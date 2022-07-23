@@ -40,9 +40,9 @@
 # ■スケジュール
  企画〜技術調査：6/30 〆切  
  README〜ER図作成：7/11 〆切  
- メイン機能実装：7/12 - 8/12  
- β版をRUNTEQ内リリース（MVP）：8/13 〆切  
- 本番リリース：8月末  
+ メイン機能実装：7/23 - 8/23  
+ β版をRUNTEQ内リリース（MVP）：8/24 〆切  
+ 本番リリース：9/7
  
 # 画面遷移図
 https://www.figma.com/file/AooAFozghAwS7wKYnJsxmo/%E6%8A%B9%E8%8C%B6%E3%81%A8%E7%A5%9E%E7%A4%BE%E3%80%82%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3?node-id=0%3A1
