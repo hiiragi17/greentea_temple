@@ -28,9 +28,44 @@ gem 'jbuilder', '~> 2.7'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.4', require: false
 
+# Model
+gem 'enum_help'
+
+# Authentication
+gem 'sorcery'
+
+# Localization
+gem 'rails-i18n'
+
+# Pagination
+gem 'kaminari'
+
+# Search
+gem 'ransack'
+
+# Image upload
+gem 'carrierwave', '~> 2.0'
+gem 'mini_magick'
+
+# ActiveRecord
+gem 'activerecord-import'
+
+# admin
+gem 'rails_admin', ['>= 3.0.0.beta2', '< 4']
+
+
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+
+  # Test
+  gem 'factory_bot_rails'
+  gem 'rspec-rails'
+
+  # Code analyse
+  gem 'rubocop', require:false
+  gem 'rubocop-rails', require:false
 end
 
 group :development do
@@ -48,3 +83,12 @@ end
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 gem "net-smtp"
+
+group :test do
+  gem 'capybara'
+  gem 'faker'
+  gem 'fuubar'
+  gem 'shoulda-matchers'
+  gem 'timecop'
+  gem 'webdrivers'
+end
