@@ -152,6 +152,14 @@ GEM
     msgpack (1.5.3)
     multi_json (1.15.0)
     multi_xml (0.6.0)
+    net-imap (0.2.3)
+      digest
+      net-protocol
+      strscan
+    net-pop (0.1.1)
+      digest
+      net-protocol
+      timeout
     net-protocol (0.1.3)
       timeout
     net-smtp (0.3.1)
@@ -294,6 +302,7 @@ GEM
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
     ssrf_filter (1.0.7)
+    strscan (3.0.4)
     thor (1.2.1)
     tilt (2.0.11)
     timecop (0.9.5)
@@ -344,6 +353,8 @@ DEPENDENCIES
   kaminari
   listen (~> 3.3)
   mini_magick
+  net-imap
+  net-pop
   net-smtp
   pg (~> 1.1)
   puma (~> 5.0)
