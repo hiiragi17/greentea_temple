@@ -1,0 +1,30 @@
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/msgpack-1.5.4/ext/msgpack
+/Users/hironomami/.rbenv/versions/3.1.2/bin/ruby -I /Users/hironomami/.rbenv/versions/3.1.2/lib/ruby/3.1.0 -r ./siteconf20220801-8475-scyekz.rb extconf.rb
+checking for ruby/st.h... yes
+checking for st.h... no
+checking for rb_enc_interned_str() in ruby.h... yes
+checking for rb_hash_new_capa() in ruby.h... no
+creating Makefile
+
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/msgpack-1.5.4/ext/msgpack
+make DESTDIR\= clean
+
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/msgpack-1.5.4/ext/msgpack
+make DESTDIR\=
+compiling buffer.c
+compiling buffer_class.c
+compiling extension_value_class.c
+compiling factory_class.c
+compiling packer.c
+compiling packer_class.c
+compiling packer_ext_registry.c
+compiling rbinit.c
+compiling rmem.c
+compiling unpacker.c
+compiling unpacker_class.c
+compiling unpacker_ext_registry.c
+linking shared-object msgpack/msgpack.bundle
+
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/msgpack-1.5.4/ext/msgpack
+make DESTDIR\= install
+/usr/bin/install -c -m 0755 msgpack.bundle ./.gem.20220801-8475-zyy2mw/msgpack

@@ -1,0 +1,255 @@
+PKG_CONFIG_PATH = /Users/hironomami/.rbenv/versions/3.1.2/openssl/lib/pkgconfig
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib PKG_CONFIG_PATH=/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib/pkgconfig pkg-config --exists openssl
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib PKG_CONFIG_PATH=/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib/pkgconfig {"PKG_CONFIG_PATH"=>"/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib/pkgconfig"} pkg-config --libs openssl |
+=> "-L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -lssl -lcrypto\n"
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -o conftest -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe conftest.c  -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib  -fstack-protector-strong -L/usr/local/lib     -lruby.3.1   "
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: int main(int argc, char **argv)
+4: {
+5:   return !!argv[argc];
+6: }
+/* end */
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -o conftest -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe conftest.c  -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib  -fstack-protector-strong -L/usr/local/lib     -lruby.3.1 -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -lssl -lcrypto  "
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: int main(int argc, char **argv)
+4: {
+5:   return !!argv[argc];
+6: }
+/* end */
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib PKG_CONFIG_PATH=/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib/pkgconfig {"PKG_CONFIG_PATH"=>"/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib/pkgconfig"} pkg-config --cflags-only-I openssl |
+=> "-I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include\n"
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib PKG_CONFIG_PATH=/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib/pkgconfig {"PKG_CONFIG_PATH"=>"/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib/pkgconfig"} pkg-config --cflags-only-other openssl |
+=> "\n"
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib PKG_CONFIG_PATH=/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib/pkgconfig {"PKG_CONFIG_PATH"=>"/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib/pkgconfig"} pkg-config --libs-only-l openssl |
+=> "-lssl -lcrypto\n"
+package configuration for openssl
+incflags: -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include
+cflags: 
+ldflags: -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib
+libs: -lssl -lcrypto
+
+have_header: checking for openssl/bio.h... -------------------- yes
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe    -c conftest.c"
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: #include <openssl/bio.h>
+/* end */
+
+--------------------
+
+have_func: checking for DTLS_method() in openssl/ssl.h... -------------------- yes
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -o conftest -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe  conftest.c  -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib  -fstack-protector-strong -L/usr/local/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib     -lssl -lcrypto -lruby.3.1  -lssl -lcrypto  "
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: #include <openssl/ssl.h>
+ 4: 
+ 5: /*top*/
+ 6: extern int t(void);
+ 7: int main(int argc, char **argv)
+ 8: {
+ 9:   if (argc > 1000000) {
+10:     int (* volatile tp)(void)=(int (*)(void))&t;
+11:     printf("%d", (*tp)());
+12:   }
+13: 
+14:   return !!argv[argc];
+15: }
+16: int t(void) { void ((*volatile p)()); p = (void ((*)()))DTLS_method; return !p; }
+/* end */
+
+--------------------
+
+have_func: checking for TLS_server_method() in openssl/ssl.h... -------------------- yes
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -o conftest -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe  conftest.c  -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib  -fstack-protector-strong -L/usr/local/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib     -lssl -lcrypto -lruby.3.1  -lssl -lcrypto  "
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: #include <openssl/ssl.h>
+ 4: 
+ 5: /*top*/
+ 6: extern int t(void);
+ 7: int main(int argc, char **argv)
+ 8: {
+ 9:   if (argc > 1000000) {
+10:     int (* volatile tp)(void)=(int (*)(void))&t;
+11:     printf("%d", (*tp)());
+12:   }
+13: 
+14:   return !!argv[argc];
+15: }
+16: int t(void) { void ((*volatile p)()); p = (void ((*)()))TLS_server_method; return !p; }
+/* end */
+
+--------------------
+
+have_func: checking for SSL_CTX_set_min_proto_version(NULL, 0) in openssl/ssl.h... -------------------- yes
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -o conftest -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe  conftest.c  -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib  -fstack-protector-strong -L/usr/local/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib     -lssl -lcrypto -lruby.3.1  -lssl -lcrypto  "
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: #include <openssl/ssl.h>
+ 4: 
+ 5: /*top*/
+ 6: extern int t(void);
+ 7: int main(int argc, char **argv)
+ 8: {
+ 9:   if (argc > 1000000) {
+10:     int (* volatile tp)(void)=(int (*)(void))&t;
+11:     printf("%d", (*tp)());
+12:   }
+13: 
+14:   return !!argv[argc];
+15: }
+16: 
+17: int t(void) { SSL_CTX_set_min_proto_version(NULL, 0); return 0; }
+/* end */
+
+--------------------
+
+have_func: checking for X509_STORE_up_ref()... -------------------- yes
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -o conftest -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe  conftest.c  -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib  -fstack-protector-strong -L/usr/local/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib     -lssl -lcrypto -lruby.3.1  -lssl -lcrypto  "
+conftest.c:14:57: error: use of undeclared identifier 'X509_STORE_up_ref'
+int t(void) { void ((*volatile p)()); p = (void ((*)()))X509_STORE_up_ref; return !p; }
+                                                        ^
+1 error generated.
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: /*top*/
+ 4: extern int t(void);
+ 5: int main(int argc, char **argv)
+ 6: {
+ 7:   if (argc > 1000000) {
+ 8:     int (* volatile tp)(void)=(int (*)(void))&t;
+ 9:     printf("%d", (*tp)());
+10:   }
+11: 
+12:   return !!argv[argc];
+13: }
+14: int t(void) { void ((*volatile p)()); p = (void ((*)()))X509_STORE_up_ref; return !p; }
+/* end */
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -o conftest -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe  conftest.c  -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib  -fstack-protector-strong -L/usr/local/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib     -lssl -lcrypto -lruby.3.1  -lssl -lcrypto  "
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: /*top*/
+ 4: extern int t(void);
+ 5: int main(int argc, char **argv)
+ 6: {
+ 7:   if (argc > 1000000) {
+ 8:     int (* volatile tp)(void)=(int (*)(void))&t;
+ 9:     printf("%d", (*tp)());
+10:   }
+11: 
+12:   return !!argv[argc];
+13: }
+14: extern void X509_STORE_up_ref();
+15: int t(void) { X509_STORE_up_ref(); return 0; }
+/* end */
+
+--------------------
+
+have_func: checking for SSL_CTX_set_ecdh_auto(NULL, 0) in openssl/ssl.h... -------------------- yes
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -o conftest -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe  conftest.c  -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib  -fstack-protector-strong -L/usr/local/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib     -lssl -lcrypto -lruby.3.1  -lssl -lcrypto  "
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: #include <openssl/ssl.h>
+ 4: 
+ 5: /*top*/
+ 6: extern int t(void);
+ 7: int main(int argc, char **argv)
+ 8: {
+ 9:   if (argc > 1000000) {
+10:     int (* volatile tp)(void)=(int (*)(void))&t;
+11:     printf("%d", (*tp)());
+12:   }
+13: 
+14:   return !!argv[argc];
+15: }
+16: 
+17: int t(void) { SSL_CTX_set_ecdh_auto(NULL, 0); return 0; }
+/* end */
+
+--------------------
+
+have_func: checking for SSL_get1_peer_certificate() in openssl/ssl.h... -------------------- no
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -o conftest -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe  conftest.c  -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib  -fstack-protector-strong -L/usr/local/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib     -lssl -lcrypto -lruby.3.1  -lssl -lcrypto  "
+conftest.c:16:57: error: use of undeclared identifier 'SSL_get1_peer_certificate'
+int t(void) { void ((*volatile p)()); p = (void ((*)()))SSL_get1_peer_certificate; return !p; }
+                                                        ^
+1 error generated.
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: #include <openssl/ssl.h>
+ 4: 
+ 5: /*top*/
+ 6: extern int t(void);
+ 7: int main(int argc, char **argv)
+ 8: {
+ 9:   if (argc > 1000000) {
+10:     int (* volatile tp)(void)=(int (*)(void))&t;
+11:     printf("%d", (*tp)());
+12:   }
+13: 
+14:   return !!argv[argc];
+15: }
+16: int t(void) { void ((*volatile p)()); p = (void ((*)()))SSL_get1_peer_certificate; return !p; }
+/* end */
+
+DYLD_FALLBACK_LIBRARY_PATH=.:/Users/hironomami/.rbenv/versions/3.1.2/lib "clang -o conftest -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/arm64-darwin21 -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0/ruby/backward -I/Users/hironomami/.rbenv/versions/3.1.2/include/ruby-3.1.0 -I. -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/openssl/include -I/Users/hironomami/.rbenv/versions/3.1.2/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fdeclspec -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wdeprecated-declarations -Wdivision-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wextra-tokens -Wundef  -fno-common -pipe  conftest.c  -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib -L. -L/Users/hironomami/.rbenv/versions/3.1.2/lib  -fstack-protector-strong -L/usr/local/lib -L/Users/hironomami/.rbenv/versions/3.1.2/openssl/lib     -lssl -lcrypto -lruby.3.1  -lssl -lcrypto  "
+Undefined symbols for architecture arm64:
+  "_SSL_get1_peer_certificate", referenced from:
+      _t in conftest-29335b.o
+ld: symbol(s) not found for architecture arm64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: #include <openssl/ssl.h>
+ 4: 
+ 5: /*top*/
+ 6: extern int t(void);
+ 7: int main(int argc, char **argv)
+ 8: {
+ 9:   if (argc > 1000000) {
+10:     int (* volatile tp)(void)=(int (*)(void))&t;
+11:     printf("%d", (*tp)());
+12:   }
+13: 
+14:   return !!argv[argc];
+15: }
+16: extern void SSL_get1_peer_certificate();
+17: int t(void) { SSL_get1_peer_certificate(); return 0; }
+/* end */
+
+--------------------
+

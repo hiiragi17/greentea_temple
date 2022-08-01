@@ -1,0 +1,15 @@
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/bootsnap-1.13.0/ext/bootsnap
+/Users/hironomami/.rbenv/versions/3.1.2/bin/ruby -I /Users/hironomami/.rbenv/versions/3.1.2/lib/ruby/3.1.0 -r ./siteconf20220801-8475-r19av0.rb extconf.rb
+creating Makefile
+
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/bootsnap-1.13.0/ext/bootsnap
+make DESTDIR\= clean
+
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/bootsnap-1.13.0/ext/bootsnap
+make DESTDIR\=
+compiling bootsnap.c
+linking shared-object bootsnap/bootsnap.bundle
+
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/bootsnap-1.13.0/ext/bootsnap
+make DESTDIR\= install
+/usr/bin/install -c -m 0755 bootsnap.bundle ./.gem.20220801-8475-xux1mk/bootsnap
