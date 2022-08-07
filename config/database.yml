@@ -81,6 +81,6 @@ test:
 #
 production:
   <<: *default
-  database: greentea_temple_development
+  database: greentea_temple_production
   username: greentea_temple
   password: <%= ENV["GREENTEA_TEMPLE_DATABASE_PASSWORD"] %>
