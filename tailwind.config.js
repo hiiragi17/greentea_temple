@@ -6,6 +6,9 @@ module.exports = {
     './app/javascript/**/*.js'
   ],
   plugins: [
-    require('daisyui')  // ← 追記する
+    require('daisyui')  
   ],
+  daisyui: {
+    themes: ["retro"]
+  }
 }
