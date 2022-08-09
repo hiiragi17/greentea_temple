@@ -21,19 +21,31 @@
 # Ignore uploaded files in development.
 /storage/*
 !/storage/.keep
-/tmp/storage/*
-!/tmp/storage/
-!/tmp/storage/.keep
+
+/node_modules
+/yarn-error.log
 
 /public/assets
+.byebug_history
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 
-/app/assets/builds/*
-!/app/assets/builds/.keep
-
+/public/packs
+/public/packs-test
 /node_modules
+/yarn-error.log
+yarn-debug.log*
+.yarn-integrity
+
+# Ignore vendor
+/vendor
+
+# Ignore sqlite3 files
+db/greentea_temple_development
+db/greentea_temple_test
+
+/public/uploads
 
 /.env
 .DS_Store
