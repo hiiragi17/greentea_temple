@@ -1,0 +1,25 @@
+{
+  "name": "greentea_temple",
+  "version": "1.0.0",
+  "description": "# ■ サービス概要 　京都にある抹茶スイーツのお店の近くにある神社仏閣を調べたり、   　京都にある神社仏閣近くの抹茶スイーツを調べたりすることができ、   　また自分だけの抹茶スイーツと神社仏閣のルートマップが作成出来るサービスです。",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hiiragi17/greentea_temple.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hiiragi17/greentea_temple/issues"
+  },
+  "homepage": "https://github.com/hiiragi17/greentea_temple#readme",
+  "dependencies": {
+    "daisyui": "^2.22.0"
+  }
+}
