@@ -1,0 +1,16 @@
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/strscan-3.0.4/ext/strscan
+/Users/hironomami/.rbenv/versions/3.1.2/bin/ruby -I /Users/hironomami/.rbenv/versions/3.1.2/lib/ruby/3.1.0 -r ./siteconf20220809-10347-onhc1f.rb extconf.rb
+checking for onig_region_memsize() in ruby.h... yes
+creating Makefile
+
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/strscan-3.0.4/ext/strscan
+make DESTDIR\= clean
+
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/strscan-3.0.4/ext/strscan
+make DESTDIR\=
+compiling strscan.c
+linking shared-object strscan.bundle
+
+current directory: /Users/hironomami/PF/greentea_temple/vendor/bundle/ruby/3.1.0/gems/strscan-3.0.4/ext/strscan
+make DESTDIR\= install
+/usr/bin/install -c -m 0755 strscan.bundle ./.gem.20220809-10347-x6ui3t
