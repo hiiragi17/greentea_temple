@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/hiiragi17/greentea_temple/issues"
   },
-  "homepage": "https://github.com/hiiragi17/greentea_temple#readme"
+  "homepage": "https://github.com/hiiragi17/greentea_temple#readme",
+  "dependencies": {
+    "daisyui": "^2.22.0"
+  }
 }
