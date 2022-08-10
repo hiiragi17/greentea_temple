@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_08_10_082414) do
+ActiveRecord::Schema[7.0].define(version: 2022_08_10_083959) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -24,6 +24,15 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_10_082414) do
     t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "place_areas", force: :cascade do |t|
+    t.bigint "place_id", null: false
+    t.bigint "area_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["area_id"], name: "index_place_areas_on_area_id"
+    t.index ["place_id"], name: "index_place_areas_on_place_id"
   end
 
   create_table "place_genres", force: :cascade do |t|
@@ -51,6 +60,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_10_082414) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "place_areas", "areas"
+  add_foreign_key "place_areas", "places"
   add_foreign_key "place_genres", "genres"
   add_foreign_key "place_genres", "places"
 end
