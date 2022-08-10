@@ -1,4 +1,7 @@
 class Place < ApplicationRecord
+    has_many :genres, through: :place_genres
+    has_many :place_genres
+
     validates :name, presence: true
     validates :description, presence: true
     validates :longitude, presence: true
