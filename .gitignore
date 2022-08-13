@@ -39,7 +39,7 @@ yarn-debug.log*
 .yarn-integrity
 
 # Ignore vendor
-/vendor
+vendor
 
 # Ignore sqlite3 files
 db/greentea_temple_development
