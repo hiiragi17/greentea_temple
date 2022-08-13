@@ -10,8 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_08_13_084711) do
+ActiveRecord::Schema[7.0].define(version: 2022_08_13_101834) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "greenteas", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description", null: false
+    t.string "phone_number"
+    t.string "address", null: false
+    t.string "access", null: false
+    t.datetime "open_time"
+    t.datetime "close_time"
+    t.string "homepage"
+    t.integer "latitude", null: false
+    t.integer "longitude", null: false
+    t.integer "closed"
+    t.integer "img"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
 end
