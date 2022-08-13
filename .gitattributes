@@ -5,6 +5,3 @@ db/schema.rb linguist-generated
 
 # Mark any vendored files as having been vendored.
 vendor/* linguist-vendored
-
-special-vendored-path/* linguist-vendored
-project-docs/* linguist-documentation
