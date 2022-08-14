@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_08_14_012116) do
+ActiveRecord::Schema[7.0].define(version: 2022_08_14_012657) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -54,6 +54,16 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_14_012116) do
     t.string "img"
   end
 
+  create_table "temple_areas", force: :cascade do |t|
+    t.bigint "temple_id", null: false
+    t.bigint "area_id", null: false
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["area_id"], name: "index_temple_areas_on_area_id"
+    t.index ["temple_id"], name: "index_temple_areas_on_temple_id"
+  end
+
   create_table "temples", force: :cascade do |t|
     t.string "name", null: false
     t.text "description", null: false
@@ -73,4 +83,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_14_012116) do
 
   add_foreign_key "greentea_genres", "genres"
   add_foreign_key "greentea_genres", "greenteas"
+  add_foreign_key "temple_areas", "areas"
+  add_foreign_key "temple_areas", "temples"
 end
