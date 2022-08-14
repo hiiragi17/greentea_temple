@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_08_10_083959) do
+ActiveRecord::Schema[7.0].define(version: 2022_08_14_012657) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -26,25 +26,17 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_10_083959) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "place_areas", force: :cascade do |t|
-    t.bigint "place_id", null: false
-    t.bigint "area_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["area_id"], name: "index_place_areas_on_area_id"
-    t.index ["place_id"], name: "index_place_areas_on_place_id"
-  end
-
-  create_table "place_genres", force: :cascade do |t|
-    t.bigint "place_id", null: false
+  create_table "greentea_genres", force: :cascade do |t|
+    t.bigint "greentea_id", null: false
     t.bigint "genre_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["genre_id"], name: "index_place_genres_on_genre_id"
-    t.index ["place_id"], name: "index_place_genres_on_place_id"
+    t.string "name", null: false
+    t.index ["genre_id"], name: "index_greentea_genres_on_genre_id"
+    t.index ["greentea_id"], name: "index_greentea_genres_on_greentea_id"
   end
 
-  create_table "places", force: :cascade do |t|
+  create_table "greenteas", force: :cascade do |t|
     t.string "name", null: false
     t.text "description", null: false
     t.string "phone_number"
@@ -55,13 +47,42 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_10_083959) do
     t.string "homepage"
     t.integer "latitude", null: false
     t.integer "longitude", null: false
-    t.integer "place_type"
+    t.integer "closed"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "holiday"
+    t.string "img"
   end
 
-  add_foreign_key "place_areas", "areas"
-  add_foreign_key "place_areas", "places"
-  add_foreign_key "place_genres", "genres"
-  add_foreign_key "place_genres", "places"
+  create_table "temple_areas", force: :cascade do |t|
+    t.bigint "temple_id", null: false
+    t.bigint "area_id", null: false
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["area_id"], name: "index_temple_areas_on_area_id"
+    t.index ["temple_id"], name: "index_temple_areas_on_temple_id"
+  end
+
+  create_table "temples", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description", null: false
+    t.string "phone_number"
+    t.string "address", null: false
+    t.string "access", null: false
+    t.datetime "open_time"
+    t.datetime "close_time"
+    t.string "homepage"
+    t.integer "latitude", null: false
+    t.integer "longitude", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "holiday"
+    t.string "img"
+  end
+
+  add_foreign_key "greentea_genres", "genres"
+  add_foreign_key "greentea_genres", "greenteas"
+  add_foreign_key "temple_areas", "areas"
+  add_foreign_key "temple_areas", "temples"
 end

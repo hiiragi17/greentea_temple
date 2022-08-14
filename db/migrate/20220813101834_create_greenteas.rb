@@ -1,6 +1,6 @@
-class CreatePlaces < ActiveRecord::Migration[7.0]
+class CreateGreenteas < ActiveRecord::Migration[7.0]
   def change
-    create_table :places do |t|
+    create_table :greenteas do |t|
       t.string :name, null: false
       t.text :description, null: false
       t.string :phone_number
@@ -11,7 +11,8 @@ class CreatePlaces < ActiveRecord::Migration[7.0]
       t.string :homepage
       t.integer :latitude, null: false
       t.integer :longitude, null: false
-      t.integer :place_type
+      t.integer :closed
+      t.integer :img
 
       t.timestamps
     end

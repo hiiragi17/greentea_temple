@@ -1,6 +1,6 @@
 FactoryBot.define do
-  factory :place_area do
-    place { nil }
+  factory :temple_area do
+    temple { nil }
     area { nil }
   end
 end

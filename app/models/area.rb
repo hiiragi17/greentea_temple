@@ -1,6 +1,7 @@
 class Area < ApplicationRecord
-    has_many :places, through: :place_areas
-    has_many :place_areas
+    has_many :temples, through: :temple_areas
+    has_many :temple_areas
 
     validates :name, presence: true
+    
 end

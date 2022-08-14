@@ -48,4 +48,4 @@
 https://www.figma.com/file/AooAFozghAwS7wKYnJsxmo/%E6%8A%B9%E8%8C%B6%E3%81%A8%E7%A5%9E%E7%A4%BE%E3%80%82%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3?node-id=0%3A1
 
 # ER図
-https://drive.google.com/file/d/1t8cbr7xrmKH7jzKY6dfvE9nclJxi9Nj-/view?usp=sharing
+https://drive.google.com/file/d/1A-DeCxxgm9ON8ctuKS66walHDG8QUyxk/view?usp=sharing
