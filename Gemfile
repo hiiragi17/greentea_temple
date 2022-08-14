@@ -69,6 +69,11 @@ gem 'mini_magick'
 # ActiveRecord
 gem 'activerecord-import'
 
+# scraping
+
+gem "selenium-webdriver"
+gem 'nokogiri'
+
 # Use Sass to process CSS
 # gem "sassc-rails"
 

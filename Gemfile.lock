@@ -350,6 +350,7 @@ DEPENDENCIES
   jsbundling-rails
   kaminari
   mini_magick
+  nokogiri
   oauth2 (~> 2.0.0)
   pg (~> 1.1)
   puma (~> 5.0)
