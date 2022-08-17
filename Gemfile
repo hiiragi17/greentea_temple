@@ -73,6 +73,7 @@ gem 'activerecord-import'
 
 gem "selenium-webdriver"
 gem 'nokogiri'
+gem 'roo'
 
 # Use Sass to process CSS
 # gem "sassc-rails"
