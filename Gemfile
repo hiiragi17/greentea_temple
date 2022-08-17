@@ -73,7 +73,7 @@ gem 'activerecord-import'
 
 gem "selenium-webdriver"
 gem 'nokogiri'
-gem 'roo'
+gem "activerecord-import"
 
 # google map
 gem 'geocoder'
