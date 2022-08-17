@@ -75,6 +75,9 @@ gem "selenium-webdriver"
 gem 'nokogiri'
 gem 'roo'
 
+# google map
+gem 'geocoder'
+
 # Use Sass to process CSS
 # gem "sassc-rails"
 
