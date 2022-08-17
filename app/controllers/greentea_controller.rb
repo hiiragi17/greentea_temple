@@ -1,0 +1,2 @@
+class GreenteaController < ApplicationController
+end
