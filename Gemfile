@@ -71,7 +71,7 @@ gem 'activerecord-import'
 
 # scraping
 
-gem "selenium-webdriver"
+gem 'open-uri'
 gem 'nokogiri'
 gem "activerecord-import"
 
