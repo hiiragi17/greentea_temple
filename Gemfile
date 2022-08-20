@@ -74,6 +74,7 @@ gem 'activerecord-import'
 gem 'open-uri'
 gem 'nokogiri'
 gem "activerecord-import"
+gem 'selenium-webdriver'
 
 # google map
 gem 'geocoder'
