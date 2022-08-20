@@ -8,4 +8,7 @@ class Greentea < ApplicationRecord
     validates :latitude, presence: true
 
     enum place_type: { open: 0, close: 1 }
+
+    geocoded_by :address
+    after_validation :geocode, if: :address_changed?
 end

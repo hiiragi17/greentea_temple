@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_08_14_012657) do
+ActiveRecord::Schema[7.0].define(version: 2022_08_20_065157) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -42,16 +42,15 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_14_012657) do
     t.string "phone_number"
     t.string "address", null: false
     t.string "access", null: false
-    t.datetime "open_time"
-    t.datetime "close_time"
     t.string "homepage"
-    t.integer "latitude", null: false
-    t.integer "longitude", null: false
+    t.float "latitude", null: false
+    t.float "longitude", null: false
     t.integer "closed"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "holiday"
     t.string "img"
+    t.string "business_hours"
   end
 
   create_table "temple_areas", force: :cascade do |t|
@@ -70,15 +69,14 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_14_012657) do
     t.string "phone_number"
     t.string "address", null: false
     t.string "access", null: false
-    t.datetime "open_time"
-    t.datetime "close_time"
     t.string "homepage"
-    t.integer "latitude", null: false
-    t.integer "longitude", null: false
+    t.float "latitude", null: false
+    t.float "longitude", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "holiday"
     t.string "img"
+    t.string "business_hours"
   end
 
   add_foreign_key "greentea_genres", "genres"
