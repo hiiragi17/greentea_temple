@@ -1,2 +1,0 @@
-class TempleController < ApplicationController
-end
