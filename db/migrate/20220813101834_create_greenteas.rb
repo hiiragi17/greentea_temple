@@ -6,13 +6,12 @@ class CreateGreenteas < ActiveRecord::Migration[7.0]
       t.string :phone_number
       t.string :address, null: false
       t.string :access, null: false
-      t.datetime :open_time
-      t.datetime :close_time
+      t.string :business_hours
       t.string :homepage
-      t.integer :latitude, null: false
-      t.integer :longitude, null: false
+      t.float :latitude, null: false
+      t.float :longitude, null: false
       t.integer :closed
-      t.integer :img
+      t.string :img
 
       t.timestamps
     end
