@@ -92,6 +92,7 @@ group :development, :test do
   # Test
   gem 'factory_bot_rails'
   gem 'rspec-rails'
+  gem 'pry-byebug'
 
   # Code analyse
   gem 'rubocop', require:false
