@@ -8,8 +8,8 @@ class CreateTemples < ActiveRecord::Migration[7.0]
       t.string :access, null: false
       t.string :business_hours
       t.string :homepage
-      t.float :latitude, null: false
-      t.float :longitude, null: false
+      t.float :latitude
+      t.float :longitude
       t.string :holiday
       t.string :img
 
