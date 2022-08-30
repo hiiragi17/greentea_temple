@@ -1,0 +1,20 @@
+<div class="max-w-screen-md grid sm:grid-cols-2 mx-auto">
+  <div class="sm:col-span-2 p-3.5 items-center text-center">
+    <div class="container mx-auto mt-24 py-5 px-5 bg-secondary-focus md:rounded-3xl md:px-20">
+     <!-- 抹茶スイーツ店の情報 -->
+    <h1><%= @greentea.name %></h1>
+    <li><%= @greentea.description %></li>
+    <li> <%= @greentea.phone_number %></li>
+    <li><%= @greentea.address %></li>
+    <li> <%= @greentea.access %></li>
+    <li><%= @greentea.business_hours %></li>
+    <li><%= @greentea.homepage %></li>
+    <li><%= @greentea.holiday %></li>
+     <!-- 近くの神社仏閣を表示する -->
+    近くの神社仏閣
+    <!-- タグ表示 -->
+    </div>
+    <!-- 戻るリンク -->
+    <%=link_to "検索ページへ戻る", greenteas_path %>
+  </div>
+</div>
