@@ -1,0 +1,14 @@
+<div class="max-w-screen-md grid sm:grid-cols-2 mx-auto">
+  <div class="sm:col-span-2 p-3.5 items-center text-center">
+    <div id="greentea-id-<%= greentea.id %>">
+      <div class="card lg:card-side bg-secondary-focus text-primary-content">
+        <figure><%= image_tag 'sample.jpeg', size: '300x200' %></figure>
+          <div class="card-body">
+            <h2 class="card-title">
+              <%= link_to greentea.name, greentea_path(greentea), class: 'button btn btn-success', style: 'color: white'%>
+            </h2>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
