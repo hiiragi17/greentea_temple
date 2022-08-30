@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_08_20_065157) do
+ActiveRecord::Schema[7.0].define(version: 2022_08_27_081754) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -31,7 +31,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_20_065157) do
     t.bigint "genre_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "name", null: false
     t.index ["genre_id"], name: "index_greentea_genres_on_genre_id"
     t.index ["greentea_id"], name: "index_greentea_genres_on_greentea_id"
   end
@@ -42,21 +41,20 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_20_065157) do
     t.string "phone_number"
     t.string "address", null: false
     t.string "access", null: false
+    t.string "business_hours"
     t.string "homepage"
-    t.float "latitude", null: false
-    t.float "longitude", null: false
     t.integer "closed"
+    t.string "img"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "holiday"
-    t.string "img"
-    t.string "business_hours"
+    t.float "latitude"
+    t.float "longitude"
   end
 
   create_table "temple_areas", force: :cascade do |t|
     t.bigint "temple_id", null: false
     t.bigint "area_id", null: false
-    t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["area_id"], name: "index_temple_areas_on_area_id"
@@ -69,14 +67,14 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_20_065157) do
     t.string "phone_number"
     t.string "address", null: false
     t.string "access", null: false
+    t.string "business_hours"
     t.string "homepage"
     t.float "latitude", null: false
     t.float "longitude", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.string "holiday"
     t.string "img"
-    t.string "business_hours"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_foreign_key "greentea_genres", "genres"
