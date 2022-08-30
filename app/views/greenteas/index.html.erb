@@ -1,40 +1,20 @@
-<h1>抹茶スイーツ店一覧</h1>
-<table>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>名前</th>
-      <th>説明</th>
-      <th>電話番号</th>
-      <th>住所</th>
-      <th>アクセス</th>
-      <th>開店時間</th>
-      <th>閉店時間</th>
-      <th>ホームページ</th>
-      <th>緯度</th>
-      <th>経度</th>
-      <th>定休日</th>
-      <th>写真</th>
-    </tr>
-  </thead>
+<div class="max-w-screen-md grid sm:grid-cols-2 mx-auto">
+  <div class="sm:col-span-2 p-3.5 items-center text-center">
+    <h1>抹茶スイーツ店を検索する</h1>
+      <!-- 検索フォーム -->
+      <%= render 'search_form', url: greenteas_path %>
 
-  <tbody>
-    <%# @greenteas.each do |greentea| %>
-      <tr>
-        <td><%#= greentea.id %></td>
-        <td><%#= greentea.name %></td>
-        <td><%#= greentea.description %></td>
-        <td><%#= greentea.phone_number %></td>
-        <td><%#= greentea.address %></td>
-        <td><%#= greentea.access %></td>
-        <td><%#= greentea.open_time %></td>
-        <td><%#= greentea.close_time %></td>
-        <td><%#= greentea.homepage %></td>
-        <td><%#= greentea.latitude %></td>
-        <td><%#= greentea.longitude %></td>
-        <td><%#= greentea.holiday %></td>
-        <td><%#= greentea.img %></td>
-      </tr>
-    <%# end %>
-  </tbody>
-</table>
+       <!-- 抹茶スイーツ一覧 -->
+      <div class="max-w-screen-md grid sm:grid-cols-2 mx-auto">
+        <div class="sm:col-span-2 p-3.5 items-center text-center">
+        <% if @greenteas.present? %>
+          <%= render @greenteas %> 
+        <% else %>
+          <p><%= '検索結果はありません' %></p>
+        <% end %>
+      <!-- ページネーション -->
+      <%= paginate @greenteas %>
+        </div>
+      </div>
+  </div>
+</div>
