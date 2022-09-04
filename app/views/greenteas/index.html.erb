@@ -3,18 +3,13 @@
     <h1>抹茶スイーツ店を検索する</h1>
       <!-- 検索フォーム -->
       <%= render 'search_form', url: greenteas_path %>
-
        <!-- 抹茶スイーツ一覧 -->
-      <div class="max-w-screen-md grid sm:grid-cols-2 mx-auto">
-        <div class="sm:col-span-2 p-3.5 items-center text-center">
         <% if @greenteas.present? %>
           <%= render @greenteas %> 
         <% else %>
           <p><%= '検索結果はありません' %></p>
-        <% end %>
+        <% end %>  
       <!-- ページネーション -->
-      <%= paginate @greenteas %>
-        </div>
-      </div>
+      <%= paginate @greenteas %>   
   </div>
 </div>
