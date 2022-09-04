@@ -5,13 +5,13 @@
       <%= search_form_for @search, url: url do |f| %>
       <%= f.search_field :name_or_description_or_address_or_access_cont, class: "input input-bordered input-success w-full max-w-xs", placeholder: 'キーワード' %>
     <h2>カテゴリで検索</h2> 
-        <% Genre.all.each do |genre| %>
-        <%= f.check_box :greentea_genres_genre_id_eq_any, { multiple: true, checked: genre[:checked], disabled: genre[:disabled], include_hidden: false }, genre[:id] %>
-        <label><%= genre.name %></label>
-        <% end %>
-        <br>
-        <%= f.submit "検索", class: 'btn btn-sm btn-accent-focus', style: 'color: white'%>
+      <% Genre.all.each do |genre| %>
+      <%= f.check_box :greentea_genres_genre_id_eq_any, { multiple: true, checked: genre[:checked], disabled: genre[:disabled], include_hidden: false }, genre[:id] %>
+      <label><%= genre.name %></label>
+      <% end %>
+      <br>
+      <%= f.submit "検索", class: 'btn btn-sm btn-accent-focus', style: 'color: white'%>
      <% end %>
-</div>
-</div>
+    </div>
+  </div>
 </div>
