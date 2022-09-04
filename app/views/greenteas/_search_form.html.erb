@@ -1,12 +1,12 @@
 <div class="max-w-screen-md grid sm:grid-cols-2 mx-auto">
   <div class="sm:col-span-2 p-3.5 items-center text-center">
-  <div class="artboard phone-1 bg-secondary-focus">
+    <div class="artboard phone-1 bg-secondary-focus">
     <h2>キーワードで検索</h2> 
       <%= search_form_for @search, url: url do |f| %>
-      <%= f.search_field :name_or_description_cont, class: "input input-bordered input-success w-full max-w-xs", placeholder: 'キーワード' %>
+      <%= f.search_field :name_or_description_or_address_or_access_cont, class: "input input-bordered input-success w-full max-w-xs", placeholder: 'キーワード' %>
     <h2>カテゴリで検索</h2> 
         <% Genre.all.each do |genre| %>
-        <%= f.check_box :genres_id_eq_any_all, { multiple: true, checked: genre[:checked], disabled: genre[:disabled], include_hidden: false }, genre[:id] %>
+        <%= f.check_box :greentea_genres_genre_id_eq_any, { multiple: true, checked: genre[:checked], disabled: genre[:disabled], include_hidden: false }, genre[:id] %>
         <label><%= genre.name %></label>
         <% end %>
         <br>

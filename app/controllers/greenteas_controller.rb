@@ -5,12 +5,12 @@ class GreenteasController < ApplicationController
   end
 
   def show
-    @greentea =Greentea.find(params[:id])
+    @greentea = Greentea.find(params[:id])
   end
 
   private
-  def greeentea_params
-    params.require(:greentea).permit(:name, :description)
+  def greentea_params
+    params.require(:greentea).permit(:name, :description, :access, :address, genre_ids: [])
   end
 
 end
