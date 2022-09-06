@@ -1,0 +1,21 @@
+<h2>gmap</h2>
+<div class="w-full h-screen" id='map'></div>
+
+<style>
+#map{
+  height: 500px;
+  width: 100%;
+}
+</style>
+
+<script>
+function initMap(){
+  let map = new google.maps.Map(document.getElementById('map'), {
+  center: { lat: 35.0117, lng: 135.4520 },
+  zoom: 12
+  });
+}
+</script>
+<script async defer 
+    src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=<%= ENV['GOOGLE_MAP_API'] %>&callback=initMap">
+</script>
