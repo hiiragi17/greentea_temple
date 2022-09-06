@@ -70,14 +70,17 @@ gem 'mini_magick'
 gem 'activerecord-import'
 
 # scraping
-
 gem 'open-uri'
 gem 'nokogiri'
-gem "activerecord-import"
-gem 'selenium-webdriver'
 
 # google map
 gem 'geocoder'
+
+# javascript
+gem 'gon'
+
+# APIを環境変数化
+gem 'dotenv-rails'
 
 # Use Sass to process CSS
 # gem "sassc-rails"
