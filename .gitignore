@@ -49,5 +49,3 @@ db/greentea_temple_test
 
 /.env
 .DS_Store
-
-geocoder.rb
