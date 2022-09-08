@@ -1,18 +1,56 @@
-<h2>gmap</h2>
-<div class="w-full h-screen" id='map'></div>
-
-<style>
-#map{
-  height: 500px;
-  width: 100%;
-}
-</style>
+<div class="w-full h-96" id='map'></div>
 
 <script>
+let map;
+let marker = []; //マーカーを複数表示させるため配列化
+let infoWindow = []; //吹き出しを複数表示させたいので配列化
+const greenteas = gon.greenteas; //コントローラで定義したインスタンス変数を変数に代入
+
 function initMap(){
-  let map = new google.maps.Map(document.getElementById('map'), {
-  center: { lat: 35.0117, lng: 135.4520 },
-  zoom: 12
+  // 現在位置の特定
+  navigator.geolocation.getCurrentPosition(function (position){
+    // LatLngに位置座標を代入
+    LatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+  // mapの初期位置設定
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: { lat: 35.0117, lng: 135.4520 },
+    zoom: 14
+  });
+
+ // map.setCenterで地図が初期位置に移動
+    map.setCenter(LatLng);
+
+  // forは繰り返し処理
+    // 変数iを0と定義し、
+    // その後gonで定義したgreenteas分繰り返し加える処理を行う
+    for (let i = 0; i < greenteas.length; i++){
+      // greenteas[i]は変数iのユーザーを取得している
+      marker[i] = new google.maps.Marker({
+        map: map,
+        position: {
+          // DBに保存してある、緯度・経度を呼び出す
+          lat: greenteas[i].latitude,
+          lng: greenteas[i].longitude
+        }
+      });
+
+      // 変数iを変数idに代入
+      let id = greenteas[i]['id']
+
+      // infoWindowは吹き出し
+      infoWindow[i] = new google.maps.InfoWindow({
+        // contentで中身を指定
+        // 今回は文字にリンクを貼り付けた形で表示
+        content: `<a href='/greenteas/${id}'>${greenteas[i].name}</a>`
+      });
+
+      // markerがクリックされた時、
+      marker[i].addListener("click", function(){
+        // infoWindowを表示
+        infoWindow[i].open(map, marker[i]);
+      });
+    }
   });
 }
 </script>
