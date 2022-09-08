@@ -394,6 +394,7 @@ DEPENDENCIES
   rails (~> 7.0.3)
   rails-i18n
   ransack
+  rexml (~> 3.2, >= 3.2.5)
   rspec-rails
   rubocop
   rubocop-rails
