@@ -75,6 +75,7 @@ gem 'nokogiri'
 
 # google map
 gem 'geocoder'
+gem 'geokit'
 
 # javascript
 gem 'gon'

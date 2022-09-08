@@ -129,6 +129,7 @@ GEM
       rspec-core (~> 3.0)
       ruby-progressbar (~> 1.4)
     geocoder (1.8.0)
+    geokit (1.13.1)
     globalid (1.0.0)
       activesupport (>= 5.0)
     gon (6.4.0)
@@ -378,6 +379,7 @@ DEPENDENCIES
   faker
   fuubar
   geocoder
+  geokit
   gon
   jbuilder
   jsbundling-rails
