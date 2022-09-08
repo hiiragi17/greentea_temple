@@ -1,0 +1,2 @@
+module CurrentLocationHelper
+end
