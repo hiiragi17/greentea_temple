@@ -77,6 +77,8 @@ gem 'nokogiri'
 gem 'geocoder'
 gem 'geokit'
 
+gem 'rexml', '~> 3.2', '>= 3.2.5'
+
 # javascript
 gem 'gon'
 
