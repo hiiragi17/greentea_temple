@@ -75,7 +75,7 @@ gem 'nokogiri'
 
 # google map
 gem 'geocoder'
-gem 'geokit'
+gem 'geokit-rails'
 
 gem 'rexml', '~> 3.2', '>= 3.2.5'
 
