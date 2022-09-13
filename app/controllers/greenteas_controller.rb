@@ -6,6 +6,9 @@ class GreenteasController < ApplicationController
 
   def show
     @greentea = Greentea.find(params[:id])
+    @longitude = @greentea.longitude
+    @latitude = @greentea.latitude
+    @temples = Temple.all.within(2.0, origin: [@latitude, @longitude]).by_distance(origin: [@latitude, @longitude])
   end
 
   private

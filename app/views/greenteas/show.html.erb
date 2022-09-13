@@ -12,9 +12,12 @@
     <li><%= @greentea.holiday %></li>
      <!-- 近くの神社仏閣を表示する -->
     近くの神社仏閣
+    <%= render 'shared/temple',{ temple: @temple } %> 
+
+
     <!-- タグ表示 -->
-    </div>
     <!-- 戻るリンク -->
     <%=link_to "検索ページへ戻る", greenteas_path %>
+    </div>
   </div>
 </div>
