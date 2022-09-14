@@ -1,20 +1,17 @@
-<div class="max-w-screen-md grid sm:grid-cols-2 mx-auto">
-  <div class="sm:col-span-2 p-3.5 items-center text-center">
-    <h1>抹茶スイーツ店を検索する</h1>
-      <!-- 検索フォーム -->
+<div class="container.mx-auto.mt-24">
+  <h1 class= 'font-serif text-3xl font-bold'>抹茶スイーツ店を検索する</h1>
+    <!-- 検索フォーム -->
+    <div class="p-3.5">
       <%= render 'search_form', url: greenteas_path %>
-
-       <!-- 抹茶スイーツ一覧 -->
- 
-        <% if @greenteas.present? %>
-          <%= render @greenteas %> 
-        <% else %>
-          <p><%= '検索結果はありません' %></p>
-        <% end %>
-        </div>
-      </div>
-
-      <!-- ページネーション -->
+    </div>
+    <!-- 抹茶スイーツ一覧 -->
+    <div class="p-3.5">
+      <% if @greenteas.present? %>
+        <%= render @greenteas %> 
+      <% else %>
+        <p><%= '検索結果はありません' %></p>
+      <% end %>
+    </div>
+    <!-- ページネーション -->
       <%= paginate @greenteas %>   
-  </div>
 </div>
