@@ -1,17 +1,18 @@
-
-  <div class="sm:col-span-2 p-3.5">
-    <div id="greentea-id-<%= greentea.id %>">
-      <div class="card w-96 bg-secondary-focus shadow-xl items-center">
-        <div class="sm:col-span-2 p-3.5">
-          <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
+<div class="sm:col-span-2 p-3.5">
+  <div id="greentea-id-<%= greentea.id %>">
+    <div class="card w-96 bg-secondary-focus shadow-xl items-center">
+      <div class="sm:col-span-2 p-3.5">
+        <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
           <div class="card-body">
             <h2 class="card-title">
               <div class="card-actions justify-end">
-                <%= link_to greentea.name, greentea_path(greentea), class: 'button btn btn-success', style: 'color: white'%>
+                <div class="sm:col-span-2 p-3.5">
+                  <%= link_to greentea.name, greentea_path(greentea), class: 'button btn btn-success', style: 'color: white'%>
+                </div>
             </h2>
               </div>
           </div>
-        </div>
       </div>
     </div>
-    </div>
+  </div>
+</div>
