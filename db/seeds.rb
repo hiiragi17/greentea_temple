@@ -8,7 +8,7 @@
 require "csv"
 
 CSV.foreach('db/genre.csv') do |row|
- Genre.find_or_create_by(:name => row[0])
+  Genre.find_or_create_by(:name => row[0])
 end
 
 CSV.foreach('db/greentea.csv', headers: true) do |row|

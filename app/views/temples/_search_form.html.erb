@@ -1,17 +1,22 @@
-<div class="max-w-screen-md grid sm:grid-cols-2 mx-auto">
-  <div class="sm:col-span-2 p-3.5 items-center text-center">
-    <div class="artboard phone-1 bg-primary">
-    <h2>キーワードで検索</h2> 
-      <%= search_form_for @search, url: url do |f| %>
-      <%= f.search_field :name_or_description_or_address_or_access_cont, class: "input input-bordered input-error w-full max-w-xs", placeholder: 'キーワード' %>
-    <h2>地域で検索</h2> 
-      <% Area.all.each do |area| %>
-      <%= f.check_box :temple_areas_area_id_eq_any, { multiple: true, checked: area[:checked], disabled: area[:disabled], include_hidden: false }, area[:id] %>
-      <label><%= area.name %></label>
-      <% end %>
-      <br>
-      <%= f.submit "検索", class: 'btn btn-sm btn-accent-focus', style: 'color: white'%>
-     <% end %>
-    </div>
+<div class="artboard phone-2 bg-primary sm:col-span-2 p-3.5 items-center text-center">
+  <div class="sm:col-span-2 p-3.5">
+    <h2 class="text-center font-bold font-serif text-xl">キーワードで検索</h2> 
   </div>
+    <div class="sm:col-span-2 p-3.5">
+    <%= search_form_for @search, url: url do |f| %>
+    <%= f.search_field :name_or_description_or_address_or_access_cont, class: "input input-bordered input-success w-full max-w-xs text-center text-xl", placeholder: 'キーワード' %>
+    </div>
+    <div class="sm:col-span-2 p-3.5">
+    <h2 class="text-center font-bold font-serif text-xl">エリアで検索</h2> 
+    </div>
+    <div class="sm:col-span-2 p-3.5">
+      <% Area.all.each do |area| %>
+      <%= f.check_box :temple_areas_area_id_eq_any, { multiple: true, checked: area[:checked], disabled: area[:disabled], include_hidden: false, style: 'transform: scale(1.5);', }, area[:id] %>
+      <label class="font-bold font-serif text-lg"><%= area.name %></label>
+      <% end %>
+    </div>
+    <div class="sm:col-span-2 p-3.5">
+      <%= f.submit "検索", class: 'btn btn-accent-focus', style: 'color: white'%>
+    </div>
+    <% end %>
 </div>

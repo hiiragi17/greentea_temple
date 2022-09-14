@@ -1,0 +1,19 @@
+<div class="card w-96 bg-secondary-focus shadow-xl items-center">
+   <div class="sm:col-span-2 p-3.5">
+    <% @greenteas.each do |greentea| %>
+    <div class="p-3.5">
+      <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
+       <div class="p-3.5">
+        <div class="card-body">
+        中心から<%= "#{@temple.get_distance(@latitude, @longitude)} "%>m 
+          <h2 class="card-title">
+            <div class="card-actions justify-end">
+             <div class="p-3.5">
+              <%= link_to greentea.name, greentea_path(greentea), class: 'button btn btn-success', style: 'color: white'%>
+          </h2>
+            </div>
+        </div>
+    </div>
+    <% end %>
+  </div>
+</div>
