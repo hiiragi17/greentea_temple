@@ -1,5 +1,5 @@
-<div class="text-center items-center">
-  <div class="container mx-auto mt-24 py-5 px-5 bg-secondary md:rounded-3xl md:px-20">
+<div class="gird gird-cols-3 sm:col-span-2 p-4.5 text-center items-cente">
+  <div class="container mx-auto mt-24 py-5 px-5 bg-secondary md:rounded-4xl md:px-20">
   <h1 class='font-serif text-3xl font-bold'><%= @greentea.name %></h1>
   <!-- 抹茶スイーツ店の情報 -->
   <ul class="font-serif text-xl font-bold"><%= @greentea.description %></ul>
@@ -14,12 +14,11 @@
   <div class="p-3.5">
     <h2 class='font-serif text-2xl font-bold'>近くの神社仏閣</h2>
   </div>
-  <div class="p-3.5 items-center">
     <%= render 'shared/temple',{ temple: @temple } %> 
   </div>
     <!-- タグ表示 -->
     <!-- 戻るリンク -->
-    <div class="p-3.5 text-center">
+    <div class="text-center">
     <%=link_to "検索ページへ戻る", greenteas_path %>
   </div>
 </div>
