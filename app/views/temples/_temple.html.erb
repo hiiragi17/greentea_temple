@@ -1,14 +1,18 @@
-<div class="sm:col-span-2 p-3.5 items-center text-center">
-  <div class="card w-96 bg-primary shadow-xl">
-    <div id="temple-id-<%= temple.id %>">
-      <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
-        <div class="card-body">
-          <h2 class="card-title">
-            <div class="card-actions justify-end">
-              <%= link_to temple.name, temple_path(temple), class: 'button btn btn-error', style: 'color: white'%>
-          </h2>
-            </div>
-        </div>
+<div class="sm:col-span-2 p-3.5">
+  <div id="temple-id-<%= temple.id %>">
+    <div class="card w-96 bg-primary shadow-xl items-center">
+      <div class="sm:col-span-2 p-3.5">
+        <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
+          <div class="card-body">
+            <h2 class="card-title">
+              <div class="card-actions justify-end">
+              <div class="sm:col-span-2 p-3.5">
+                <%= link_to temple.name, temple_path(temple), class: 'button btn btn-error', style: 'color: white'%>
+              </div>
+            </h2>
+              </div>
+          </div>
+      </div>
     </div>
   </div>
 </div>
