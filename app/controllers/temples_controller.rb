@@ -12,8 +12,8 @@ class TemplesController < ApplicationController
   end
 
   private
+
   def temple_params
     params.require(:greentea).permit(:name, :description, :access, :address, area_ids: [])
   end
-
 end

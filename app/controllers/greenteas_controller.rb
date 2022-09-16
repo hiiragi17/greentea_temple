@@ -12,8 +12,8 @@ class GreenteasController < ApplicationController
   end
 
   private
+
   def greentea_params
     params.require(:greentea).permit(:name, :description, :access, :address, genre_ids: [])
   end
-
 end
