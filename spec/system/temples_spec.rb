@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe "Temples", type: :system do
+RSpec.describe 'Temples', type: :system do
   describe 'index temple' do
     before do
       temples = build_list(:temple, 30)
@@ -14,7 +14,7 @@ RSpec.describe "Temples", type: :system do
       it 'pagination 10count' do
         visit temples_path
         click_link '2'
-        sleep 1 
+        sleep 1
         expect(all('.card').count).to eq(10), 'ぺージネーションが機能していません'
       end
     end

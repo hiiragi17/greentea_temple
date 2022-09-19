@@ -1,14 +1,14 @@
 require 'rails_helper'
 
-RSpec.describe "SearchTemples", type: :system do
+RSpec.describe 'SearchTemples', type: :system do
   describe 'search temple' do
-    let!(:temple_gan) { create(:temple, :gan, name:'神社仏閣願号社') }
-    let!(:temple_kouyou) { create(:temple, :kouyou, name:'神社仏閣本') }
-    let!(:temple_husimi) { create(:temple, :husimi,  name:'神社仏閣清') }
-    let!(:temple_uzi) { create(:temple, :uzi,  name:'神社仏閣春') }
-    let!(:temple) { create(:temple, name:'神社仏閣左京区') }
+    let!(:temple_gan) { create(:temple, :gan, name: '神社仏閣願号社') }
+    let!(:temple_kouyou) { create(:temple, :kouyou, name: '神社仏閣本') }
+    let!(:temple_husimi) { create(:temple, :husimi, name: '神社仏閣清') }
+    let!(:temple_uzi) { create(:temple, :uzi, name: '神社仏閣春') }
+    let!(:temple) { create(:temple, name: '神社仏閣左京区') }
     let!(:area) { create(:area) }
-    let!(:temple_area) { create(:temple_area, temple:temple, area:area) }
+    let!(:temple_area) { create(:temple_area, temple:, area:) }
     context 'search name' do
       it 'display name-temple' do
         visit temples_path

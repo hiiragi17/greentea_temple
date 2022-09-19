@@ -1,14 +1,14 @@
 require 'rails_helper'
 
-RSpec.describe "SearchGreenteas", type: :system do
+RSpec.describe 'SearchGreenteas', type: :system do
   describe 'search greentea' do
-    let!(:greentea_gion) { create(:greentea, :gion, name:'抹茶スイーツ祇園') }
-    let!(:greentea_cake) { create(:greentea, :cake, name:'抹茶スイーツ努力') }
-    let!(:greentea_husimi) { create(:greentea, :husimi,  name:'抹茶スイーツ希望') }
-    let!(:greentea_uzi) { create(:greentea, :uzi,  name:'抹茶スイーツ夢') }
-    let!(:greentea) { create(:greentea, name:'抹茶スイーツジャンル') }
+    let!(:greentea_gion) { create(:greentea, :gion, name: '抹茶スイーツ祇園') }
+    let!(:greentea_cake) { create(:greentea, :cake, name: '抹茶スイーツ努力') }
+    let!(:greentea_husimi) { create(:greentea, :husimi, name: '抹茶スイーツ希望') }
+    let!(:greentea_uzi) { create(:greentea, :uzi, name: '抹茶スイーツ夢') }
+    let!(:greentea) { create(:greentea, name: '抹茶スイーツジャンル') }
     let!(:genre) { create(:genre) }
-    let!(:greentea_genre) { create(:greentea_genre, greentea:greentea, genre:genre) }
+    let!(:greentea_genre) { create(:greentea_genre, greentea:, genre:) }
     context 'search name' do
       it 'display name-greentea' do
         visit greenteas_path

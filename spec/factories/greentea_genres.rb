@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :greentea_genre do
-    greentea 
-    genre 
+    greentea
+    genre
   end
 end

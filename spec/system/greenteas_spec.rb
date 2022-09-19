@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe "Greenteas", type: :system do
+RSpec.describe 'Greenteas', type: :system do
   describe 'index greentea' do
     before do
       greenteas = build_list(:greentea, 30)
@@ -14,7 +14,7 @@ RSpec.describe "Greenteas", type: :system do
       it 'pagination 10count' do
         visit greenteas_path
         click_link '2'
-        sleep 1 
+        sleep 1
         expect(all('.card').count).to eq(10), 'ぺージネーションが機能していません'
       end
     end
