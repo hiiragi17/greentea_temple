@@ -6,7 +6,6 @@ AllCops:
     - 'vendor/**/*'
     - 'db/**/*'
     - 'bin/**/*'
-    - 'spec/**/*'
     - 'node_modules/**/*'
     - 'Gemfile'
     - 'config/**/*'
@@ -32,6 +31,7 @@ Metrics/BlockLength:
     - 'Gemfile'
     - 'config/**/*'
     - 'spec/**/*_spec.rb'
+    - 'spec/**/*'
 
 Metrics/ClassLength:
   CountComments: false
@@ -81,3 +81,7 @@ Style/HashTransformValues:
 
 Bundler/OrderedGems:
   Enabled: false
+
+Rails/FilePath: 
+  Exclude:
+    - 'spec/**/*'
