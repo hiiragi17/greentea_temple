@@ -12,7 +12,7 @@
     <div class="sm:col-span-2 p-3.5">
       <% Area.all.each do |area| %>
       <%= f.check_box :temple_areas_area_id_eq_any, { multiple: true, checked: area[:checked], disabled: area[:disabled], include_hidden: false, style: 'transform: scale(1.5);', }, area[:id] %>
-      <label class="font-bold font-serif text-lg"><%= area.name %></label>
+     <%= f.label :temple_areas_area_id_eq_any, area.name, value: area[:id] %>
       <% end %>
     </div>
     <div class="sm:col-span-2 p-3.5">
