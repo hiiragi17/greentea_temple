@@ -1,6 +1,6 @@
-<div class="gird gird-cols-3 sm:col-span-2 p-3.5">
-  <div class="card w-96 bg-secondary-focus shadow-xl items-center">
-    <% @greenteas.each do |greentea| %>
+<% @greenteas.each do |greentea| %>
+  <div class="gird gird-cols-3 sm:col-span-2 p-3.5">
+    <div class="card w-96 bg-secondary-focus shadow-xl items-center">
       <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
         <div class="card-body">
         <%
@@ -16,6 +16,6 @@
         </div>
         </h2>  
         </div>
-    <% end %>
+    </div>
   </div>
-</div>
+<% end %>
