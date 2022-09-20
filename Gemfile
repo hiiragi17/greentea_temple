@@ -103,6 +103,7 @@ group :development, :test do
   # Code analyse
   gem 'rubocop', require:false
   gem 'rubocop-rails', require:false
+  gem 'erb_lint', require: false
 end
 
 group :development do
