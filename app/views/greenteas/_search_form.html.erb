@@ -1,22 +1,22 @@
-<div class="artboard phone-7 bg-secondary-focus sm:col-span-2 p-3.5 items-center text-center">
+<div class="artboard phone-1 bg-secondary-focus sm:col-span-2 p-3.5 items-center text-center">
   <div class="sm:col-span-2 p-1.5">
-    <h2 class="text-center font-bold font-serif text-xl">キーワードで検索</h2> 
+    <h2 class="text-center font-bold font-serif text-xl">キーワードで検索</h2>
   </div>
     <div class="sm:col-span-2 p-1.5">
-    <%= search_form_for @search, url: url do |f| %>
-    <%= f.search_field :name_or_description_or_address_or_access_cont, class: "input input-bordered input-success w-full max-w-xs text-center text-xl", placeholder: 'キーワード' %>
+    <%= search_form_for @search, url: do |f| %>
+    <%= f.search_field :name_or_description_or_address_or_access_cont, class: 'input input-bordered input-success w-full max-w-xs text-center text-xl', placeholder: 'キーワード' %>
     </div>
     <div class="sm:col-span-2 p-1.5">
-    <h2 class="text-center font-bold font-serif text-xl">カテゴリで検索</h2> 
+    <h2 class="text-center font-bold font-serif text-xl">カテゴリで検索</h2>
     </div>
     <div class="sm:col-span-2 p-1.5">
       <% Genre.all.each do |genre| %>
-      <%= f.check_box :greentea_genres_genre_id_eq_any, { multiple: true, checked: genre[:checked], disabled: genre[:disabled], include_hidden: false, style: 'transform: scale(1.5);', }, genre[:id] %>
-      <div class="font-bold font-serif text-lg"><%= f.label :greentea_genres_genre_id_eq_any, genre.name, value: genre[:id]%></div>
+      <%= f.check_box :greentea_genres_genre_id_eq_any, { multiple: true, checked: genre[:checked], disabled: genre[:disabled], include_hidden: false, style: 'transform: scale(1.5);' }, genre[:id] %>
+      <%= f.label :greentea_genres_genre_id_eq_any, genre.name, { class: 'font-bold font-serif text-lg' }, value: genre[:id] %>
       <% end %>
     </div>
     <div class="sm:col-span-2 p-1.5">
-      <%= f.submit "検索", class: 'btn btn-accent-focus', style: 'color: white'%>
+      <%= f.submit '検索', class: 'btn btn-accent-focus', style: 'color: white' %>
     </div>
     <% end %>
 </div>
