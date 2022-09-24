@@ -1,8 +1,10 @@
 <% @temples.each do |temple| %>
   <div class="gird gird-cols-3 sm:col-span-2 p-3.5">
-    <div class="card w-96 bg-primary shadow-xl items-center">
-      <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
-        <div class="card-body">
+    <div class="card 2l bg-primary shadow-xl items-center">
+      <div class ='p-3.5'>
+        <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
+      </div>
+      <div class="card-body">
         <%
 =begin
         %>
@@ -17,7 +19,7 @@
           </div>
         </div>
         </h2>
-        </div>
+      </div>
     </div>
   </div>
 <% end %>

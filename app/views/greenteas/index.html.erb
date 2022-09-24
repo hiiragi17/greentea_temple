@@ -1,6 +1,6 @@
 <div data-turbo="false">
-  <div class="container.mx-auto.mt-24">
-    <h1 class='font-serif text-3xl font-bold'>抹茶スイーツ店を検索する</h1>
+  <div class="container mx-auto my-4">
+    <h1 class='font-serif text-3xl font-bold text-center'>抹茶スイーツ店を検索する</h1>
     <!-- 検索フォーム -->
     <div class="p-3.5">
       <%= render 'search_form', url: greenteas_path %>
@@ -14,9 +14,8 @@
       <% end %>
     </div>
     <!-- ページネーション -->
-
+    <div class="container mx-14">
       <%= paginate @greenteas %>
     </div>
-  </div>
   </div>
 </div>
