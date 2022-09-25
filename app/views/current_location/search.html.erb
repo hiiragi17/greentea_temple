@@ -59,12 +59,8 @@ function initMap(){
           lng: greenteas[i].longitude
         },
         icon: {
-             fillColor: "#007E66",                //塗り潰し色
-             fillOpacity: 0.5,                    //塗り潰し透過率
-             path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, //矢印を指定
-             scale: 10,                           //円のサイズ
-             strokeColor: "#007E66",              //枠の色
-             strokeWeight: 1.0                    //枠の透過率
+          	url: '/assets/greentea_icon.png',         //アイコンのURL
+		        scaledSize: new google.maps.Size(40, 40)  //サイズ
         },
       });
 
@@ -100,12 +96,8 @@ function initMap(){
           lng: temples[i].longitude
         },
         icon: {
-             fillColor: "#E9546B",                //塗り潰し色
-             fillOpacity: 0.5,                    //塗り潰し透過率
-             path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, //矢印を指定
-             scale: 10,                           //矢印のサイズ
-             strokeColor: "#E9546B",              //枠の色
-             strokeWeight: 1.0                    //枠の透過率
+       	    url: '/assets/torii_icon.png',             //アイコンのURL
+		        scaledSize: new google.maps.Size(40, 40) //サイズ
         }
       });
 
