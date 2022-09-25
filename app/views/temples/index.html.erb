@@ -8,6 +8,7 @@
     <!-- 抹茶スイーツ一覧 -->
     <div class="p-3.5">
       <% if @temples.present? %>
+      <div class='font-serif text-3xl font-bold text-center', style= 'color: red'><%= "#{@temples.total_count}件ヒットしました！" %></div>
         <%= render @temples %>
       <% else %>
         <p><%= '検索結果はありません' %></p>

@@ -1,24 +1,25 @@
 <div class="text-center items-center">
-<div class="container mx-auto mt-24 py-5 px-5 bg-primary md:rounded-3xl md:px-20">
-  <h1 class='font-serif text-3xl font-bold'><%= @temple.name %></h1>
-  <!-- 神社仏閣の情報 -->
-  <ul class="font-serif text-xl font-bold"><%= @temple.description %></ul>
-  <ul class="font-sans text-lg font-bold">電話番号：<%= @temple.phone_number %></ul>
-  <ul class="font-sans text-lg font-bold">住所：<%= @temple.address %></ul>
-  <ul class="font-sans text-lg font-bold">アクセス：<%= @temple.access %></ul>
-  <ul class="font-sans text-lg font-bold">営業時間：<%= @temple.business_hours %></ul>
-  <ul class="font-sans text-lg font-bold">ホームページ：<%= @temple.homepage %></ul>
-  <ul class="font-sans text-lg font-bold">休日：<%= @temple.holiday %></ul>
-</div>
+  <div class="container mx-auto mt-24 py-5 px-5 bg-primary md:rounded-3xl md:px-20">
+    <h1 class='font-serif text-3xl font-bold'><%= @temple.name %></h1>
+    <!-- 神社仏閣の情報 -->
+    <ul class="font-serif text-xl font-bold"><%= @temple.description %></ul>
+    <ul class="font-sans text-lg font-bold">電話番号：<%= @temple.phone_number %></ul>
+    <ul class="font-sans text-lg font-bold">住所：<%= @temple.address %></ul>
+    <ul class="font-sans text-lg font-bold">アクセス：<%= @temple.access %></ul>
+    <ul class="font-sans text-lg font-bold">営業時間：<%= @temple.business_hours %></ul>
+    <ul class="font-sans text-lg font-bold">ホームページ：<%= @temple.homepage %></ul>
+    <ul class="font-sans text-lg font-bold">休日：<%= @temple.holiday %></ul>
+  </div>
   <!-- 近くの抹茶スイーツ店を表示する -->
-  <div class="sm:col-span-2 p-3.5 item-center">
+  <div class="p-3.5">
     <h2 class='font-serif text-2xl font-bold'>近くの抹茶スイーツ店</h2>
+  </div> 
+  <div class="p-3.5">
+    <h2 class='font-serif text-xl font-bold'><%= "#{@greenteas.count}店近くにあります" %>
   </div>
-  <div class="sm:col-span-2 p-3.5">
-    <%= render 'shared/greentea', { greentea: @greentea } %>
-  </div>
-    <!-- タグ表示 -->
-    <!-- 戻るリンク -->
-    <div class="sm:col-span-2 p-3.5 text-center">
-    <%= link_to '検索ページへ戻る', temples_path %>
-    </div>
+  <%= render 'shared/greentea', { greentea: @greentea } %>
+  <!-- タグ表示 -->
+  <!-- 戻るリンク -->
+  <div class="text-center">
+  <%= link_to '検索ページへ戻る', temples_path %>
+</div>
