@@ -52,16 +52,17 @@ function initMap(){
     for (let i = 0; i < greenteas.length; i++){
       // greenteas[i]は変数iのユーザーを取得している
       greenteaMarker[i] = new google.maps.Marker({
-        map: map,
         position: {
           // DBに保存してある、緯度・経度を呼び出す
           lat: greenteas[i].latitude,
           lng: greenteas[i].longitude
         },
+        map: map,
         icon: {
-          	url: '/assets/images/greentea_icon.png',         //アイコンのURL
+          	url: '/assets/greentea_icon.png',         //アイコンのURL
 		        scaledSize: new google.maps.Size(40, 40)  //サイズ
         },
+        animation: google.maps.Animation.DROP
       });
 
       // 変数iを変数idに代入
@@ -89,16 +90,17 @@ function initMap(){
     for (let i = 0; i < temples.length; i++){
       // temples[i]は変数iのユーザーを取得している
       templeMarker[i] = new google.maps.Marker({
+        map: map,
         position: {
           // DBに保存してある、緯度・経度を呼び出す
           lat: temples[i].latitude,
           lng: temples[i].longitude
         },
-        map: map,
         icon: {
        	    url: '/assets/torii_icon.png',             //アイコンのURL
 		        scaledSize: new google.maps.Size(40, 40) //サイズ
         },
+        animation: google.maps.Animation.DROP
       });
 
       // 変数iを変数idに代入

@@ -82,6 +82,9 @@ gem 'rexml', '~> 3.2', '>= 3.2.5'
 # javascript
 gem 'gon'
 
+# Redirection
+gem 'open_uri_redirections'
+
 # APIを環境変数化
 gem 'dotenv-rails'
 

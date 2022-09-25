@@ -227,6 +227,7 @@ GEM
       stringio
       time
       uri
+    open_uri_redirections (0.2.1)
     parallel (1.22.1)
     parser (3.1.2.1)
       ast (~> 2.4.1)
@@ -407,6 +408,7 @@ DEPENDENCIES
   nokogiri
   oauth2 (~> 2.0.0)
   open-uri
+  open_uri_redirections
   pg (~> 1.1)
   pry-byebug
   puma (~> 5.0)
