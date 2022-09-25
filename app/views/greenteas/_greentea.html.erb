@@ -1,13 +1,15 @@
 <div class="gird gird-cols-3 sm:col-span-2 p-3.5">
   <div id="greentea-id-<%= greentea.id %>">
-    <div class="card 2l bg-secondary-focus shadow-xl items-center">
+    <div class="card 2l bg-secondary-focus shadow-xl items-center text-center">
       <div class='p-3.5'>
         <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
       </div>
       <div class="card-body">
         <h2 class="card-title">
           <div class="card-actions justify-end">
-            <div class="sm:col-span-2 p-3.5">
+            <div class="p-3.5">
+            <%= greentea.address%><br>
+            <%= greentea.holiday %><br>
               <%= link_to greentea.name, greentea_path(greentea), class: 'btn btn-wide btn-success', style: 'color: white' %>
             </div>
           </div>
