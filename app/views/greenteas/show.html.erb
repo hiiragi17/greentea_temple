@@ -1,22 +1,27 @@
+<%= content_for(:title, t('.title')) %>
 <div class="text-center items-center">
-<div class="container mx-auto mt-24 py-5 px-5 bg-secondary-focus md:rounded-3xl md:px-20">
-  <h1 class='font-serif text-3xl font-bold'><%= @greentea.name %></h1>
-  <!-- 抹茶スイーツ店の情報 -->
-  <ul class="font-serif text-xl font-bold"><%= @greentea.description %></ul>
-  <ul class="font-sans text-lg font-bold">電話番号：<%= @greentea.phone_number %></ul>
-  <ul class="font-sans text-lg font-bold">住所：<%= @greentea.address %></ul>
-  <ul class="font-sans text-lg font-bold">アクセス：<%= @greentea.access %></ul>
-  <ul class="font-sans text-lg font-bold">営業時間：<%= @greentea.business_hours %></ul>
-  <ul class="font-sans text-lg font-bold">ホームページ：<%= @greentea.homepage %></ul>
-  <ul class="font-sans text-lg font-bold">休日：<%= @greentea.holiday %></ul>
-</div>
-  <!-- 近くの神社仏閣を表示する -->
-    <h2 class='font-serif text-2xl font-bold'>近くの神社仏閣</h2>
-    <%= render 'shared/temple', { temple: @temple } %>
+  <div class="container mx-auto mt-24 py-5 px-5 bg-secondary-focus md:rounded-3xl md:px-20">
+    <h1 class='font-serif text-3xl font-bold'><%= @greentea.name %></h1>
+    <!-- 抹茶スイーツ店の情報 -->
+    <ul class="font-serif text-xl font-bold"><%= @greentea.description %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.phone_number') %>：<%= @greentea.phone_number %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.address') %>：<%= @greentea.address %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.access') %>：<%= @greentea.access %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.business_hours') %>：<%= @greentea.business_hours %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.homepage') %>：<%= @greentea.homepage %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.holiday') %>：<%= @greentea.holiday %></ul>
   </div>
-    <!-- タグ表示 -->
-    <!-- 戻るリンク -->
-    <div class="text-center">
+  <!-- 近くの神社仏閣を表示する -->
+  <div class="p-3.5">
+    <h2 class='font-serif text-2xl font-bold'>近くの神社仏閣</h2>
+  </div>
+  <div class="p-3.5">
+    <h2 class='font-serif text-xl font-bold'><%= "#{@temples.count}社近くにあります" %>
+  </div>
+  <%= render 'shared/temple', { temple: @temple } %>
+  <!-- タグ表示 -->
+  <!-- 戻るリンク -->
+  <div class="text-center">
     <%= link_to '←検索ページへ戻る', greenteas_path %>
   </div>
 </div>

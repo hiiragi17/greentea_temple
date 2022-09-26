@@ -82,11 +82,17 @@ gem 'rexml', '~> 3.2', '>= 3.2.5'
 # javascript
 gem 'gon'
 
+# Redirection
+gem 'open_uri_redirections'
+
 # APIを環境変数化
 gem 'dotenv-rails'
 
+# 管理画面
+gem 'rails_admin', '~> 3.0'
+
 # Use Sass to process CSS
-# gem "sassc-rails"
+gem "sassc-rails"
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"

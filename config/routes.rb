@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  mount RailsAdmin::Engine => '/admin', as: 'rails_admin'
   root 'static_pages#top'
   resources :greenteas, only: %i[index show]
   resources :temples, only: %i[index show] 

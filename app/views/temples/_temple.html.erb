@@ -1,14 +1,16 @@
 <div class="gird gird-cols-3 sm:col-span-2 p-3.5">
   <div id="temple-id-<%= temple.id %>">
-    <div class="card w-2l bg-primary shadow-xl items-center">
+    <div class="card w-2l bg-primary shadow-xl text-center items-center">
       <div class='p-3.5'>
         <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
       </div>
       <div class="card-body">
         <h2 class="card-title">
           <div class="card-actions justify-end">
-            <div class="sm:col-span-2 p-3.5">
-              <%= link_to temple.name, temple_path(temple), class: 'button btn btn-error', style: 'color: white' %>
+            <div class="p-3.5">
+              <%= temple.address %><br>
+              <%= temple.holiday %><br>
+              <%= link_to temple.name, temple_path(temple), class: 'btn btn-wide btn-error', style: 'color: white' %>
             </div>
           </div>
         </h2>

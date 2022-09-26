@@ -1,0 +1,95 @@
+ja:
+  defaults:
+    login: 'ログイン'
+    register: '登録'
+    logout: 'ログアウト'
+    post: '投稿'
+    edit: '編集'
+    show: '詳細'
+    delete: '削除'
+    search_word: '検索ワード'
+    update: '更新'
+    password_reset: 'パスワードリセット'
+    unspecified: '指定なし'
+    message:
+      require_login: 'ログインしてください'
+      created: "%{item}を作成しました"
+      not_created: "%{item}を作成できませんでした"
+      updated: "%{item}を更新しました"
+      not_updated: "%{item}を更新できませんでした"
+      delete_confirm: "削除しますか？"
+      deleted: "%{item}を削除しました"
+      bookmark: "いいねしました"
+      not_bookmark: "いいねを外しました"
+      not_authorized: "権限がありません"
+  users:
+    new:
+      title: 'ユーザー登録'
+      to_login_page: 'ログインページへ'
+    create:
+      success: 'ユーザー登録が完了しました'
+      fail: 'ユーザー登録に失敗しました'
+  user_sessions:
+    new:
+      title: 'ログイン'
+      to_register_page: '登録ページへ'
+      password_forget: 'パスワードをお忘れの方はこちら'
+    create:
+      success: 'ログインしました'
+      fail: 'ログインに失敗しました'
+    destroy:
+      success: 'ログアウトしました'
+  greenteas:
+    index:
+      title: '抹茶スイーツ店を検索する'
+      no_result: '検索結果はありません'
+    show:
+      title: '抹茶スイーツ店詳細'
+      phone_number: '電話番号'
+      address: '住所'
+      access: 'アクセス'
+      business_hours: '営業時間'
+      homepage: 'ホームページ'
+      holiday: '休日'
+    bookmarks:
+      title: 'いいね一覧'
+      no_result: 'いいね中の抹茶スイーツ店がありません。'
+  temples:
+    index:
+      title: '神社仏閣を検索する'
+      no_result: '検索結果はありません'
+    show:
+      title: '神社仏閣詳細'
+      phone_number: '電話番号'
+      address: '住所'
+      access: 'アクセス'
+      business_hours: '営業時間'
+      homepage: 'ホームページ'
+      holiday: '休日'
+    bookmarks:
+      title: 'いいね一覧'
+      no_result: 'いいね中の神社仏閣がありません。'
+  currente_location:
+    search:
+      title: '現在地検索'
+  bookmarks:
+    create:
+      success: 'いいねしました'
+    destroy:
+      success: 'いいねを外しました'
+  profiles:
+    show:
+      title: 'プロフィール'   
+    edit:
+      title: 'プロフィール編集'
+  password_resets:
+    new:
+      submit: '送信'
+      title: 'パスワードリセット申請'
+    create:
+      success: 'パスワードリセット手順を送信しました'
+    edit:
+      title: 'パスワードリセット'
+    update:
+      success: 'パスワードが変更されました。'
+      fail: 'パスワードの変更に失敗しました'
