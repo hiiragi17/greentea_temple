@@ -9,10 +9,10 @@
     <!-- 抹茶スイーツ一覧 -->
     <div class="p-3.5">
       <% if @temples.present? %>
-      <div class='font-serif text-3xl font-bold text-center', style= 'color: red'><%= "#{@temples.total_count}件ヒットしました！" %></div>
+      <div class='font-serif text-3xl font-bold text-center' <%= "#{@temples.total_count}件ヒットしました！" %>>
         <%= render @temples %>
       <% else %>
-        <p class='font-serif text-3xl font-bold text-center', style= 'color: red'><%= t('.no_result') %></p>
+        <p class='font-serif text-3xl font-bold text-center' <%= t('.no_result') %>>
       <% end %>
     </div>
     <!-- ページネーション -->
