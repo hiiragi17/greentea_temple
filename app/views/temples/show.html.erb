@@ -1,14 +1,15 @@
+<%= content_for(:title, t('.title')) %>
 <div class="text-center items-center">
   <div class="container mx-auto mt-24 py-5 px-5 bg-primary md:rounded-3xl md:px-20">
     <h1 class='font-serif text-3xl font-bold'><%= @temple.name %></h1>
     <!-- 神社仏閣の情報 -->
     <ul class="font-serif text-xl font-bold"><%= @temple.description %></ul>
-    <ul class="font-sans text-lg font-bold">電話番号：<%= @temple.phone_number %></ul>
-    <ul class="font-sans text-lg font-bold">住所：<%= @temple.address %></ul>
-    <ul class="font-sans text-lg font-bold">アクセス：<%= @temple.access %></ul>
-    <ul class="font-sans text-lg font-bold">営業時間：<%= @temple.business_hours %></ul>
-    <ul class="font-sans text-lg font-bold">ホームページ：<%= @temple.homepage %></ul>
-    <ul class="font-sans text-lg font-bold">休日：<%= @temple.holiday %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.phone_number') %>：<%= @temple.phone_number %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.address') %>：<%= @temple.address %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.access') %>：<%= @temple.access %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.business_hours') %>：<%= @temple.business_hours %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.homepage') %>：<%= @temple.homepage %></ul>
+    <ul class="font-sans text-lg font-bold"><%= t('.holiday') %>：<%= @temple.holiday %></ul>
   </div>
   <!-- 近くの抹茶スイーツ店を表示する -->
   <div class="p-3.5">

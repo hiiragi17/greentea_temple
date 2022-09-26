@@ -1,6 +1,7 @@
+<%= content_for(:title, t('.title')) %>
 <div data-turbo="false">
   <div class="container mx-auto my-4">
-    <h1 class='font-serif text-3xl font-bold text-center'>抹茶スイーツ店を検索する</h1>
+    <h1 class='font-serif text-3xl font-bold text-center'><%= t('.title') %></h1>
     <!-- 検索フォーム -->
     <div class="p-3.5">
       <%= render 'search_form', url: greenteas_path %>
@@ -11,7 +12,7 @@
         <div class='font-serif text-3xl font-bold text-center', style= 'color: red'><%= "#{@greenteas.total_count}件ヒットしました！" %></div>
         <%= render @greenteas %>
       <% else %>
-        <p><%= '検索結果はありません' %></p>
+        <p class='font-serif text-3xl font-bold text-center', style= 'color: red'><%= t('.no_result') %></p>
       <% end %>
     </div>
     <!-- ページネーション -->
