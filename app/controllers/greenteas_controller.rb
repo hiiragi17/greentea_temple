@@ -1,4 +1,6 @@
 class GreenteasController < ApplicationController
+  skip_before_action :require_login, only: %i[index show]
+
   def index
     @search = Greentea.ransack(params[:q])
     @greenteas = @search.result(distinct: true).page(params[:page])

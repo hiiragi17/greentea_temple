@@ -49,9 +49,9 @@ gem "bootsnap", require: false
 gem 'enum_help'
 
 # Authentication
-gem 'sorcery'
-
-gem 'oauth2', '~> 2.0.0'
+gem 'sorcery', github: 'sorcery/sorcery'
+gem 'oauth2'
+gem 'cancancan'
 
 # Localization
 gem 'rails-i18n'
