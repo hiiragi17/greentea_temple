@@ -7,6 +7,6 @@ class ApplicationController < ActionController::Base
 
   def not_authenticated
     flash[:info] = 'ログインしてください'
-    redirect_to main_app.root_path #main_appのプレフィックスをつける
+    redirect_to main_app.root_path # main_appのプレフィックスをつける
   end
 end
