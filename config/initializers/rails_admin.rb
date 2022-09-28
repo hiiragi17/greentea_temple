@@ -4,13 +4,21 @@ RailsAdmin.config do |config|
   ### Popular gems integration
 
   ## == Devise ==
-  # config.authenticate_with do
+  config.authenticate_with do
+    require_login
+
+    redirect_to root_path unless current_user.admin?
+  end
+  config.current_user_method(&:current_user)
+
   #   warden.authenticate! scope: :user
   # end
-  # config.current_user_method(&:current_user)
+
 
   ## == CancanCan ==
-  # config.authorize_with :cancancan
+  config.authorize_with :cancancan
+
+  config.parent_controller = 'ApplicationController' 
 
   ## == Pundit ==
   # config.authorize_with :pundit
