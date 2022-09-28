@@ -1,4 +1,6 @@
 class TemplesController < ApplicationController
+  skip_before_action :require_login, only: %i[index show]
+
   def index
     @search = Temple.ransack(params[:q])
     @temples = @search.result(distinct: true).page(params[:page])
