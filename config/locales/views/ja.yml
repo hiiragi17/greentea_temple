@@ -7,7 +7,7 @@ ja:
     edit: '編集'
     show: '詳細'
     delete: '削除'
-    search_word: '検索ワード'
+    search: '検索'
     update: '更新'
     password_reset: 'パスワードリセット'
     unspecified: '指定なし'
@@ -22,17 +22,27 @@ ja:
       bookmark: "いいねしました"
       not_bookmark: "いいねを外しました"
       not_authorized: "権限がありません"
+  static_pages:
+    top:
+      greentea: '抹茶スイーツで検索'
+      temple: '神社仏閣で検索'
+      current: '現在地で検索'
   users:
     new:
-      title: 'ユーザー登録'
+      title: '会員登録'
       to_login_page: 'ログインページへ'
     create:
-      success: 'ユーザー登録が完了しました'
-      fail: 'ユーザー登録に失敗しました'
+      success: '会員登録が完了しました'
+      fail: '会員登録に失敗しました'
+    update:
+      sucess: 'ユーザー情報のアップデートに成功しました'
+      fail: 'ユーザー情報のアップデートに失敗しました'
+    destroy:
+      sucess: '退会しました。ご利用いただきありがとうございました'
   user_sessions:
     new:
       title: 'ログイン'
-      to_register_page: '登録ページへ'
+      to_register_page: '会員登録ページへ'
       password_forget: 'パスワードをお忘れの方はこちら'
     create:
       success: 'ログインしました'
