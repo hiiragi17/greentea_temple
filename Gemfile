@@ -52,6 +52,7 @@ gem 'enum_help'
 gem 'sorcery', github: 'sorcery/sorcery'
 gem 'oauth2'
 gem 'cancancan'
+gem 'config'
 
 # Localization
 gem 'rails-i18n'
