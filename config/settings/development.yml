@@ -1,0 +1,3 @@
+sorcery:
+  twitter_callback_url: 'http://127.0.0.1:3000/oauth/callback?provider=twitter'
+  line_callback_url: 'https://9630-14-10-134-160.jp.ngrok.io/oauth/callback?provider=line'

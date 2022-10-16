@@ -3,5 +3,6 @@
 <h1><%= t '.title' %></h1>
 
 <%= render 'form', user: @user %>
-<%= link_to 'Back', users_path %>
+<%= link_to 'Login with Tsitter', auth_at_provider_path(provider: :twitter) %>
+<%= link_to 'Login with Line', auth_at_provider_path(provider: :line) %>
 </div>

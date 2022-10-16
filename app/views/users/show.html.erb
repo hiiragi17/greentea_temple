@@ -1,8 +1,8 @@
 <p>
-  <strong>Email:</strong>
-  <%= @user.email %>
-</p>
-
+<div>
+  <% current_user = User.find(session[:user_id]) %>
+  <%= "現在ログイン中のユーザーのID：#{current_user.id}" %>
+</div>
 <p>
   <strong>Name:</strong>
   <%= @user.name %>
