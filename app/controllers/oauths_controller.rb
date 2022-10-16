@@ -1,5 +1,6 @@
 class OauthsController < ApplicationController
   skip_before_action :require_login
+
   def oauth
     login_at(auth_params[:provider])
   end
@@ -16,7 +17,7 @@ class OauthsController < ApplicationController
       create_user_from(provider) unless (@user = login_from(provider))
       redirect_to user_path(@user), success: "#{provider.titleize}アカウントでログインしました"
     rescue StandardError
-      redirect_to login_path, danger: "#{provider.titleize}アカウントでのログインに失敗しました"
+      redirect_to login_path, error: "#{provider.titleize}アカウントでのログインに失敗しました"
     end
   end
 
