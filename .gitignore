@@ -50,9 +50,6 @@ db/greentea_temple_test
 /.env
 .DS_Store
 
-# SSL証明書
-/config/certs/*
-
 # config関連
 config/settings.local.yml
 config/settings/*.local.yml
