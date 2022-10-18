@@ -1,12 +1,36 @@
-<p>
-<div>
-  <% current_user = User.find(session[:user_id]) %>
-  <%= "現在ログイン中のユーザーのID：#{current_user.id}" %>
+<%= content_for(:title, t('.title')) %>
+  <h1 class='font-serif text-3xl font-bold text-center items-center p-2'><%= t('.title') %></h1>
+  <div class="container mx-auto flex justify-center items-center text-center">
+    <div class='p-3'>
+      <div class="card lg:card bg-info-content shadow-xl items-center text-center">
+        <div class="card-body">
+          <h1 class="card-title text-3xl">
+            <div class="card-actions justify-end">
+            <%= @user.name %>
+          </h1>
+              <div class='p-3'>
+                <div class='sm:col-span-2 p-2 text-center'>
+                  <%= link_to  edit_user_path, class: 'btn btn-wide btn-secondary', style: 'color: white' do %>
+                    <svg class="mr-2 -ml-1 w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/> </svg>
+                    <div class='text-lg font-bold'>プロフィールを編集</div>
+                  <% end %>
+                </div>
+              </div>
+              <div class='p-2'>
+                <div class='sm:col-span-2 p-2 text-center'>
+                  <%= link_to user_path(current_user), data: {turbo_method: :delete, turbo_confirm: '本当に退会しますか?　※この操作は取り消せません。'}, class: 'btn btn-wide btn-primary', style: 'color: white' do %>
+                    <svg class="mr-2 -ml-1 w-6 h-6"  viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 6C12.5523 6 13 6.44772 13 7V13C13 13.5523 12.5523 14 12 14C11.4477 14 11 13.5523 11 13V7C11 6.44772 11.4477 6 12 6Z" fill="currentColor" /> <path d="M12 16C11.4477 16 11 16.4477 11 17C11 17.5523 11.4477 18 12 18C12.5523 18 13 17.5523 13 17C13 16.4477 12.5523 16 12 16Z" fill="currentColor" /> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12Z" fill="currentColor"/></svg>
+                    <div class='text-lg font-bold'>退会する</div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<div class='container mx-auto flex justify-center items-center p-3'>
+  <%= link_to root_path, class: 'btn btn-sm btn-warning-content' do%>
+    <svg class="mr-2 -ml-1 w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-skip-backward-fill" viewBox="0 0 16 16"> <path d="M.5 3.5A.5.5 0 0 0 0 4v8a.5.5 0 0 0 1 0V8.753l6.267 3.636c.54.313 1.233-.066 1.233-.697v-2.94l6.267 3.636c.54.314 1.233-.065 1.233-.696V4.308c0-.63-.693-1.01-1.233-.696L8.5 7.248v-2.94c0-.63-.692-1.01-1.233-.696L1 7.248V4a.5.5 0 0 0-.5-.5z"/></svg>Back
+  <% end %>
 </div>
-<p>
-  <strong>Name:</strong>
-  <%= @user.name %>
-</p>
-
-<%= link_to 'Edit', edit_user_path(@user) %> |
-<%= link_to 'Back', users_path %>
