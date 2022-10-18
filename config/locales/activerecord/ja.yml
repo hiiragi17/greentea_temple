@@ -15,10 +15,7 @@ ja:
       temple_area: '神社仏閣_地域'
     attributes:
       user:
-        email: 'メールアドレス'
-        password: 'パスワード'
-        password_confirmation: 'パスワード確認'
-        name: '名前'
+        name: 'ニックネーム'
         avatar: 'アバター'
         id: 'ID'
         role: '権限'

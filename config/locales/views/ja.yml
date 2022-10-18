@@ -1,14 +1,13 @@
 ja:
   defaults:
     login: 'ログイン'
-    register: '登録'
     logout: 'ログアウト'
     post: '投稿'
     edit: '編集'
     show: '詳細'
     delete: '削除'
     search: '検索'
-    update: '更新'
+    update: '更新する'
     password_reset: 'パスワードリセット'
     unspecified: '指定なし'
     message:
@@ -28,22 +27,21 @@ ja:
       temple: '神社仏閣で検索'
       current: '現在地で検索'
   users:
-    new:
-      title: '会員登録'
-      to_login_page: 'ログインページへ'
     create:
       success: '会員登録が完了しました'
       fail: '会員登録に失敗しました'
+    show:
+      title: 'マイページ'
+    edit:
+      title: 'プロフィール編集'
     update:
-      sucess: 'ユーザー情報のアップデートに成功しました'
+      success: 'ユーザー情報のアップデートに成功しました'
       fail: 'ユーザー情報のアップデートに失敗しました'
     destroy:
-      sucess: '退会しました。ご利用いただきありがとうございました'
+      success: '退会しました。ご利用いただきありがとうございました'
   user_sessions:
     new:
-      title: 'ログイン'
-      to_register_page: '会員登録ページへ'
-      password_forget: 'パスワードをお忘れの方はこちら'
+      title: '会員登録/ログイン'
     create:
       success: 'ログインしました'
       fail: 'ログインに失敗しました'
