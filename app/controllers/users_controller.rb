@@ -30,8 +30,8 @@ class UsersController < ApplicationController
   end
 
   def destroy
-    @user.destroy!
-    redirect_to users_url, success: t('.success'), status: :see_other
+    current_user.destroy!
+    redirect_to root_path, success: t('.success')
   end
 
   private
@@ -41,6 +41,6 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:name, :email, :password, :password_confirmation, :role)
+    params.require(:user).permit(:name, :role)
   end
 end
