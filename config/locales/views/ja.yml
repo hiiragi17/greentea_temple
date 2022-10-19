@@ -76,7 +76,7 @@ ja:
   currente_location:
     search:
       title: '現在地検索'
-  bookmarks:
+  greentea_likes:
     create:
       success: 'いいねしました'
     destroy:
