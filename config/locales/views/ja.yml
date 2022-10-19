@@ -8,7 +8,6 @@ ja:
     delete: '削除'
     search: '検索'
     update: '更新する'
-    password_reset: 'パスワードリセット'
     unspecified: '指定なし'
     message:
       require_login: 'ログインしてください'
@@ -27,9 +26,6 @@ ja:
       temple: '神社仏閣で検索'
       current: '現在地で検索'
   users:
-    create:
-      success: '会員登録が完了しました'
-      fail: '会員登録に失敗しました'
     show:
       title: 'マイページ'
     edit:
@@ -85,19 +81,3 @@ ja:
       success: 'いいねしました'
     destroy:
       success: 'いいねを外しました'
-  profiles:
-    show:
-      title: 'プロフィール'   
-    edit:
-      title: 'プロフィール編集'
-  password_resets:
-    new:
-      submit: '送信'
-      title: 'パスワードリセット申請'
-    create:
-      success: 'パスワードリセット手順を送信しました'
-    edit:
-      title: 'パスワードリセット'
-    update:
-      success: 'パスワードが変更されました。'
-      fail: 'パスワードの変更に失敗しました'
