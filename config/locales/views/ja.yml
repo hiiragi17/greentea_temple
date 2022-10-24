@@ -55,9 +55,9 @@ ja:
       business_hours: '営業時間'
       homepage: 'ホームページ'
       holiday: '休日'
-    bookmarks:
-      title: 'いいね一覧'
-      no_result: 'いいね中の抹茶スイーツ店がありません。'
+    greentea_likes:
+      title: '抹茶スイーツのお気に入り一覧'
+      no_result: 'お気に入り中の抹茶スイーツ店がありません。'
   temples:
     index:
       title: '神社仏閣を検索する'
@@ -78,6 +78,6 @@ ja:
       title: '現在地検索'
   greentea_likes:
     create:
-      success: 'いいねしました'
+      success: 'お気に入りにしました'
     destroy:
-      success: 'いいねを外しました'
+      success: 'お気に入りを解除しました'

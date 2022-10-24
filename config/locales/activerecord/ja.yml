@@ -13,6 +13,8 @@ ja:
       temple: '神社仏閣'
       greentea_genre: '抹茶スイーツ店_ジャンル'
       temple_area: '神社仏閣_地域'
+      greentea_like: '抹茶スイーツ_お気に入り'
+      authentication: '認証'
     attributes:
       user:
         name: 'ニックネーム'
