@@ -11,6 +11,11 @@
             <%= greentea.address %><br>
             <%= greentea.holiday %><br>
               <%= link_to greentea.name, greentea_path(greentea), class: 'btn btn-wide btn-success', style: 'color: white' %>
+                <% if logged_in? %>
+                  <%= render 'greentea_like_button', greentea: greentea %>
+                <% else %>
+                  <%= render 'before_login_greentea_like' %>
+                <% end %>
             </div>
           </div>
         </h2>
