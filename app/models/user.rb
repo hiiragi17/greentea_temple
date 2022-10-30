@@ -1,9 +1,9 @@
 class User < ApplicationRecord
   authenticates_with_sorcery!
-  has_many :authentications, dependent: :destroy
-  accepts_nested_attributes_for :authentications
   has_many :greentea_likes, dependent: :destroy
   has_many :greenteas, through: :greentea_likes, source: :greentea
+  has_many :authentications, dependent: :destroy
+  accepts_nested_attributes_for :authentications
 
   validates :name, presence: true
 
@@ -14,7 +14,7 @@ class User < ApplicationRecord
   end
 
   def greentea_like(greentea)
-   greenteas << greentea
+    greenteas << greentea
   end
   
   def ungreentea_like(greentea)
