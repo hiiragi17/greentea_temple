@@ -16,7 +16,7 @@ class User < ApplicationRecord
   def greentea_like(greentea)
     greenteas << greentea
   end
-  
+
   def ungreentea_like(greentea)
     greenteas.destroy(greentea)
   end
