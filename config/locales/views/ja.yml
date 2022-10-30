@@ -56,8 +56,8 @@ ja:
       homepage: 'ホームページ'
       holiday: '休日'
     greentea_likes:
-      title: '抹茶スイーツのお気に入り一覧'
-      no_result: 'お気に入り中の抹茶スイーツ店がありません。'
+      title: '抹茶スイーツのいいね一覧'
+      no_result: 'いいね中の抹茶スイーツ店がありません。'
   temples:
     index:
       title: '神社仏閣を検索する'
@@ -70,7 +70,7 @@ ja:
       business_hours: '営業時間'
       homepage: 'ホームページ'
       holiday: '休日'
-    bookmarks:
+    temple_likes:
       title: 'いいね一覧'
       no_result: 'いいね中の神社仏閣がありません。'
   currente_location:
