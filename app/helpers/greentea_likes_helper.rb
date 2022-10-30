@@ -1,0 +1,2 @@
+module GreenteaLikesHelper
+end
