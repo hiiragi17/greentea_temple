@@ -1,0 +1,9 @@
+<%= content_for(:title, t('.title')) %>
+<div class="container mx-auto my-4">
+  <h1 class='font-serif text-3xl font-bold text-center'><%= t('.title') %></h1>
+    <% if @greentea_like_greenteas.present? %>
+      <%= render @greentea_like_greentea %>
+    <% else %>
+      <p><%= t('.no_result') %></p>
+    <% end %>
+</div>
