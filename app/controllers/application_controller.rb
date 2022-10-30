@@ -6,7 +6,6 @@ class ApplicationController < ActionController::Base
   private
 
   def not_authenticated
-    redirect_to main_app.root_path
-    # , info: t('defaults.message.require_login')  # main_appのプレフィックスをつける
+    redirect_to main_app.login_path, info: t('defaults.message.require_login')  # main_appのプレフィックスをつける
   end
 end
