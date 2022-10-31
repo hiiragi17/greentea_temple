@@ -71,7 +71,7 @@ ja:
       homepage: 'ホームページ'
       holiday: '休日'
     temple_likes:
-      title: 'いいね一覧'
+      title: '神社仏閣のいいね一覧'
       no_result: 'いいね中の神社仏閣がありません。'
   currente_location:
     search:
