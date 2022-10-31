@@ -2,6 +2,8 @@ class User < ApplicationRecord
   authenticates_with_sorcery!
   has_many :greentea_likes, dependent: :destroy
   has_many :greenteas, through: :greentea_likes, source: :greentea
+  has_many :temple_likes, dependent: :destroy
+  has_many :temples, through: :temple_likes, source: :temple
   has_many :authentications, dependent: :destroy
   accepts_nested_attributes_for :authentications
 
