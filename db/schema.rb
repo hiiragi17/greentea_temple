@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_19_014240) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_30_101826) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -80,6 +80,16 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_19_014240) do
     t.index ["temple_id"], name: "index_temple_areas_on_temple_id"
   end
 
+  create_table "temple_likes", force: :cascade do |t|
+    t.bigint "user_id"
+    t.bigint "temple_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["temple_id"], name: "index_temple_likes_on_temple_id"
+    t.index ["user_id", "temple_id"], name: "index_temple_likes_on_user_id_and_temple_id", unique: true
+    t.index ["user_id"], name: "index_temple_likes_on_user_id"
+  end
+
   create_table "temples", force: :cascade do |t|
     t.string "name", null: false
     t.text "description", null: false
@@ -109,4 +119,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_19_014240) do
   add_foreign_key "greentea_likes", "users"
   add_foreign_key "temple_areas", "areas"
   add_foreign_key "temple_areas", "temples"
+  add_foreign_key "temple_likes", "temples"
+  add_foreign_key "temple_likes", "users"
 end
