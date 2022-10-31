@@ -14,7 +14,7 @@
                 <% if logged_in? %>
                   <%= render 'greentea_like_button', greentea: %>
                 <% else %>
-                  <%= render 'before_login_greentea_like' %>
+                  <%= render 'shared/before_login_like' %>
                 <% end %>
             </div>
           </div>
