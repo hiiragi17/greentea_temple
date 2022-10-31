@@ -78,6 +78,11 @@ ja:
       title: '現在地検索'
   greentea_likes:
     create:
-      success: 'お気に入りにしました'
+      success: 'いいねしました'
     destroy:
-      success: 'お気に入りを解除しました'
+      success: 'いいねを解除しました'
+  temple_likes:
+    create:
+      success: 'いいねしました'
+    destroy:
+      success: 'いいねを解除しました'
