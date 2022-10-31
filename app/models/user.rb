@@ -20,4 +20,16 @@ class User < ApplicationRecord
   def ungreentea_like(greentea)
     greenteas.destroy(greentea)
   end
+
+  def temple_like?(temple)
+    temples.include?(temple)
+  end
+
+  def temple_like(temple)
+    temples << temple
+  end
+
+  def untemple_like(temple)
+    temples.destroy(temple)
+  end
 end
