@@ -6,6 +6,8 @@ class Greentea < ApplicationRecord
 
   has_many :greentea_genres, dependent: :destroy
   has_many :genres, through: :greentea_genres
+  has_many :greentea_likes, dependent: :destroy
+  has_many :users, through: :greentea_likes
 
   validates :name, presence: true
   validates :description, presence: true

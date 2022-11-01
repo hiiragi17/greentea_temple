@@ -10,9 +10,24 @@ Rails.application.routes.draw do
   get 'oauth/callback', to: 'oauths#callback'
   get 'oauth/:provider', to: 'oauths#oauth', as: :auth_at_provider
 
-  resources :greenteas, only: %i[index show]
-  resources :temples, only: %i[index show] 
+  resources :greenteas, only: %i[index show] do
+    collection do
+      get :greentea_likes
+    end
+  end
+
+  resources :greentea_likes, only: %i[create destroy]
+
+  resources :temples, only: %i[index show] do
+    collection do
+      get :temple_likes
+    end
+  end
+
+  resources :temple_likes, only: %i[create destroy]
+
   resources :users
+
   get 'current_location', to:'current_location#search'
   get 'current_location/result', to:'current_location#result'
 end

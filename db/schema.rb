@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_16_113853) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_30_101826) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -44,6 +44,16 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_16_113853) do
     t.index ["greentea_id"], name: "index_greentea_genres_on_greentea_id"
   end
 
+  create_table "greentea_likes", force: :cascade do |t|
+    t.bigint "user_id"
+    t.bigint "greentea_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["greentea_id"], name: "index_greentea_likes_on_greentea_id"
+    t.index ["user_id", "greentea_id"], name: "index_greentea_likes_on_user_id_and_greentea_id", unique: true
+    t.index ["user_id"], name: "index_greentea_likes_on_user_id"
+  end
+
   create_table "greenteas", force: :cascade do |t|
     t.string "name", null: false
     t.text "description", null: false
@@ -68,6 +78,16 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_16_113853) do
     t.datetime "updated_at", null: false
     t.index ["area_id"], name: "index_temple_areas_on_area_id"
     t.index ["temple_id"], name: "index_temple_areas_on_temple_id"
+  end
+
+  create_table "temple_likes", force: :cascade do |t|
+    t.bigint "user_id"
+    t.bigint "temple_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["temple_id"], name: "index_temple_likes_on_temple_id"
+    t.index ["user_id", "temple_id"], name: "index_temple_likes_on_user_id_and_temple_id", unique: true
+    t.index ["user_id"], name: "index_temple_likes_on_user_id"
   end
 
   create_table "temples", force: :cascade do |t|
@@ -95,6 +115,10 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_16_113853) do
 
   add_foreign_key "greentea_genres", "genres"
   add_foreign_key "greentea_genres", "greenteas"
+  add_foreign_key "greentea_likes", "greenteas"
+  add_foreign_key "greentea_likes", "users"
   add_foreign_key "temple_areas", "areas"
   add_foreign_key "temple_areas", "temples"
+  add_foreign_key "temple_likes", "temples"
+  add_foreign_key "temple_likes", "users"
 end

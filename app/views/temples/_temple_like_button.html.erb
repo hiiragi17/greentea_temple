@@ -1,0 +1,5 @@
+<% if current_user.temple_like?(temple) %>
+  <%= render 'untemple_like', { temple: } %>
+<% else %>
+  <%= render 'temple_like', { temple: } %>
+<% end %>

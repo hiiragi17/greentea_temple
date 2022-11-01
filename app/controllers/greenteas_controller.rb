@@ -13,6 +13,10 @@ class GreenteasController < ApplicationController
     @temples = Temple.all.within(2.0, origin: [@latitude, @longitude]).by_distance(origin: [@latitude, @longitude])
   end
 
+  def greentea_likes
+    @greenteas = current_user.greentea_likes.includes(:user).order(created_at: :desc)
+  end
+
   private
 
   def greentea_params

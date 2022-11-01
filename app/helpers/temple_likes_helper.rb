@@ -1,0 +1,2 @@
+module TempleLikesHelper
+end
