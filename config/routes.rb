@@ -1,6 +1,11 @@
 Rails.application.routes.draw do
   mount RailsAdmin::Engine => '/admin', as: 'rails_admin'
+
   root 'static_pages#top'
+  get 'terms_of_service', to: 'static_pages#terms_of_service'
+  get 'privacy_policy', to: 'static_pages#privacy_policy'
+
+  resources :users
 
   get 'login', to: 'user_sessions#new'
   post 'login', to: 'user_sessions#create'
@@ -25,8 +30,6 @@ Rails.application.routes.draw do
   end
 
   resources :temple_likes, only: %i[create destroy]
-
-  resources :users
 
   get 'current_location', to:'current_location#search'
   get 'current_location/result', to:'current_location#result'
