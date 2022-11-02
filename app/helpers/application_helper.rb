@@ -1,5 +1,5 @@
 module ApplicationHelper
-  #各ページのタイトル設定
+  # 各ページのタイトル設定
   def page_title(page_title = '', admin: false)
     base_title = if admin
                    '抹茶と神社。(管理画面)'
@@ -23,7 +23,7 @@ module ApplicationHelper
       keywords: '抹茶スイーツ,神社仏閣,京都',
       canonical: request.original_url,
       separator: '|',
-      noindex: ! Rails.env.production?,
+      noindex: !Rails.env.production?,
       og: {
         site_name: :site,
         title: :title,
@@ -31,12 +31,12 @@ module ApplicationHelper
         type: 'website',
         url: request.original_url,
         image: image_url('ogp.png'),
-        locale: 'ja_JP',
+        locale: 'ja_JP'
       },
       twitter: {
         card: 'summary_large_image',
         site: '@@hiiragi_mattya',
-        image: image_url('ogp.png'),
+        image: image_url('ogp.png')
       }
     }
   end
