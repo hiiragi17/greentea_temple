@@ -2,13 +2,14 @@
 <html>
   <head>
     <title><%= page_title(yield(:title)) %></title>
+    <%= display_meta_tags(default_meta_tags) %>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= include_gon %>
     <%= stylesheet_link_tag 'application', "data-turbo-track": 'reload' %>
     <%= javascript_include_tag 'application', "data-turbo-track": 'reload', defer: true %>
+    <%= favicon_link_tag('logo2.png') %>
   </head>
 
   <body>
