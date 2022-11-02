@@ -25,6 +25,10 @@ ja:
       greentea: '抹茶スイーツで検索'
       temple: '神社仏閣で検索'
       current: '現在地で検索'
+    privacy_policy:
+      title: 'プライバシポリシー'
+    terms_of_service:
+      title: '利用規約'
   users:
     show:
       title: 'マイページ'
