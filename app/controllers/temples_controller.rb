@@ -14,7 +14,7 @@ class TemplesController < ApplicationController
   end
 
   def temple_likes
-    @temples = current_user.temple_likes.includes(:user).order(created_at: :desc)
+    @temple_like_temples = current_user.temples.includes(:users).order(created_at: :desc)
   end
 
   private
