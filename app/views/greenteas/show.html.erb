@@ -43,11 +43,15 @@
           <td class="font-sans text-sm sm:text-lg leading-relaxed"><%= @greentea.holiday %></td>
         </tr>
         <!-- いいねボタン -->
-        <% if logged_in? %>
-          <%= render 'greentea_like_button', greentea: %>
+        <%
+=begin%>
+ <% if logged_in? %>
+          <%= render 'greentea_like_button', { greentea: @greentea } %>
         <% else %>
           <%= render 'shared/before_login_like' %>
-        <% end %>
+        <% end %> 
+<%
+=end%>
       </tbody>
     </table>
   </div>
