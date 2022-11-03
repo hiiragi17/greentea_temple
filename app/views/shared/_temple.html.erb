@@ -1,10 +1,8 @@
 <% @temples.each do |temple| %>
-  <div class="gird gird-cols-3 sm:col-span-2 p-3.5">
-    <div class="card 2l bg-primary shadow-xl items-center text-center">
-      <div class='p-3.5'>
-        <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
-      </div>
-      <div class="card-body">
+  <div class="mx-auto px-1 py-3 sm:px-1 max-w-3xl text-center">
+    <div class="card card-side bg-primary shadow-xl">
+      <div class="card-body items-center text-center">
+      <!-- 距離表示 -->
         <%
 =begin
         %>
@@ -12,15 +10,23 @@
 <%
 =end
 %>
-        <h2 class="card-title">
+        <%= link_to temple.name, temple_path(temple), class: 'btn btn-wide btn-error', style: 'color: white' %>
         <div class="card-actions justify-end">
           <div class="p-3.5">
-            <%= temple.address %><br>
-            <%= temple.holiday %><br>
-            <%= link_to temple.name, temple_path(temple), class: 'btn btn-wide btn-error', style: 'color: white' %>
+            <!-- タグ表示 -->
+            <% temple.areas.each do |area| %>
+            <span class="mx-1 badge badge-accent">
+              <%= area.name %>
+            </span>
+            <% end %><br>
+            <div class="p-3.5">
+              <%= temple.address %><br>
+            </div>
+            <div class="p-3.5">
+              <%= temple.holiday %><br>
+            </div>
           </div>
         </div>
-        </h2>
       </div>
     </div>
   </div>

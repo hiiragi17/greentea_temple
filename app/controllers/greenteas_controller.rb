@@ -14,7 +14,7 @@ class GreenteasController < ApplicationController
   end
 
   def greentea_likes
-    @greenteas = current_user.greentea_likes.includes(:user).order(created_at: :desc)
+    @greentea_like_greenteas = current_user.greenteas.includes(:users).order(created_at: :desc)
   end
 
   private

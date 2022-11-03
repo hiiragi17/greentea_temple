@@ -53,6 +53,7 @@ ja:
       no_result: '検索結果はありません'
     show:
       title: '抹茶スイーツ店詳細'
+      description: '詳細'
       phone_number: '電話番号'
       address: '住所'
       access: 'アクセス'
@@ -68,6 +69,7 @@ ja:
       no_result: '検索結果はありません'
     show:
       title: '神社仏閣詳細'
+      description: '詳細'
       phone_number: '電話番号'
       address: '住所'
       access: 'アクセス'

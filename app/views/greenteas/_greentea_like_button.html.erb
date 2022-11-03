@@ -1,4 +1,4 @@
-<% if current_user.greentea_like?(greentea) %>
+<% if current_user&.greentea_like?(greentea) %>
   <%= render 'ungreentea_like', { greentea: } %>
 <% else %>
   <%= render 'greentea_like', { greentea: } %>
