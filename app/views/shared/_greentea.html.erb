@@ -1,26 +1,29 @@
 <% @greenteas.each do |greentea| %>
-  <div class="gird gird-cols-3 sm:col-span-2 p-3.5">
-    <div class="card 2l bg-secondary-focus shadow-xl text-center items-center">
-      <div class='p-3.5'>
-        <figure><%= image_tag 'sample.png', size: '300x200' %></figure>
-      </div>
-        <div class="card-body">
+  <div class="mx-auto px-1 py-3 sm:px-1 max-w-3xl text-center">
+    <div class="card card-side bg-secondary-focus shadow-xl">
+      <div class="card-body items-center text-center">
+        <!-- 距離表示 -->
         <%
-=begin
-        %>
- 中心から<%= "#{@temple.get_distance(@latitude, @longitude)} " %>m
+=begin%>
+ 中心から<%= "#{@temple.get_distance(@latitude, @longitude)} " %>m 
 <%
-=end
-%>
-        <h2 class="card-title">
+=end%>
+        <%= link_to greentea.name, greentea_path(greentea), class: 'btn btn-wide btn-success', style: 'color: white' %>
         <div class="card-actions justify-end">
           <div class="p-3.5">
-            <%= greentea.address %><br>
-            <%= greentea.holiday %><br>
-            <%= link_to greentea.name, greentea_path(greentea), class: 'btn btn-wide btn-success', style: 'color: white' %>
+            <!-- タグ表示 -->
+            <% greentea.genres.each do |genre| %>
+            <span class="mx-1 badge badge-accent">
+              <%= genre.name %>
+            </span>
+            <% end %><br>
+            <div class="p-3.5">
+              <%= greentea.address %><br>
+            </div>
+            <div class="p-3.5">
+              <%= greentea.holiday %><br>
+            </div>
           </div>
-        </div>
-        </h2>
         </div>
     </div>
   </div>
