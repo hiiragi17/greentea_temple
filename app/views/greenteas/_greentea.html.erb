@@ -19,7 +19,7 @@
             </div>
             <!-- いいねボタン -->
               <% if logged_in? %>
-                <%= render 'greentea_like_button', greentea: greentea%>
+                <%= render 'greentea_like_button', greentea: %>
               <% else %>
                 <%= render 'shared/before_login_like' %>
               <% end %>

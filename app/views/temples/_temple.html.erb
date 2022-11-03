@@ -19,7 +19,7 @@
             </div>
             <!-- いいねボタン -->
               <% if logged_in? %>
-                <%= render 'temple_like_button', temple: temple %>
+                <%= render 'temple_like_button', temple: %>
               <% else %>
                 <%= render 'shared/before_login_like' %>
               <% end %>
@@ -29,4 +29,3 @@
     </div>
   </div>
 </div>
-

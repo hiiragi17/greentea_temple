@@ -4,10 +4,12 @@
       <div class="card-body items-center text-center">
       <!-- 距離表示 -->
         <%
-=begin%>
- 中心から<%= "#{@greentea.get_distance(@latitude, @longitude)} " %>m 
+=begin
+        %>
+ 中心から<%= "#{@greentea.get_distance(@latitude, @longitude)} " %>m
 <%
-=end%>
+=end
+%>
         <%= link_to temple.name, temple_path(temple), class: 'btn btn-wide btn-error', style: 'color: white' %>
         <div class="card-actions justify-end">
           <div class="p-3.5">

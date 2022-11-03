@@ -17,7 +17,7 @@
         <tr>
           <td class="pl-1 pr-5 py-3 whitespace-nowrap text-xl font-serif text-xl font-bold align-top"><%= t('.description') %></td>
           <td class="font-sans text-sm sm:text-lg leading-relaxed"><%= @greentea.description %></td>
-        </tr>  
+        </tr>
         <tr>
           <td class="pl-1 pr-5 py-3 whitespace-nowrap text-xl font-serif text-xl font-bold align-top"><%= t('.phone_number') %></td>
           <td class="font-sans text-sm sm:text-lg leading-relaxed"><%= @greentea.phone_number %></td>
@@ -26,7 +26,7 @@
           <td class="pl-1 pr-5 py-3 whitespace-nowrap text-xl font-serif text-xl font-bold align-top"><%= t('.address') %></td>
           <td class="font-sans text-sm sm:text-lg leading-relaxed"><%= @greentea.address %></td>
         </tr>
-        <tr>    
+        <tr>
           <td class="pl-1 pr-5 py-3 whitespace-nowrap text-xl font-serif text-xl font-bold align-top"><%= t('.access') %></td>
           <td class="font-sans text-sm sm:text-lg leading-relaxed"><%= @greentea.access %></td>
         </tr>
@@ -38,20 +38,22 @@
           <td class="pl-1 pr-5 py-3 whitespace-nowrap text-xl font-serif text-xl font-bold align-top"><%= t('.homepage') %></td>
           <td class="font-sans text-sm sm:text-lg leading-relaxed"><%= link_to @greentea.homepage, @greentea.homepage, target: '_blank', rel: 'noopener' %></td>
         </tr>
-        <tr>  
+        <tr>
           <td class="pl-1 pr-5 py-3 whitespace-nowrap text-xl font-serif text-xl font-bold align-top"><%= t('.holiday') %></td>
           <td class="font-sans text-sm sm:text-lg leading-relaxed"><%= @greentea.holiday %></td>
         </tr>
         <!-- いいねボタン -->
         <%
-=begin%>
+=begin
+        %>
  <% if logged_in? %>
           <%= render 'greentea_like_button', { greentea: @greentea } %>
         <% else %>
           <%= render 'shared/before_login_like' %>
-        <% end %> 
+        <% end %>
 <%
-=end%>
+=end
+%>
       </tbody>
     </table>
   </div>
