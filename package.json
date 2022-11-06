@@ -1,9 +1,6 @@
 {
   "name": "app",
   "private": "true",
-  "engines": {
-    "node": "18.x"
-  },
   "dependencies": {
     "@hotwired/stimulus": "^3.1.0",
     "@hotwired/turbo-rails": "^7.1.3",
