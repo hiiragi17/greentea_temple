@@ -51,7 +51,6 @@ gem 'enum_help'
 # Authentication
 gem 'sorcery', '~> 0.16.4',  github: 'sorcery/sorcery'
 gem 'oauth2'
-gem 'cancancan'
 gem 'config'
 
 # Localization
