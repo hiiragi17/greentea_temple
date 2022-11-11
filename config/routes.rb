@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-  mount RailsAdmin::Engine => '/admin', as: 'rails_admin'
 
   root 'static_pages#top'
   get 'terms_of_service', to: 'static_pages#terms_of_service'
