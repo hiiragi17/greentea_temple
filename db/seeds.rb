@@ -7,12 +7,12 @@
 #   Character.create(name: "Luke", movie: movies.first)
 require "csv"
 
-CSV.foreach('db/csv/genre.csv') do |row|
-  Genre.find_or_create_by(:name => row[0])
-end
+# CSV.foreach('db/csv/genre.csv') do |row|
+#   Genre.find_or_create_by(:name => row[0])
+# end
 
 CSV.foreach('db/csv/greentea.csv', headers: true) do |row|
-  greentea = Greentea.find_or_create_by(
+  greentea = Greentea.create(
     name: row['name'],
     description: row['description'], 
     phone_number: row['phone_number'],
@@ -27,12 +27,12 @@ CSV.foreach('db/csv/greentea.csv', headers: true) do |row|
   end
 end
 
-CSV.foreach('db/csv/area.csv', headers: true) do |row|
-  Area.find_or_create_by(name:row['name'])
-end
+# CSV.foreach('db/csv/area.csv', headers: true) do |row|
+#   Area.find_or_create_by(name:row['name'])
+# end
 
 CSV.foreach('db/csv/temple.csv', headers: true) do |row|
-  temple = Temple.find_or_create_by(
+  temple = Temple.create(
     name: row['name'],
     description: row['description'], 
     phone_number: row['phone_number'],
