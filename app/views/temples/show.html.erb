@@ -1,4 +1,5 @@
 <%= content_for(:title, t('.title')) %>
+<% set_meta_tags title: @temple.name, description: @temple.description %>
 <div class="py-3 text-center items-center">
   <div class="mx-auto px-1 py-3 sm:px-1 max-w-3xl text-center bg-primary  md:rounded-3xl md:px-20">
     <!-- タグ表示 -->
