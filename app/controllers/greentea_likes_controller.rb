@@ -2,7 +2,7 @@ class GreenteaLikesController < ApplicationController
   def create
     greentea = Greentea.find(params[:greentea_id])
     current_user.greentea_like(greentea)
-    redirect_to greenteas_path, success: t('.success')
+    redirect_to greentea_likes_path, success: t('.success')
   end
 
   def destroy

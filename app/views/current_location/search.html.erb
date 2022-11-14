@@ -58,17 +58,17 @@ function initMap(){
           lat: greenteas[i].latitude,
           lng: greenteas[i].longitude
         },
-         icon: {
-             fillColor: "#007E66",                //塗り潰し色
-             fillOpacity: 0.5,                    //塗り潰し透過率
-             path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, //矢印を指定
-             scale: 10,                           //円のサイズ
+        icon: {
+           fillColor: "#007E66",                //塗り潰し色
+             fillOpacity: 0.8,                    //塗り潰し透過率
+             path: google.maps.SymbolPath.CIRCLE, //円を指定
+             scale: 15,                           //円のサイズ
              strokeColor: "#007E66",              //枠の色
              strokeWeight: 1.0                    //枠の透過率
         },
-         label: {
+        label: {
              text: '茶',                           //ラベル文字
-             color: '#1f3134',                    //文字の色
+             color: '#FFFFFF',                    //文字の色
              fontSize: '20px'                     //文字のサイズ
         }
       });
@@ -107,14 +107,14 @@ function initMap(){
           icon: {
              fillColor: "#E9546B",                //塗り潰し色
              fillOpacity: 0.5,                    //塗り潰し透過率
-             path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, //矢印を指定
-             scale: 10,                           //円のサイズ
+             path: google.maps.SymbolPath.CIRCLE, //円を指定
+             scale: 15,                           //円のサイズ
              strokeColor: "#E9546B",              //枠の色
              strokeWeight: 1.0                    //枠の透過率
         },
          label: {
              text: '神',                           //ラベル文字
-             color: '#1f3134',                    //文字の色
+             color: '#FFFFFF',                    //文字の色
              fontSize: '20px'                     //文字のサイズ
         }
       });
