@@ -10,6 +10,14 @@
     <%= stylesheet_link_tag 'application', "data-turbo-track": 'reload' %>
     <%= javascript_include_tag 'application', "data-turbo-track": 'reload', defer: true %>
     <%= favicon_link_tag('logo2.png') %>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6L4KZPC2EP"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6L4KZPC2EP');
+    </script>
   </head>
 
   <body>
