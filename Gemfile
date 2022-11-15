@@ -89,6 +89,7 @@ gem 'open_uri_redirections'
 gem 'dotenv-rails'
 
 # 管理画面
+gem "administrate"
 
 # Use Sass to process CSS
 gem "sassc-rails"
