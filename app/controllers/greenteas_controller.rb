@@ -10,7 +10,7 @@ class GreenteasController < ApplicationController
     @greentea = Greentea.find(params[:id])
     @longitude = @greentea.longitude
     @latitude = @greentea.latitude
-    @temples = Temple.all.within(2.0, origin: [@latitude, @longitude]).by_distance(origin: [@latitude, @longitude])
+    @temples = Temple.all.within(1.5, origin: [@latitude, @longitude]).by_distance(origin: [@latitude, @longitude])
   end
 
   def greentea_likes
