@@ -8,15 +8,11 @@ class UsersController < ApplicationController
 
   def edit; end
 
-  def show; end
-
-  def create
-    @user = User.new(user_params)
-    if @user.save
-      redirect_to login_path, success: t('.success')
+  def show 
+    if @user == current_user
+      render 'show'
     else
-      flash.now[:error] = t('.fail')
-      render :new
+      redirect_to root_path
     end
   end
 

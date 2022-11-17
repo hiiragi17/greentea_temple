@@ -1,4 +1,18 @@
 Rails.application.routes.draw do
+  namespace :admin do
+      resources :users
+      resources :temple_likes
+      resources :temple_areas
+      resources :temples
+      resources :greentea_likes
+      resources :greentea_genres
+      resources :greenteas
+      resources :genres
+      resources :authentications
+      resources :areas
+
+      root to: "users#index"
+    end
 
   root 'static_pages#top'
   get 'terms_of_service', to: 'static_pages#terms_of_service'
