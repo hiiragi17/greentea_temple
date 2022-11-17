@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  skip_before_action :require_login, only: %i[new create]
+  skip_before_action :require_login, only: %i[new]
   before_action :set_user, only: %i[show edit update destroy]
 
   def new
@@ -8,11 +8,11 @@ class UsersController < ApplicationController
 
   def edit; end
 
-  def show 
+  def show
     if @user == current_user
       render 'show'
     else
-      render_404
+      render404
     end
   end
 
