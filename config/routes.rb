@@ -46,4 +46,6 @@ Rails.application.routes.draw do
 
   get 'current_location', to:'current_location#search'
   get 'current_location/result', to:'current_location#result'
+
+  get '*path', to: 'application#render_404'
 end
