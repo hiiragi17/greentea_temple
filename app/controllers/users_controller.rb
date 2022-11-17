@@ -12,7 +12,7 @@ class UsersController < ApplicationController
     if @user == current_user
       render 'show'
     else
-      redirect_to root_path
+      render_404
     end
   end
 
