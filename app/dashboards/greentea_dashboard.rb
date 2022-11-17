@@ -1,4 +1,4 @@
-require "administrate/base_dashboard"
+require 'administrate/base_dashboard'
 
 class GreenteaDashboard < Administrate::BaseDashboard
   # ATTRIBUTE_TYPES
@@ -26,7 +26,7 @@ class GreenteaDashboard < Administrate::BaseDashboard
     phone_number: Field::String,
     users: Field::HasMany,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

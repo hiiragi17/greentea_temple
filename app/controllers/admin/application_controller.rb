@@ -6,8 +6,8 @@
 # you're free to overwrite the RESTful controller actions.
 module Admin
   class ApplicationController < Administrate::ApplicationController
-  before_action :require_login
-  before_action :check_admin 
+    before_action :require_login
+    before_action :check_admin
 
     def authenticate_admin
       not_authenticated
