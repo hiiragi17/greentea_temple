@@ -1,4 +1,4 @@
-<div class="gird gird-cols-3 sm-col-span-2 p-3.5">
+<div class="mx-auto px-1 py-3 sm:px-1 max-w-3xl text-center">
   <div id="temple-id-<%= temple.id %>">
     <div class="card card-side bg-primary shadow-xl">
       <div class="card-body items-center text-center">
@@ -18,11 +18,11 @@
               <%= temple.holiday %><br>
             </div>
             <!-- いいねボタン -->
-              <% if logged_in? %>
-                <%= render 'temple_like_button', temple: %>
-              <% else %>
-                <%= render 'shared/before_login_like' %>
-              <% end %>
+            <% if logged_in? %>
+              <%= render 'temple_like_button', temple: %>
+            <% else %>
+              <%= render 'shared/before_login_like' %>
+            <% end %>
           </div>
         </div>
       </div>
