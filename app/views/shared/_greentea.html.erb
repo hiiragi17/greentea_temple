@@ -2,7 +2,7 @@
   <div class="mx-auto px-1 py-3 sm:px-1 max-w-3xl text-center">
     <div class="card card-side bg-secondary-focus shadow-xl">
       <div class="card-body items-center text-center">
-        <!-- 距離表示 -->
+      <!-- 距離表示 -->
         <%
 =begin
         %>
@@ -10,23 +10,24 @@
 <%
 =end
 %>
-        <%= link_to greentea.name, greentea_path(greentea), class: 'btn btn-wide btn-success', style: 'color: white' %>
-        <div class="card-actions justify-end">
+      <%= link_to greentea.name, greentea_path(greentea), class: 'btn btn-wide btn-success', style: 'color: white' %>
+      <div class="card-actions justify-end">
+        <div class="p-3.5">
+        <!-- タグ表示 -->
+          <% greentea.genres.each do |genre| %>
+          <span class="mx-1 badge badge-accent">
+            <%= genre.name %>
+          </span>
+          <% end %><br>
           <div class="p-3.5">
-            <!-- タグ表示 -->
-            <% greentea.genres.each do |genre| %>
-            <span class="mx-1 badge badge-accent">
-              <%= genre.name %>
-            </span>
-            <% end %><br>
-            <div class="p-3.5">
-              <%= greentea.address %><br>
-            </div>
-            <div class="p-3.5">
-              <%= greentea.holiday %><br>
-            </div>
+            <%= greentea.address %><br>
+          </div>
+          <div class="p-3.5">
+            <%= greentea.holiday %><br>
           </div>
         </div>
+      </div>
+      </div>
     </div>
   </div>
 <% end %>
