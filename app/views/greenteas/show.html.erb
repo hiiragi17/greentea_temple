@@ -36,7 +36,7 @@
         </tr>
         <tr>
           <td class="pl-1 pr-5 py-3 whitespace-nowrap text-xl font-serif font-bold align-top"><%= t('.homepage') %></td>
-          <td class="font-sans text-sm sm:text-lg leading-relaxed"><%= link_to @greentea.homepage, @greentea.homepage, target: '_blank', rel: 'noopener' %></td>
+          <td class="font-sans text-sm sm:text-lg custom-link"><%= link_to truncate(@greentea.homepage, length: 32), @greentea.homepage, style: 'color: blue', target: '_blank', rel: 'noopener' %></td>
         </tr>
         <tr>
           <td class="pl-1 pr-5 py-3 whitespace-nowrap text-xl font-serif font-bold align-top"><%= t('.holiday') %></td>
