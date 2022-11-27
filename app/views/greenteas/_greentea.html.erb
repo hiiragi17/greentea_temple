@@ -4,18 +4,21 @@
       <div class="card-body items-center text-center">
         <%= link_to greentea.name, greentea_path(greentea), class: 'btn btn-wide btn-success', style: 'color: white' %>
         <div class="card-actions justify-end">
-          <div class="p-3.5">
+          <div class="p-2.5">
             <!-- タグ表示 -->
             <% greentea.genres.each do |genre| %>
             <span class="mx-1 badge badge-accent">
               <%= genre.name %>
             </span>
             <% end %><br>
-            <div class="p-3.5">
+            <div class="p-1.5">
               <%= greentea.address %><br>
             </div>
-            <div class="p-3.5">
-              <%= greentea.holiday %><br>
+            <div class="p-1.5">
+              <%= greentea.access %><br>
+            </div>
+            <div class="p-1.5">
+              <%= greentea.holiday %>
             </div>
             <!-- いいねボタン -->
             <% if logged_in? %>
