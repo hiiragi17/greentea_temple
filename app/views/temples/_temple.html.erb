@@ -4,18 +4,21 @@
       <div class="card-body items-center text-center">
         <%= link_to temple.name, temple_path(temple), class: 'btn btn-wide btn-error', style: 'color: white' %>
           <div class="card-actions justify-end">
-            <div class="p-3.5">
+            <div class="p-1.5">
               <!-- タグ表示 -->
               <% temple.areas.each do |area| %>
               <span class="mx-1 badge badge-accent">
                 <%= area.name %>
               </span>
               <% end %>
-              <div class="p-3.5">
+              <div class="p-1.5">
                 <%= temple.address %>
               </div>
-              <div class="p-3.5">
-                <%= temple.holiday %><br>
+              <div class="p-1.5">
+                <%= temple.access %><br>
+              </div>
+                <div class="p-1.5">
+                <%= temple.holiday %>
               </div>
               <!-- いいねボタン -->
               <% if logged_in? %>
