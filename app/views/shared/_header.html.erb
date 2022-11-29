@@ -14,8 +14,10 @@
         </label>
         <ul tabindex="0" class="menu menu-conpact dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 text-left">
           <li><%= link_to 'TOPページへ戻る', root_path %></li>
+          <div data-turbo="false">
           <li><%= link_to (t 'static_pages.top.greentea'), greenteas_path %></li>
           <li><%= link_to (t 'static_pages.top.temple'), temples_path %></li>
+          </div>
           <li><%= link_to (t 'users.show.title'), user_path(current_user) %></li>
           <li><%= link_to (t 'defaults.logout'), logout_path, class: 'dropdown-item', data: { turbo_method: :delete } %></li>
         </ul>
@@ -23,8 +25,12 @@
     </div>
     <div class="navbar-end hidden lg:flex">
       <ul class="menu menu-horizontal p-0 mr-0 text-sm">
+        <div data-turbo="false">
         <li><%= link_to (t 'static_pages.top.greentea'), greenteas_path %></li>
+        </div>
+        <div data-turbo="false">
         <li><%= link_to (t 'static_pages.top.temple'), temples_path %></li>
+        </div>
         <li><%= link_to (t 'users.show.title'), user_path(current_user) %></li>
         <li><%= link_to (t 'defaults.logout'), logout_path, class: 'dropdown-item', data: { turbo_method: :delete } %></li>
       </ul>

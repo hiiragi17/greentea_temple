@@ -1,3 +1,4 @@
+<%= turbo_frame_tag dom_id(temple, :like_temple) do %>
 <div class='container mx-auto flex justify-center items-center p-3'>
 <%= link_to temple_like_path(current_user.temple_likes.find_by(temple_id: temple.id)),
             class: 'btn btn-wide btn-error-content',
@@ -6,3 +7,4 @@
   <svg style="color: red" xmlns="http://www.w3.org/2000/svg" class="mr-2 -ml-1 w-6 h-6" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16"> <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z" /></svg>いいね解除
 <% end %>
 </div>
+<% end %>
