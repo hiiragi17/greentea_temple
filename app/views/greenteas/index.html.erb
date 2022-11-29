@@ -6,7 +6,7 @@
       <%= render 'search_form', html: greenteas_path %>
     </div>
     <!-- 抹茶スイーツ一覧 -->
-    <%= turbo_frame_tag "greentea-list" do %>
+    <%= turbo_frame_tag 'greentea-list' do %>
     <div class="p-3.5">
       <% if @greenteas.present? %>
         <div class='font-serif text-3xl font-bold text-center'>
