@@ -2,7 +2,9 @@
   <div id="greentea-id-<%= greentea.id %>">
     <div class="card card-side bg-secondary-focus shadow-xl">
       <div class="card-body items-center text-center">
+        <div data-turbo="false">
         <%= link_to greentea.name, greentea_path(greentea), class: 'btn btn-wide btn-success', style: 'color: white' %>
+        </div>
         <div class="card-actions justify-end">
           <div class="p-2.5">
             <!-- タグ表示 -->
@@ -24,7 +26,9 @@
             <% if logged_in? %>
               <%= render 'greentea_like_button', greentea: %>
             <% else %>
+              <div data-turbo="false">
               <%= render 'shared/before_login_like' %>
+              </div>
             <% end %>
           </div>
         </div>
