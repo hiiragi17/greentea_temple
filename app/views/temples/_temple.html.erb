@@ -2,7 +2,9 @@
   <div id="temple-id-<%= temple.id %>">
     <div class="card card-side bg-primary shadow-xl">
       <div class="card-body items-center text-center">
+        <div data-turbo="false">
         <%= link_to temple.name, temple_path(temple), class: 'btn btn-wide btn-error', style: 'color: white' %>
+        </div>
           <div class="card-actions justify-end">
             <div class="p-1.5">
               <!-- タグ表示 -->
@@ -24,7 +26,9 @@
               <% if logged_in? %>
                 <%= render 'temple_like_button', temple: %>
               <% else %>
+                <div data-turbo="false">
                 <%= render 'shared/before_login_like' %>
+                </div>
               <% end %>
             </div>
           </div>
