@@ -5,7 +5,9 @@
 # 抹茶と神社。
 
 <img src="https://user-images.githubusercontent.com/94298144/189052247-e5390c19-8701-49c7-83ec-3e9793c8d363.png" width="400" height="400">
-サービスURL:https://www.matcha-to-jinja.com/
+
+## サービスURL
+https://www.matcha-to-jinja.com/
 
 # ■ サービス概要
 　京都にある抹茶スイーツのお店の近くにある神社仏閣を調べたり、  
@@ -44,6 +46,27 @@
 |:---:|:---:|
 |　![抹茶スイーツ検索](https://user-images.githubusercontent.com/94298144/205436531-9905b312-1e17-434b-8d9a-423294f814d6.gif)　|　![神社仏閣検索](https://user-images.githubusercontent.com/94298144/205436544-5401e888-3629-4817-a576-a963c7f4d41a.gif)　|
 
+## 2. 詳細ページでは、それぞれの情報とその近くにある施設を見ることができる<br>
+抹茶スイーツ店・神社仏閣の詳細ページではそれぞれの情報と、<br>
+半径1.5km以内にある抹茶スイーツ店・神社仏閣を見ることができます。<br>
+またTwitterやLineで抹茶スイーツ店・神社仏閣を共有することもできます。<br>
+
+![詳細ページ](https://user-images.githubusercontent.com/94298144/205470198-0a8b7e71-cbad-4597-b8bb-a7f7680d6e8a.gif)
+
+## 3.現在地検索で近くにある抹茶スイーツ店と神社仏閣を調べることができる<br>
+京都にいれば、現在地周りの抹茶スイーツ店と神社仏閣を見ることができます。<br>
+茶のアイコンが抹茶スイーツ店、神のアイコンが神社仏閣になっており、<br>
+吹き出しをクリックすると、詳細ページにアクセスすることができます。<br>
+
+![現在地検索２ (1)](https://user-images.githubusercontent.com/94298144/205470310-041a24b0-37cd-441e-bb3d-bca9ce8cd6c2.gif)
+
+## 4. ユーザーログインするといいね機能が使える<br>
+ユーザー登録することで「いいね機能」が利用可能になります。<br>
+登録＆ログインは、Twitter・LINEの外部認証から選択できます。<br>
+※ログインして出来る機能は今後拡張予定です<br>
+
+![ユーザー登録](https://user-images.githubusercontent.com/94298144/205470343-0c622843-c6a6-4de8-bb06-9d40207c6a58.gif)
+
 ## ■使用技術  
 バッグエンド   
 　・Ruby 3.1.2  
@@ -60,8 +83,15 @@
 　・Google Geocoding API(緯度経度の取得に使用)  
 　・Google MapsJavaScript API(マップ作成に使用)  
 
-## 画面遷移図
-[Figma](https://www.figma.com/file/AooAFozghAwS7wKYnJsxmo/%E6%8A%B9%E8%8C%B6%E3%81%A8%E7%A5%9E%E7%A4%BE%E3%80%82%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3?node-id=0%3A1)
+# ER図
+[![Image from Gyazo](https://i.gyazo.com/296fbadf44c1309af6a5decb160e745b.png)](https://gyazo.com/296fbadf44c1309af6a5decb160e745b)
 
-## ER図
-[![Image from Gyazo](https://i.gyazo.com/17f0eea322a140bd5b37f37a69da0d30.png)](https://gyazo.com/17f0eea322a140bd5b37f37a69da0d30)
+# その他
+
+<img src="https://img.shields.io/badge/-Qiita-55C500.svg?logo=&style=flat-square">[【個人開発】京都観光できっと大活躍！🍵京都の抹茶スイーツ店と神社仏閣のどちらも検索できるサービスを作った話。⛩【Rails7】](https://qiita.com/hiiragi_en17/items/721174747da020cd84f5)
+
+2022/12/4 現在
+
+- 総PV数・・・3412回を突破
+
+- UU数・・・・395人を突破
