@@ -83,7 +83,7 @@ https://www.matcha-to-jinja.com/
 　・Google Geocoding API(緯度経度の取得に使用)  
 　・Google MapsJavaScript API(マップ作成に使用)  
 
-# ■　ER図
+# ■ER図
 [![Image from Gyazo](https://i.gyazo.com/296fbadf44c1309af6a5decb160e745b.png)](https://gyazo.com/296fbadf44c1309af6a5decb160e745b)
 
 # ■その他
