@@ -9,7 +9,7 @@
 ## サービスURL
 https://www.matcha-to-jinja.com/
 
-# ■ サービス概要
+# ■　サービス概要
 　京都にある抹茶スイーツのお店の近くにある神社仏閣を調べたり、  
 　京都にある神社仏閣近くの抹茶スイーツを調べたりすることができ、  
 　現在地近くにある抹茶スイーツ店と神社仏閣を調べることができ、  
@@ -34,7 +34,7 @@ https://www.matcha-to-jinja.com/
 </details>
 　
 
-# ■機能に関して  
+# ■　機能に関して  
 
 ## 1. 抹茶スイーツと神社仏閣が検索できる
 抹茶スイーツはキーワードとスイーツのカテゴリで、<br>
@@ -67,7 +67,7 @@ https://www.matcha-to-jinja.com/
 
 ![ユーザー登録](https://user-images.githubusercontent.com/94298144/205470343-0c622843-c6a6-4de8-bb06-9d40207c6a58.gif)
 
-## ■使用技術  
+## ■　使用技術  
 バッグエンド   
 　・Ruby 3.1.2  
 　・Ruby on Rails 7.0.3  
@@ -83,10 +83,10 @@ https://www.matcha-to-jinja.com/
 　・Google Geocoding API(緯度経度の取得に使用)  
 　・Google MapsJavaScript API(マップ作成に使用)  
 
-# ER図
+# ■　ER図
 [![Image from Gyazo](https://i.gyazo.com/296fbadf44c1309af6a5decb160e745b.png)](https://gyazo.com/296fbadf44c1309af6a5decb160e745b)
 
-# その他
+# ■　その他
 
 <img src="https://img.shields.io/badge/-Qiita-55C500.svg?logo=&style=flat-square">[【個人開発】京都観光できっと大活躍！🍵京都の抹茶スイーツ店と神社仏閣のどちらも検索できるサービスを作った話。⛩【Rails7】](https://qiita.com/hiiragi_en17/items/721174747da020cd84f5)
 
