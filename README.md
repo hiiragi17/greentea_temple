@@ -90,8 +90,10 @@ https://www.matcha-to-jinja.com/
 
 <img src="https://img.shields.io/badge/-Qiita-55C500.svg?logo=&style=flat-square">[【個人開発】京都観光できっと大活躍！🍵京都の抹茶スイーツ店と神社仏閣のどちらも検索できるサービスを作った話。⛩【Rails7】](https://qiita.com/hiiragi_en17/items/721174747da020cd84f5)
 
-2022/12/4 現在
+[画面遷移図](https://www.figma.com/file/AooAFozghAwS7wKYnJsxmo/%E6%8A%B9%E8%8C%B6%E3%81%A8%E7%A5%9E%E7%A4%BE%E3%80%82%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3?node-id=0%3A1&t=jNXYQ676FQBXQweI-0)
 
-- 総PV数・・・3412回を突破
+2022/12/8 現在
 
-- UU数・・・・395人を突破
+- 総PV数・・・3817回を突破
+
+- UU数・・・・504人を突破
