@@ -61,6 +61,8 @@
         <% else %>
           <%= render 'shared/before_login_like' %>
         <% end %>
+         <!-- 口コミボタン -->
+          <%= link_to '口コミを見る',  greentea_greenteacomments_path(@greentea), class: 'btn btn-wide btn-secondary', style: 'color: white' %>
   </div>
     <!-- 戻るリンク -->
       <div data-turbo="false">
