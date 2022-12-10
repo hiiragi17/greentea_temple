@@ -47,3 +47,5 @@ ja:
         email: 'メールアドレス'
         name: '名前'
         avatar: 'アバター'
+      greenteacomment:
+        body: '口コミを投稿する'

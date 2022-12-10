@@ -92,3 +92,7 @@ ja:
       success: 'いいねしました'
     destroy:
       success: 'いいねを解除しました'
+  greenteacomments:
+    index:
+      title: '口コミ一覧'
+      no_result: 'このお店の口コミはまだありません。是非投稿してみてください！'
