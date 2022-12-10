@@ -29,6 +29,7 @@ Rails.application.routes.draw do
   get 'oauth/:provider', to: 'oauths#oauth', as: :auth_at_provider
 
   resources :greenteas, only: %i[index show] do
+    resources :greenteacomments, only: %i[index create destroy], shallow: true
     collection do
       get :greentea_likes
     end
