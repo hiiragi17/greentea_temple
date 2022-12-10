@@ -20,6 +20,6 @@ class ApplicationController < ActionController::Base
   private
 
   def not_authenticated
-    redirect_to root_path
+    redirect_to root_path, error: t('defaults.message.require_login')
   end
 end
