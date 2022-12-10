@@ -1,0 +1,2 @@
+module GreenteacommentsHelper
+end
