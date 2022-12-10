@@ -1,0 +1,12 @@
+<div class="artboard-demo bg-secondary-focus sm:col-span-2 p-3.5 items-center text-center">
+  <%= form_with model: greenteacomment, url: [greentea, greenteacomment], local: true do |f| %>
+    <%= render 'shared/error_messages', object: f.object %>
+    <div class="p-3.5">
+    <%= f.label :body, { class: 'font-bold font-serif text-xl' }%><br>
+    </div>
+    <%= f.text_area :body, class: 'input input-bordered input-lg input-success w-full max-w-x', placeholder: '例：とても美味しかった' %>
+    <div class="p-3.5">
+      <%= f.submit (t 'defaults.post'), class: 'btn btn-wide btn-accent-focus', style: 'color: white' %>
+    </div>
+  <% end %>
+</div>
