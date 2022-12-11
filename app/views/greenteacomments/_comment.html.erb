@@ -4,9 +4,14 @@
     <tr>
       <td class="pl-1 pr-5 py-3 whitespace-nowrap text-sm sm:text-lg font-semibold align-top"><%= greenteacomment.user.name %></td>
       <td class="px-1 py-3 text-sm sm:text-lg leading-relaxe"><%= greenteacomment.body %></td>
-       <td>
+      <td>
         <% if greenteacomment.user == current_user %>
-          <%= link_to "削除", greenteacomment_path(greenteacomment), data: { turbo_method: :delete } , class: "btn btn-sm btn-error", style: 'color: white' %>
+          <%
+=begin%>
+ <%= link_to "編集", edit_greenteacomment_path(greenteacomment), class: "btn btn-sm btn-secondary", style: 'color: white' %> 
+<%
+=end%>
+          <%= link_to "削除", greenteacomment_path(greenteacomment), data: { turbo_method: :delete, turbo_confirm: '本当に削除しますか？' } , class: "btn btn-sm btn-error", style: 'color: white' %>
         <% end %>
       </td>
     </tr>

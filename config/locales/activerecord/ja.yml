@@ -41,8 +41,6 @@ ja:
         business_hours: '営業時間'
         homepage: 'ホームページ'
         holiday: '休日'
-      comment:
-        body: 'コメント'
       profile:
         email: 'メールアドレス'
         name: '名前'

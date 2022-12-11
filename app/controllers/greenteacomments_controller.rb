@@ -12,11 +12,25 @@ class GreenteacommentsController < ApplicationController
     if greenteacomment.save
       redirect_to greentea_greenteacomments_path, success: '口コミを作成しました'
     else
-      redirect_to greentea_greenteacomments_path, error: t('defaults.message.not_created')
+      redirect_to greentea_greenteacomments_path, error: '口コミが投稿出来ませんでした'
     end
     # @greenteacomment = current_user.greenteacomments.build(greenteacomment_params)
     # @greenteacomment.save
   end
+
+  # def edit 
+  #   @greenteacomment = current_user.greenteacomments.find(params[:id])
+  # end
+
+  # def update
+  #   @greenteacomment = current_user.greenteacomments.find(params[:id])
+  #   if @greenteacomment.update(greenteacomment_params)
+  #     redirect_to @greenteacomment, success: '口コミを編集しました'
+  #   else
+  #     flash.now['error'] = '口コミが編集できませんでした'
+  #     render :edit
+  #   end
+  # end
 
   def destroy
     greenteacomment = current_user.greenteacomments.find(params[:id])
