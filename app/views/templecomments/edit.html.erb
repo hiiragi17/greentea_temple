@@ -1,0 +1,14 @@
+<%= content_for(:title, t('.title')) %>
+<div class="artboard-demo bg-primary sm:col-span-2 p-3.5 items-center text-center">
+  <%= form_with model: @templecomment, local: true do |f| %>
+    <%= f.label :'口コミを編集する', { class: 'font-bold font-serif text-xl' }%><br>
+    <%= f.text_area :body, class: 'input input-bordered input-lg input-success w-full max-w-x' %>
+    <div class="p-3.5">
+      <div data-turbo="false">
+        <div class="actions">
+        <%= f.submit (t 'defaults.edit'), class: 'btn btn-wide btn-accent-focus', style: 'color: white' %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
