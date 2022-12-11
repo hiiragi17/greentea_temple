@@ -1,7 +1,7 @@
 <div class="artboard-demo bg-primary sm:col-span-2 p-3.5 items-center text-center">
   <%= form_with model: templecomment, url: [temple, templecomment], local: true do |f| %>
     <%= render 'shared/error_messages', object: f.object %>
-    <%= f.label :body, { class: 'font-bold font-serif text-xl' }%><br>
+    <%= f.label :body, { class: 'font-bold font-serif text-xl' } %><br>
     <div class='p-3.5 font-bold font-serif text-lg text-info'>※ログインしないと口コミは投稿できません</div>
     <%= f.text_area :body, class: 'input input-bordered input-lg input-error w-full max-w-x', placeholder: '例：とても厳かだった' %>
     <div class="p-3.5">

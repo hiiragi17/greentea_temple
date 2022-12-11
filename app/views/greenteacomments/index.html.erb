@@ -6,7 +6,7 @@
   <!-- コメント一覧 -->
   <div class='p-3'>
     <% if @greentea_greenteacomments.present? %>
-      <%= render 'comment', { greenteacomments: @greenteacomments} %>
+      <%= render 'comment', { greenteacomments: @greenteacomments } %>
     <% else %>
       <p><%= t('.no_result') %></p>
     <% end %>
@@ -18,5 +18,5 @@
     <% end %>
   </div>
   <!-- コメントフォーム -->
-  <%= render 'comment_form', { greentea: @greentea, greenteacomment: @greenteacomment} %>
+  <%= render 'comment_form', { greentea: @greentea, greenteacomment: @greenteacomment } %>
 </div>

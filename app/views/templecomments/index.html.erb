@@ -6,7 +6,7 @@
   <!-- コメント一覧 -->
   <div class='p-3'>
     <% if @temple_templecomments.present? %>
-      <%= render 'comment', { templecomments: @templecomments} %>
+      <%= render 'comment', { templecomments: @templecomments } %>
     <% else %>
       <p><%= t('.no_result') %></p>
     <% end %>
@@ -18,5 +18,5 @@
     <% end %>
   </div>
   <!-- コメントフォーム -->
-  <%= render 'comment_form', { temple: @temple, templecomment: @templecomment} %>
+  <%= render 'comment_form', { temple: @temple, templecomment: @templecomment } %>
 </div>
