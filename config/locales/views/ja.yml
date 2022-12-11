@@ -98,3 +98,9 @@ ja:
       no_result: 'このお店の口コミはまだありません。是非投稿してみてください！'
     edit:
       title: '口コミを編集する'
+  templecomments:
+    index:
+      title: '口コミ一覧'
+      no_result: 'この神社仏閣の口コミはまだありません。是非投稿してみてください！'
+    edit:
+      title: '口コミを編集する'
