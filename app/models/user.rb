@@ -6,6 +6,8 @@ class User < ApplicationRecord
   has_many :temples, through: :temple_likes, source: :temple
   has_many :authentications, dependent: :destroy
   accepts_nested_attributes_for :authentications
+  has_many :greenteacomments, dependent: :destroy
+  has_many :templecomments, dependent: :destroy
 
   validates :name, presence: true
 
@@ -33,5 +35,9 @@ class User < ApplicationRecord
 
   def untemple_like(temple)
     temples.destroy(temple)
+  end
+
+  def own?(object)
+    id == object.user_id
   end
 end

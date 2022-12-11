@@ -16,6 +16,8 @@ ja:
       greentea_like: '抹茶スイーツのいいね'
       temple_like: '神社仏閣のいいね'
       authentication: '認証'
+      greenteacomment: '抹茶スイーツ店のコメント'
+      templecomment: '神社仏閣のコメント'
     attributes:
       user:
         name: 'ニックネーム'
@@ -41,9 +43,11 @@ ja:
         business_hours: '営業時間'
         homepage: 'ホームページ'
         holiday: '休日'
-      comment:
-        body: 'コメント'
       profile:
         email: 'メールアドレス'
         name: '名前'
         avatar: 'アバター'
+      greenteacomment:
+        body: '口コミを投稿する'
+      templecomment:
+        body: '口コミを投稿する'

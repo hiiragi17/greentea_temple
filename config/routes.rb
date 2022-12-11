@@ -10,6 +10,8 @@ Rails.application.routes.draw do
       resources :genres
       resources :authentications
       resources :areas
+      resources :greenteacomments
+      resources :templecomments
 
       root to: "users#index"
     end
@@ -29,6 +31,7 @@ Rails.application.routes.draw do
   get 'oauth/:provider', to: 'oauths#oauth', as: :auth_at_provider
 
   resources :greenteas, only: %i[index show] do
+    resources :greenteacomments, only: %i[index create edit update destroy], shallow: true
     collection do
       get :greentea_likes
     end
@@ -37,6 +40,7 @@ Rails.application.routes.draw do
   resources :greentea_likes, only: %i[create destroy]
 
   resources :temples, only: %i[index show] do
+    resources :templecomments, only: %i[index create edit update destroy], shallow: true
     collection do
       get :temple_likes
     end
