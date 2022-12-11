@@ -1,0 +1,2 @@
+module TemplecommentsHelper
+end
