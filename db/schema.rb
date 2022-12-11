@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_12_09_075615) do
+ActiveRecord::Schema[7.0].define(version: 2022_12_11_062514) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -114,6 +114,16 @@ ActiveRecord::Schema[7.0].define(version: 2022_12_09_075615) do
     t.index ["user_id"], name: "index_temple_likes_on_user_id"
   end
 
+  create_table "templecomments", force: :cascade do |t|
+    t.text "body", null: false
+    t.bigint "user_id", null: false
+    t.bigint "temple_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["temple_id"], name: "index_templecomments_on_temple_id"
+    t.index ["user_id"], name: "index_templecomments_on_user_id"
+  end
+
   create_table "temples", force: :cascade do |t|
     t.string "name", null: false
     t.text "description", null: false
@@ -147,4 +157,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_12_09_075615) do
   add_foreign_key "temple_areas", "temples"
   add_foreign_key "temple_likes", "temples"
   add_foreign_key "temple_likes", "users"
+  add_foreign_key "templecomments", "temples"
+  add_foreign_key "templecomments", "users"
 end
