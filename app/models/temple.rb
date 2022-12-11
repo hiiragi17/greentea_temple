@@ -3,6 +3,7 @@ class Temple < ApplicationRecord
   has_many :areas, through: :temple_areas
   has_many :temple_likes, dependent: :destroy
   has_many :users, through: :temple_likes
+  has_many :templecomments, dependent: :destroy
 
   validates :name, presence: true
   validates :description, presence: true
