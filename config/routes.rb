@@ -38,6 +38,7 @@ Rails.application.routes.draw do
   resources :greentea_likes, only: %i[create destroy]
 
   resources :temples, only: %i[index show] do
+    resources :templecomments, only: %i[index create edit update destroy], shallow: true
     collection do
       get :temple_likes
     end
