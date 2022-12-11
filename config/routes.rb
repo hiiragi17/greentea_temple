@@ -10,6 +10,8 @@ Rails.application.routes.draw do
       resources :genres
       resources :authentications
       resources :areas
+      resources :greenteacomments
+      resources :templecomments
 
       root to: "users#index"
     end
