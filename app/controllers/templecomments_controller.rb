@@ -18,7 +18,7 @@ class TemplecommentsController < ApplicationController
     # @templecomment.save
   end
 
-  # def edit 
+  # def edit
   #   @templecomment = current_user.templecomments.find(params[:id])
   # end
 

@@ -18,7 +18,7 @@ class GreenteacommentsController < ApplicationController
     # @greenteacomment.save
   end
 
-  # def edit 
+  # def edit
   #   @greenteacomment = current_user.greenteacomments.find(params[:id])
   # end
 
