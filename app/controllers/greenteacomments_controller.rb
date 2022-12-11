@@ -35,7 +35,7 @@ class GreenteacommentsController < ApplicationController
   def destroy
     greenteacomment = current_user.greenteacomments.find(params[:id])
     greenteacomment.destroy!
-    redirect_to greentea_path, success: '口コミを削除しました'
+    redirect_to greenteacomment_path, success: '口コミを削除しました'
     # @greenteacomment = current_user.greenteacomments.find(params[:id])
     # @greenteacomment.destroy!
   end
