@@ -16,6 +16,8 @@ ja:
       greentea_like: '抹茶スイーツのいいね'
       temple_like: '神社仏閣のいいね'
       authentication: '認証'
+      greenteacomment: '抹茶スイーツ店のコメント'
+      templecomment: '神社仏閣のコメント'
     attributes:
       user:
         name: 'ニックネーム'
