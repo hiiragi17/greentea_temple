@@ -6,6 +6,8 @@ orbs:
 
 jobs:
   build:
+    docker:
+      - image: cimg/ruby:3.1.2
     executor: ruby/default
     steps:
       - checkout
