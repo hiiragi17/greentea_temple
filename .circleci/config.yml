@@ -2,7 +2,7 @@
 version: 2.1
 # 公開されているCircleCI設定を読み込む。version: 2.1以上
 orbs:  
-  ruby: circleci/ruby@0.1.2 
+  ruby: circleci/ruby@2.0.0 
 
 jobs:
   build:
