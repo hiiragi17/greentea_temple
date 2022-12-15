@@ -1,0 +1,13 @@
+# CircleCI 2.1 を使用
+version: 2.1
+# 公開されているCircleCI設定を読み込む。version: 2.1以上
+orbs:  
+  ruby: circleci/ruby@0.1.2 
+
+jobs:
+  build:
+    docker:
+      - image: cimg/ruby:3.1.2
+    executor: ruby/default
+    steps:
+      - checkout
