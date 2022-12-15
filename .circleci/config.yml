@@ -1,5 +1,7 @@
+# CircleCI 2.1 を使用
 version: 2.1
-orbs:
+# 公開されているCircleCI設定を読み込む。version: 2.1以上
+orbs:  
   ruby: circleci/ruby@0.1.2 
 
 jobs:
@@ -9,3 +11,8 @@ jobs:
     executor: ruby/default
     steps:
       - checkout
+      - run: gem install bundler:2.3.7
+      - run:
+          name: Which bundler?
+          command: bundle -v
+      - ruby/bundle-install
