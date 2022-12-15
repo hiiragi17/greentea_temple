@@ -1,18 +1,18 @@
-# CircleCI 2.1 を使用
-version: 2.1
-# 公開されているCircleCI設定を読み込む。version: 2.1以上
-orbs:  
-  ruby: circleci/ruby@2.0.0 
-
+version: '2.1'
+orbs:
+  heroku: circleci/heroku@2.0
 jobs:
-  build:
-    docker:
-      - image: cimg/ruby:3.1.2
-    executor: ruby/default
+  deploy:
+    executor: heroku/default
     steps:
       - checkout
-      - run: gem install bundler:2.3.7
+      - heroku/install
       - run:
-          name: Which bundler?
-          command: bundle -v
-      - ruby/bundle-install
+          command: >
+            echo "The command above installs Heroku, the command below deploys.
+            What you do inbetween is up to you!"
+      - heroku/deploy-via-git
+workflows:
+  heroku_deploy:
+    jobs:
+      - deploy
