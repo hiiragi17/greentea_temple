@@ -1,14 +1,15 @@
 version: 2.1
 orbs:
-  node: circleci/node@4.7
-  heroku: circleci/heroku@2.0.0
-workflows:
-  heroku_deploy:
-    jobs:
-      - heroku/deploy-via-git:
-          post-steps:
-            - run: heroku run rails db:migrate --app $HEROKU_APP_NAME #example of a post-deployment step
-          context: Heroku
-          filters:
-            branches:
-              only: main
+  ruby: circleci/ruby@0.1.2 
+
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.6.3-stretch-node
+    executor: ruby/default
+    steps:
+      - checkout
+      - run:
+          name: Which bundler?
+          command: bundle -v
+      - ruby/bundle-install
