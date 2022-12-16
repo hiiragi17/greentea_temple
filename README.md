@@ -102,7 +102,7 @@ https://www.matcha-to-jinja.com/
 
 [画面遷移図](https://www.figma.com/file/AooAFozghAwS7wKYnJsxmo/%E6%8A%B9%E8%8C%B6%E3%81%A8%E7%A5%9E%E7%A4%BE%E3%80%82%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3?node-id=0%3A1&t=jNXYQ676FQBXQweI-0)
 
-2022/12/8 現在
+2022/12/15 現在
 
 - 総PV数・・・4820回を突破
 
