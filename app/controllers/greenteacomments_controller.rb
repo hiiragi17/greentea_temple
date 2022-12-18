@@ -18,19 +18,19 @@ class GreenteacommentsController < ApplicationController
     # @greenteacomment.save
   end
 
-  # def edit
-  #   @greenteacomment = current_user.greenteacomments.find(params[:id])
-  # end
+  def edit
+    @greenteacomment = current_user.greenteacomments.find(params[:id])
+  end
 
-  # def update
-  #   @greenteacomment = current_user.greenteacomments.find(params[:id])
-  #   if @greenteacomment.update(greenteacomment_params)
-  #     redirect_to @greenteacomment, success: '口コミを編集しました'
-  #   else
-  #     flash.now['error'] = '口コミが編集できませんでした'
-  #     render :edit
-  #   end
-  # end
+  def update
+    @greenteacomment = current_user.greenteacomments.find(params[:id])
+    if @greenteacomment.update(greenteacomment_update_params)
+      redirect_to edit_greenteacomment_path(@greenteacomment), success: '口コミを編集しました'
+    else
+      flash.now['error'] = '口コミが編集できませんでした'
+      render :edit
+    end
+  end
 
   def destroy
     greenteacomment = current_user.greenteacomments.find(params[:id])
@@ -44,5 +44,9 @@ class GreenteacommentsController < ApplicationController
 
   def greenteacomment_params
     params.require(:greenteacomment).permit(:body).merge(greentea_id: params[:greentea_id])
+  end
+
+  def greenteacomment_update_params
+      params.require(:greenteacomment).permit(:body)
   end
 end
