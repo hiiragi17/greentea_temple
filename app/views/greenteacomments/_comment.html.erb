@@ -4,7 +4,8 @@
     <tr>
       <td>
       <div class="chat chat-start">
-        <div class="chat-header"><%= greenteacomment.user.name %></div>
+        <div class="chat-header"><%= greenteacomment.user.name %>
+        <time class="text-xs opacity-50"><%= greenteacomment.created_at.strftime('%Y/%m/%d %H:%M') %></time></div>
         <div class="chat-bubble chat-bubble-secondary whitespace-pre-wrap"><%= greenteacomment.body %></div>
       </td>
       </div>
