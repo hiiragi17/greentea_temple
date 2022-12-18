@@ -15,7 +15,8 @@ module GreenteaTemple
     end
 
     config.i18n.default_locale = :ja
-
+    config.paths.add 'lib', eager_load: true
+    config.time_zone = 'Tokyo'
     config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '**', '*.{rb,yml}').to_s]
     # Configuration for the application, engines, and railties goes here.
     #
