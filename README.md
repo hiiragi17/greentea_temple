@@ -104,4 +104,4 @@ https://www.matcha-to-jinja.com/
 
 - 初月PV数・・・5148回
 
-- 初月UU数・・・・671人を突破
+- 初月UU数・・・671人
