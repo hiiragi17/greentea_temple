@@ -51,5 +51,40 @@ Rails.application.routes.draw do
   get 'current_location', to:'current_location#search'
   get 'current_location/result', to:'current_location#result'
 
+  # API
+  namespace :api do
+    namespace :v1 do
+      # 読み取り系
+      resources :greenteas, only: %i[index show]
+      resources :temples, only: %i[index show]
+      resources :areas, only: %i[index]
+      resources :genres, only: %i[index]
+
+      # 近隣検索
+      get 'nearby', to: 'nearby#search'
+
+      # 認証
+      post 'auth/:provider/callback', to: 'auth#callback'
+      delete 'auth/logout', to: 'auth#logout'
+      get 'current_user', to: 'current_user#show'
+
+      # いいね
+      resources :greenteas, only: [] do
+        resources :likes, only: %i[index create], controller: 'greentea_likes'
+        delete 'likes', to: 'greentea_likes#destroy'
+        resources :comments, only: %i[index create], controller: 'greenteacomments'
+      end
+      resources :temples, only: [] do
+        resources :likes, only: %i[index create], controller: 'temple_likes'
+        delete 'likes', to: 'temple_likes#destroy'
+        resources :comments, only: %i[index create], controller: 'templecomments'
+      end
+
+      # コメント削除
+      delete 'comments/greentea/:id', to: 'greenteacomments#destroy', as: :destroy_greenteacomment
+      delete 'comments/temple/:id', to: 'templecomments#destroy', as: :destroy_templecomment
+    end
+  end
+
   get '*path', to: 'application#render_404'
 end

@@ -1,10 +1,10 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.1.2"
+ruby ">= 3.1.2"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 7.0.3"
+gem "rails", "~> 7.1.0"
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
@@ -13,7 +13,7 @@ gem "sprockets-rails"
 gem "pg", "~> 1.1"
 
 # Use the Puma web server [https://github.com/puma/puma]
-gem "puma", "~> 5.0"
+gem "puma", ">= 5.0"
 
 # Bundle and transpile JavaScript [https://github.com/rails/jsbundling-rails]
 gem "jsbundling-rails"
@@ -49,7 +49,7 @@ gem "bootsnap", require: false
 gem 'enum_help'
 
 # Authentication
-gem 'sorcery', '~> 0.16.4',  github: 'sorcery/sorcery'
+gem 'sorcery', github: 'sorcery/sorcery'
 gem 'oauth2'
 gem 'config'
 
@@ -70,7 +70,6 @@ gem 'mini_magick'
 gem 'activerecord-import'
 
 # scraping
-gem 'open-uri'
 gem 'nokogiri'
 
 # google map
@@ -81,9 +80,6 @@ gem 'rexml', '~> 3.2', '>= 3.2.5'
 
 # javascript
 gem 'gon'
-
-# Redirection
-gem 'open_uri_redirections'
 
 # APIを環境変数化
 gem 'dotenv-rails'
@@ -96,6 +92,10 @@ gem "sassc-rails"
 
 # SEO
 gem 'meta-tags'
+
+# API
+gem 'rack-cors'
+gem 'jwt'
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
@@ -110,8 +110,8 @@ group :development, :test do
   gem 'pry-byebug'
 
   # Code analyse
-  gem 'rubocop', require:false
-  gem 'rubocop-rails', require:false
+  gem 'rubocop', require: false
+  gem 'rubocop-rails', require: false
   gem 'erb_lint', require: false
 end
 
@@ -134,5 +134,4 @@ group :test do
   gem 'shoulda-matchers'
   gem 'timecop'
   gem "selenium-webdriver"
-  gem "webdrivers"
 end
