@@ -1,4 +1,28 @@
 Rails.application.routes.draw do
+  # API endpoints
+  namespace :api do
+    namespace :v1 do
+      resources :greenteas, only: %i[index show] do
+        resources :greenteacomments, only: %i[index create], shallow: true
+      end
+      resources :temples, only: %i[index show] do
+        resources :templecomments, only: %i[index create], shallow: true
+      end
+      resources :areas, only: [:index]
+      resources :genres, only: [:index]
+
+      resources :greentea_likes, only: %i[index create destroy]
+      resources :temple_likes, only: %i[index create destroy]
+      resources :greenteacomments, only: [:destroy]
+      resources :templecomments, only: [:destroy]
+
+      get 'nearby', to: 'nearby#search'
+      get 'current_user', to: 'current_user#show'
+      post 'auth/:provider', to: 'auth#create'
+      delete 'auth/logout', to: 'auth#destroy'
+    end
+  end
+
   namespace :admin do
       resources :users
       resources :temple_likes
