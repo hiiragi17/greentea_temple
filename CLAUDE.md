@@ -17,7 +17,8 @@
 - Administrate（管理画面）
 - Tailwind CSS + daisyUI（jsbundling-rails / cssbundling-rails）
 - RSpec + FactoryBot + Capybara
-- デプロイ: 過去は Heroku 運用だったが、**今後 Heroku にデプロイはしない**。#118 で GCP Cloud Run + Neon へ移行予定。
+- デプロイ: GCP Cloud Run + Neon PostgreSQL（#118 で移行予定）
+  - ⚠️ **Heroku には今後デプロイしない**（過去運用）
 
 外部 API:
 - Google Geocoding API（住所→緯度経度）
