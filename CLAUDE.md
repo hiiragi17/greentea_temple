@@ -17,7 +17,7 @@
 - Administrate（管理画面）
 - Tailwind CSS + daisyUI（jsbundling-rails / cssbundling-rails）
 - RSpec + FactoryBot + Capybara
-- Heroku（→ #118 で GCP Cloud Run + Neon へ移行予定）
+- デプロイ: 過去は Heroku 運用だったが、**今後 Heroku にデプロイはしない**。#118 で GCP Cloud Run + Neon へ移行予定。
 
 外部 API:
 - Google Geocoding API（住所→緯度経度）
@@ -44,7 +44,7 @@ bundle exec rubocop
 | `GOOGLE_MAPS_API_KEY` | 地図描画（JS から参照） |
 | `TWITTER_KEY` / `TWITTER_SECRET` | Twitter OAuth |
 | `LINE_KEY` / `LINE_SECRET` | LINE OAuth |
-| `DATABASE_URL` | 本番 PostgreSQL（Heroku → #118 で Neon へ） |
+| `DATABASE_URL` | 本番 PostgreSQL（#118 で Neon へ移行予定） |
 | `FRONTEND_URL` | CORS allowlist。開発: `http://localhost:3000` / 本番: `https://matcha-to-jinja.com`（#113〜） |
 | `JWT_SECRET_KEY` | API 用 JWT 署名（#115〜） |
 | `RAILS_MASTER_KEY` | `credentials.yml.enc` 復号 |
@@ -221,10 +221,11 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 ## GitHub PR ルール
 
 - PR 本文は日本語で書く
-- assignee に `hiiragi17` を設定する
+- **assignee に `hiiragi17` を必ず設定する**（PR 作成時に忘れず指定）
 - 関連 issue がある場合は本文に `Closes #<番号>` を含める
 - 1 PR = 1 issue を原則（API 化の親 issue は除く）
 - ブランチ命名: `claude/<task-name>` または `feature/<name>` / `fix/<name>`
+- **Heroku 固有の検証手順（`heroku stack` / `heroku/ruby` buildpack など）は PR 本文に書かない**。今後のデプロイ先は GCP Cloud Run（#118）のため。
 
 ## レビューコメント対応ルール
 
