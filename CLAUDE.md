@@ -7,8 +7,8 @@
 
 ## 技術スタック
 
-- Ruby 3.1.2（→ #119 で 3.3.x へ上げる予定）
-- Ruby on Rails 7.0.3
+- Ruby 3.3.11（#119 で 3.1.2 から上げ済み）
+- Ruby on Rails 7.0.3（→ #124 で 7.1.x へ上げる予定）
 - PostgreSQL
 - Sorcery（Twitter / LINE OAuth）
 - Ransack（検索）/ Kaminari（ページネーション）
@@ -17,7 +17,8 @@
 - Administrate（管理画面）
 - Tailwind CSS + daisyUI（jsbundling-rails / cssbundling-rails）
 - RSpec + FactoryBot + Capybara
-- Heroku（→ #118 で GCP Cloud Run + Neon へ移行予定）
+- デプロイ: GCP Cloud Run + Neon PostgreSQL（#118 で移行予定）
+  - ⚠️ **Heroku には今後デプロイしない**（過去運用）
 
 外部 API:
 - Google Geocoding API（住所→緯度経度）
@@ -44,7 +45,7 @@ bundle exec rubocop
 | `GOOGLE_MAPS_API_KEY` | 地図描画（JS から参照） |
 | `TWITTER_KEY` / `TWITTER_SECRET` | Twitter OAuth |
 | `LINE_KEY` / `LINE_SECRET` | LINE OAuth |
-| `DATABASE_URL` | 本番 PostgreSQL（Heroku → #118 で Neon へ） |
+| `DATABASE_URL` | 本番 PostgreSQL（#118 で Neon へ移行予定） |
 | `FRONTEND_URL` | CORS allowlist。開発: `http://localhost:3000` / 本番: `https://matcha-to-jinja.com`（#113〜） |
 | `JWT_SECRET_KEY` | API 用 JWT 署名（#115〜） |
 | `RAILS_MASTER_KEY` | `credentials.yml.enc` 復号 |
@@ -130,7 +131,9 @@ Next.js フロントエンド (matcha-to-jinja) からの参照用に API を実
 依存順:
 
 ```text
-#119 [Ruby 3.1 → 3.3]
+#119 [Ruby 3.1 → 3.3] ✅ merged
+   ↓
+#124 [Rails 7.0 → 7.1 アップグレード]   ← API 化の前に着地
    ↓
 #113 [API 基盤（api/v1 + CORS + Sorcery 0.18 へ更新）]
    ↓
@@ -142,6 +145,11 @@ Next.js フロントエンド (matcha-to-jinja) からの参照用に API を実
         ↓
         #118 [GCP Cloud Run + Neon PostgreSQL + GCS]
 ```
+
+> **#124（Rails アップグレード）を先に着地させる理由**:
+> - Sorcery 0.18 が `railties >= 7.1` を要求し、API で使う認証ライブラリが揃わない
+> - API コードを 7.0 で書いた後に上げると `ActionController::API` / `ErrorReporter` 周りで再回帰が発生する
+> - 詳細は PR #123 のコメント参照
 
 レスポンス契約は matcha-to-jinja 側の `docs/migration-plan.md` の 1-3 を **必ず正**として扱う。
 フロントの mock データ (`src/lib/api/mock/data.ts`) と同じスキーマで返す。
@@ -221,10 +229,11 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 ## GitHub PR ルール
 
 - PR 本文は日本語で書く
-- assignee に `hiiragi17` を設定する
+- **assignee に `hiiragi17` を必ず設定する**（PR 作成時に忘れず指定）
 - 関連 issue がある場合は本文に `Closes #<番号>` を含める
 - 1 PR = 1 issue を原則（API 化の親 issue は除く）
 - ブランチ命名: `claude/<task-name>` または `feature/<name>` / `fix/<name>`
+- **Heroku 固有の検証手順（`heroku stack` / `heroku/ruby` buildpack など）は PR 本文に書かない**。今後のデプロイ先は GCP Cloud Run（#118）のため。
 
 ## レビューコメント対応ルール
 
