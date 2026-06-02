@@ -76,7 +76,7 @@ ER 図: https://i.gyazo.com/296fbadf44c1309af6a5decb160e745b.png
 
 ## ディレクトリ構成
 
-```
+```text
 app/
   controllers/
     admin/              # Administrate 管理画面
@@ -129,7 +129,7 @@ JWT ライブラリ: `jwt` gem（HS256 / 有効期限 14 日。詳細は #115）
 Next.js フロントエンド (matcha-to-jinja) からの参照用に API を実装する。
 依存順:
 
-```
+```text
 #119 [Ruby 3.1 → 3.3]
    ↓
 #113 [API 基盤（api/v1 + CORS + Sorcery 0.18 へ更新）]
@@ -148,7 +148,7 @@ Next.js フロントエンド (matcha-to-jinja) からの参照用に API を実
 
 ### 主要エンドポイント（要約）
 
-```
+```text
 GET    /api/v1/health
 GET    /api/v1/greenteas              # 一覧。q[name_cont] / q[genres_id_eq] + page
 GET    /api/v1/greenteas/:id          # 詳細 + nearby_temples（≤1.5km）
