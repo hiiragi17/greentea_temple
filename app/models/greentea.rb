@@ -26,10 +26,10 @@ class Greentea < ApplicationRecord
   end
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[name address access]
+    %w[name description address access]
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    %w[genres]
+    %w[genres greentea_genres]
   end
 end

@@ -37,6 +37,27 @@ RSpec.describe 'Api::V1::Temples', type: :request do
       ids = response.parsed_body['data'].map { |d| d['id'] }
       expect(ids).to eq([target.id])
     end
+
+    # Web 既存検索フォームの ransack キーが allowlist で通ることの回帰テスト
+    it 'accepts q[name_or_description_or_address_or_access_cont] (legacy web key)' do
+      target = create(:temple, description: '紅葉の名所として知られる古刹')
+
+      get '/api/v1/temples', params: { q: { name_or_description_or_address_or_access_cont: '紅葉の名所' } }
+
+      ids = response.parsed_body['data'].map { |d| d['id'] }
+      expect(ids).to eq([target.id])
+    end
+
+    it 'accepts q[temple_areas_area_id_eq_any] (legacy web key)' do
+      area = create(:area)
+      target = create(:temple)
+      create(:temple_area, temple: target, area: area)
+
+      get '/api/v1/temples', params: { q: { temple_areas_area_id_eq_any: [area.id] } }
+
+      ids = response.parsed_body['data'].map { |d| d['id'] }
+      expect(ids).to eq([target.id])
+    end
   end
 
   describe 'GET /api/v1/temples/:id' do

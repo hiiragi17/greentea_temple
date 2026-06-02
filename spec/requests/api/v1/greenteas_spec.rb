@@ -59,6 +59,27 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
       expect(ids).to eq([target.id])
     end
 
+    # Web 既存検索フォームの ransack キーが allowlist で通ることの回帰テスト
+    it 'accepts q[name_or_description_or_address_or_access_cont] (legacy web key)' do
+      target = create(:greentea, description: 'とろける宇治抹茶のティラミス')
+
+      get '/api/v1/greenteas', params: { q: { name_or_description_or_address_or_access_cont: 'とろける宇治抹茶' } }
+
+      ids = response.parsed_body['data'].map { |d| d['id'] }
+      expect(ids).to eq([target.id])
+    end
+
+    it 'accepts q[greentea_genres_genre_id_eq_any] (legacy web key)' do
+      genre = create(:genre)
+      target = create(:greentea)
+      create(:greentea_genre, greentea: target, genre: genre)
+
+      get '/api/v1/greenteas', params: { q: { greentea_genres_genre_id_eq_any: [genre.id] } }
+
+      ids = response.parsed_body['data'].map { |d| d['id'] }
+      expect(ids).to eq([target.id])
+    end
+
     it 'returns like_count aggregated per record' do
       liked = greenteas.first
       user_a = User.create!(name: 'A')
