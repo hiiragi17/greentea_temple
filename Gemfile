@@ -53,6 +53,9 @@ gem 'sorcery', '~> 0.18'
 gem 'oauth2'
 gem 'config'
 
+# CORS for API (#113)
+gem 'rack-cors'
+
 # Localization
 gem 'rails-i18n'
 
