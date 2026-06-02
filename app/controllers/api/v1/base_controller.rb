@@ -18,11 +18,13 @@ module Api
       end
 
       def render_not_found(exception = nil)
-        render json: { error: 'Not Found', message: exception&.message }, status: :not_found
+        Rails.logger.info(exception&.full_message) if exception
+        render json: { error: 'Not Found' }, status: :not_found
       end
 
       def render_bad_request(exception = nil)
-        render json: { error: 'Bad Request', message: exception&.message }, status: :bad_request
+        Rails.logger.info(exception&.full_message) if exception
+        render json: { error: 'Bad Request' }, status: :bad_request
       end
 
       def render_internal_server_error(exception = nil)
