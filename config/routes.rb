@@ -2,6 +2,11 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       get 'health', to: 'health#show'
+
+      resources :greenteas, only: %i[index show]
+      resources :temples, only: %i[index show]
+      resources :genres, only: %i[index]
+      resources :areas, only: %i[index]
     end
 
     match '*unmatched', to: 'v1/base#route_not_found', via: :all
