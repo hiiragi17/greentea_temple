@@ -7,6 +7,10 @@ module Api
       rescue_from ActionController::ParameterMissing, with: :render_bad_request
       rescue_from StandardError, with: :render_internal_server_error if Rails.env.production?
 
+      def route_not_found
+        render json: { error: 'Not Found' }, status: :not_found
+      end
+
       private
 
       def set_default_format
