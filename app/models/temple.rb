@@ -22,12 +22,4 @@ class Temple < ApplicationRecord
     distance = distance_to(point) * 1000
     distance.round(-1)
   end
-
-  def self.ransackable_attributes(_auth_object = nil)
-    %w[name description address access]
-  end
-
-  def self.ransackable_associations(_auth_object = nil)
-    %w[areas temple_areas]
-  end
 end

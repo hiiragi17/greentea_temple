@@ -56,9 +56,6 @@ gem 'config'
 # CORS for API (#113)
 gem 'rack-cors'
 
-# JSON serializer for API (#114)
-gem 'jsonapi-serializer'
-
 # Localization
 gem 'rails-i18n'
 
