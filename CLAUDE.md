@@ -23,6 +23,32 @@
 - Google Geocoding API（住所→緯度経度）
 - Google Maps JavaScript API（地図描画）
 
+## セットアップ / よく使うコマンド
+
+```bash
+bundle install
+yarn install
+bin/rails db:setup                # DB 作成 + migrate + seed
+bin/dev                           # Procfile.dev で rails + JS/CSS watch を同時起動
+bin/rails server -p 3001          # API 開発時はフロント (Next.js: 3000) と分けるため 3001
+bundle exec rspec                 # 全テスト
+bundle exec rspec spec/requests   # API request spec のみ
+bundle exec rubocop
+```
+
+## 必須環境変数
+
+| 変数名 | 用途 |
+|---|---|
+| `GOOGLE_GEOCODING_API_KEY` | 住所 → 緯度経度（Geocoder） |
+| `GOOGLE_MAPS_API_KEY` | 地図描画（JS から参照） |
+| `TWITTER_KEY` / `TWITTER_SECRET` | Twitter OAuth |
+| `LINE_KEY` / `LINE_SECRET` | LINE OAuth |
+| `DATABASE_URL` | 本番 PostgreSQL（Heroku → #118 で Neon へ） |
+| `FRONTEND_URL` | CORS allowlist。開発: `http://localhost:3000` / 本番: `https://matcha-to-jinja.com`（#113〜） |
+| `JWT_SECRET_KEY` | API 用 JWT 署名（#115〜） |
+| `RAILS_MASTER_KEY` | `credentials.yml.enc` 復号 |
+
 ## DB 構成
 
 スポット系:
@@ -41,6 +67,10 @@
 
 距離検索:
 - Greentea / Temple の `latitude` / `longitude` を Geokit で 1.5km 圏内検索
+
+> **テーブル名の注意**: `greenteacomments` / `templecomments` はアンダースコアなしが**実際のテーブル名**（schema.rb のまま）。
+> Rails の命名規則 (`greentea_comments` / `temple_comments`) と異なるが、既存データのため変更しない。
+> 修正系のマイグレーションを生成しないこと。
 
 ER 図: https://i.gyazo.com/296fbadf44c1309af6a5decb160e745b.png
 
@@ -91,6 +121,9 @@ spec/                   # RSpec
 外部認証プロバイダ: Twitter / LINE
 将来追加候補: Google（issue #90）
 
+JWT ライブラリ: `jwt` gem（HS256 / 有効期限 14 日。詳細は #115）。
+署名鍵は `Rails.application.credentials.jwt_secret` または `ENV['JWT_SECRET_KEY']`。
+
 ## 進行中の大型タスク: Rails API 化
 
 Next.js フロントエンド (matcha-to-jinja) からの参照用に API を実装する。
@@ -112,6 +145,31 @@ Next.js フロントエンド (matcha-to-jinja) からの参照用に API を実
 
 レスポンス契約は matcha-to-jinja 側の `docs/migration-plan.md` の 1-3 を **必ず正**として扱う。
 フロントの mock データ (`src/lib/api/mock/data.ts`) と同じスキーマで返す。
+
+### 主要エンドポイント（要約）
+
+```
+GET    /api/v1/health
+GET    /api/v1/greenteas              # 一覧。q[name_cont] / q[genres_id_eq] + page
+GET    /api/v1/greenteas/:id          # 詳細 + nearby_temples（≤1.5km）
+GET    /api/v1/temples                # 一覧
+GET    /api/v1/temples/:id            # 詳細 + nearby_greenteas
+GET    /api/v1/genres
+GET    /api/v1/areas
+GET    /api/v1/nearby?lat&lng&radius  # 現在地から radius km 以内
+POST   /api/v1/auth/:provider         # OAuth → JWT 発行
+GET    /api/v1/current_user
+GET    /api/v1/greentea_likes         # 認証必須
+POST   /api/v1/greentea_likes
+DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
+(temple_likes / greenteacomments / templecomments も同型)
+```
+
+### レスポンス共通フィールド（snake_case）
+
+- スポット系: `id, name, address, access, business_hours, holiday, latitude, longitude, img, like_count, liked_by_current_user`
+- 近隣配列の各要素: `id, name, latitude, longitude, distance_meters`（整数）
+- 一覧の `meta`: `{ current_page, total_pages, total_count, per_page }`
 
 ## コーディング規約
 
@@ -135,8 +193,18 @@ Next.js フロントエンド (matcha-to-jinja) からの参照用に API を実
 
 ### 距離計算
 
-- Geokit の `Geokit::LatLng#distance_to(other, units: :meters)` を使う
-- API では `distance_meters` を **整数** で返す
+- Geokit の `Geokit::LatLng#distance_to` を使う。**デフォルト単位は km**
+- 既存コード (`app/models/temple.rb`, `app/models/greentea.rb`) では km 戻り値に `* 1000` してメートル化している
+- API では `distance_meters` を **整数** で返す（`.round` で整数化）
+- 例:
+
+  ```ruby
+  origin = Geokit::LatLng.new(lat, lng)
+  distance_meters = (origin.distance_to(spot) * 1000).round
+  # または units を明示する場合
+  origin.distance_to(spot, units: :meters).round
+  ```
+
 - 一覧クエリで距離付きが必要な場合は N+1 を避ける（`includes` または `select` でまとめて取る）
 
 ### テスト
