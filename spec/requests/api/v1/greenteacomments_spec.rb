@@ -25,6 +25,7 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
 
         expect(response).to have_http_status(:ok)
         json = response.parsed_body
+        expect(json['meta']).to include('current_page', 'total_pages', 'total_count', 'per_page')
         ids = json['data'].map { |d| d['id'] }
         expect(ids).to eq([other.id, own.id])
 
@@ -39,6 +40,7 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
       it 'returns 400 when greentea_id is missing' do
         get '/api/v1/greenteacomments', headers: auth
         expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).to include('error')
       end
     end
   end

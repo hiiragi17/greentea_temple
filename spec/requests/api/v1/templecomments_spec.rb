@@ -24,16 +24,19 @@ RSpec.describe 'Api::V1::Templecomments', type: :request do
         get '/api/v1/templecomments', params: { temple_id: temple.id }, headers: auth
 
         expect(response).to have_http_status(:ok)
-        ids = response.parsed_body['data'].map { |d| d['id'] }
+        json = response.parsed_body
+        expect(json['meta']).to include('current_page', 'total_pages', 'total_count', 'per_page')
+        ids = json['data'].map { |d| d['id'] }
         expect(ids).to eq([other.id, own.id])
 
-        own_payload = response.parsed_body['data'].find { |d| d['id'] == own.id }
+        own_payload = json['data'].find { |d| d['id'] == own.id }
         expect(own_payload['owned_by_current_user']).to eq(true)
       end
 
       it 'returns 400 when temple_id is missing' do
         get '/api/v1/templecomments', headers: auth
         expect(response).to have_http_status(:bad_request)
+        expect(response.parsed_body).to include('error')
       end
     end
   end
@@ -93,7 +96,10 @@ RSpec.describe 'Api::V1::Templecomments', type: :request do
       end
 
       it 'returns 403 when deleting another user\'s comment' do
-        delete "/api/v1/templecomments/#{other_comment.id}", headers: auth
+        expect {
+          delete "/api/v1/templecomments/#{other_comment.id}", headers: auth
+        }.not_to change(Templecomment, :count)
+
         expect(response).to have_http_status(:forbidden)
       end
 

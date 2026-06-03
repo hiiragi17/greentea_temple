@@ -29,7 +29,12 @@ RSpec.describe 'Api::V1::GreenteaLikes', type: :request do
         ids = json['data'].map { |d| d['id'] }
         expect(ids).to eq([liked.id])
         expect(json['data'].first['liked_by_current_user']).to eq(true)
-        expect(json['meta']).to include('current_page' => 1, 'total_count' => 1)
+        expect(json['meta']).to include(
+          'current_page' => 1,
+          'total_pages' => 1,
+          'total_count' => 1,
+          'per_page' => 15
+        )
       end
     end
   end

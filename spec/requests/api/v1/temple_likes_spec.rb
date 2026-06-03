@@ -25,9 +25,16 @@ RSpec.describe 'Api::V1::TempleLikes', type: :request do
         get '/api/v1/temple_likes', headers: auth
 
         expect(response).to have_http_status(:ok)
-        ids = response.parsed_body['data'].map { |d| d['id'] }
+        json = response.parsed_body
+        ids = json['data'].map { |d| d['id'] }
         expect(ids).to eq([liked.id])
-        expect(response.parsed_body['data'].first['liked_by_current_user']).to eq(true)
+        expect(json['data'].first['liked_by_current_user']).to eq(true)
+        expect(json['meta']).to include(
+          'current_page' => 1,
+          'total_pages' => 1,
+          'total_count' => 1,
+          'per_page' => 15
+        )
       end
     end
   end

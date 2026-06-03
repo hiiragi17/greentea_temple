@@ -58,6 +58,20 @@ RSpec.describe 'Api::V1::Temples', type: :request do
       ids = response.parsed_body['data'].map { |d| d['id'] }
       expect(ids).to eq([target.id])
     end
+
+    it 'reflects liked_by_current_user when authenticated' do
+      user = User.create!(name: '神社いいね回帰テスト')
+      liked = temples.first
+      TempleLike.create!(user: user, temple: liked)
+      token = JwtService.encode({ user_id: user.id })
+
+      get '/api/v1/temples', headers: { 'Authorization' => "Bearer #{token}" }
+
+      liked_payload = response.parsed_body['data'].find { |d| d['id'] == liked.id }
+      unliked_payload = response.parsed_body['data'].find { |d| d['id'] != liked.id }
+      expect(liked_payload['liked_by_current_user']).to eq(true)
+      expect(unliked_payload['liked_by_current_user']).to eq(false)
+    end
   end
 
   describe 'GET /api/v1/temples/:id' do
