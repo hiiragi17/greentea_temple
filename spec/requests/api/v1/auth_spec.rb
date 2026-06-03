@@ -53,6 +53,24 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         expect(decoded['provider']).to eq('line')
         expect(decoded['exp']).to be_within(60).of(14.days.from_now.to_i)
       end
+
+      it 'recovers from RecordNotUnique race by re-finding the Authentication' do
+        existing_user = User.create!(name: '別タブで先にログイン')
+        Authentication.create!(user: existing_user, provider: 'line', uid: 'U1234567890abcdef')
+
+        # 一度 find_by を nil に倒し、create! で RecordNotUnique を発生させる
+        allow(Authentication).to receive(:find_by).and_call_original
+        allow(Authentication).to receive(:find_by)
+          .with(provider: 'line', uid: 'U1234567890abcdef')
+          .and_return(nil, existing_user.authentications.first)
+
+        expect {
+          post '/api/v1/auth/line', params: { access_token: 'valid_line_token' }
+        }.not_to change(Authentication, :count)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['user']['id']).to eq(existing_user.id)
+      end
     end
 
     context 'with valid Twitter access_token + secret' do

@@ -25,12 +25,14 @@ class JwtService
     private
 
     def secret_key
-      credentials_key = Rails.application.credentials.dig(:jwt_secret).presence
+      credentials_key = Rails.application.credentials[:jwt_secret].presence
       env_key = ENV['JWT_SECRET_KEY'].presence
       return credentials_key || env_key if credentials_key || env_key
 
-      raise MissingSecretError,
-            'JWT secret is not configured. Set credentials :jwt_secret or ENV["JWT_SECRET_KEY"].' unless Rails.env.test?
+      unless Rails.env.test?
+        raise MissingSecretError,
+              'JWT secret is not configured. Set credentials :jwt_secret or ENV["JWT_SECRET_KEY"].'
+      end
 
       'test_jwt_secret_do_not_use_in_production'
     end

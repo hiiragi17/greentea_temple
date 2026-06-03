@@ -31,18 +31,16 @@ module Api
       end
 
       def upsert_user_from(user_info)
+        existing = Authentication.find_by(provider: user_info[:provider], uid: user_info[:uid])
+        return existing.user if existing
+
         ActiveRecord::Base.transaction do
-          auth = Authentication.find_or_initialize_by(
-            provider: user_info[:provider],
-            uid: user_info[:uid]
-          )
-          if auth.new_record?
-            user = User.create!(name: user_info[:name].presence || 'ユーザー')
-            auth.user = user
-            auth.save!
-          end
-          auth.user
+          user = User.create!(name: user_info[:name].presence || 'ユーザー')
+          Authentication.create!(user: user, provider: user_info[:provider], uid: user_info[:uid])
+          user
         end
+      rescue ActiveRecord::RecordNotUnique
+        Authentication.find_by!(provider: user_info[:provider], uid: user_info[:uid]).user
       end
     end
   end

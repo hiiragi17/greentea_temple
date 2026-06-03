@@ -1,10 +1,12 @@
 require 'oauth'
+require 'openssl'
 require 'json'
 
 module OauthUserInfoFetcher
   class Twitter
     SITE = 'https://api.twitter.com'.freeze
     VERIFY_PATH = '/1.1/account/verify_credentials.json?include_email=true'.freeze
+    TIMEOUT = 5
 
     def initialize(access_token:, access_token_secret:)
       @access_token = access_token
@@ -28,6 +30,10 @@ module OauthUserInfoFetcher
       raise FetchError, "Twitter unauthorized: #{e.message}"
     rescue ::JSON::ParserError => e
       raise FetchError, "Invalid Twitter response: #{e.message}"
+    rescue ::Net::OpenTimeout, ::Net::ReadTimeout, ::SocketError, ::OpenSSL::SSL::SSLError => e
+      raise FetchError, "Twitter request failed: #{e.message}"
+    rescue ::OAuth::Error => e
+      raise FetchError, "Twitter OAuth error: #{e.message}"
     end
 
     private
@@ -36,7 +42,8 @@ module OauthUserInfoFetcher
       consumer = ::OAuth::Consumer.new(
         Rails.application.credentials.dig(:twitter, :key),
         Rails.application.credentials.dig(:twitter, :secret_key),
-        site: SITE
+        site: SITE,
+        timeout: TIMEOUT
       )
       token = ::OAuth::AccessToken.new(consumer, @access_token, @access_token_secret)
       token.get(VERIFY_PATH)

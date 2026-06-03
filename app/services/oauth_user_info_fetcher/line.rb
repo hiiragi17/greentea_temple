@@ -1,9 +1,12 @@
 require 'net/http'
+require 'openssl'
 require 'json'
 
 module OauthUserInfoFetcher
   class Line
     PROFILE_URL = URI('https://api.line.me/v2/profile').freeze
+    OPEN_TIMEOUT = 5
+    READ_TIMEOUT = 5
 
     def initialize(access_token:)
       @access_token = access_token
@@ -23,6 +26,8 @@ module OauthUserInfoFetcher
       }
     rescue ::JSON::ParserError => e
       raise FetchError, "Invalid LINE response: #{e.message}"
+    rescue ::Net::OpenTimeout, ::Net::ReadTimeout, ::SocketError, ::OpenSSL::SSL::SSLError => e
+      raise FetchError, "LINE request failed: #{e.message}"
     end
 
     private
@@ -30,7 +35,8 @@ module OauthUserInfoFetcher
     def fetch_profile
       request = Net::HTTP::Get.new(PROFILE_URL)
       request['Authorization'] = "Bearer #{@access_token}"
-      Net::HTTP.start(PROFILE_URL.hostname, PROFILE_URL.port, use_ssl: true) do |http|
+      Net::HTTP.start(PROFILE_URL.hostname, PROFILE_URL.port,
+                      use_ssl: true, open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT) do |http|
         http.request(request)
       end
     end
