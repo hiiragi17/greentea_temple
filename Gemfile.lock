@@ -527,6 +527,7 @@ DEPENDENCIES
   jbuilder
   jsbundling-rails
   jsonapi-serializer (~> 2.2)
+  jwt (~> 3.2)
   kaminari
   meta-tags
   mini_magick
