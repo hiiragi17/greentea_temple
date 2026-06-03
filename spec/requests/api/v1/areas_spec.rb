@@ -26,6 +26,7 @@ RSpec.describe 'Api::V1::Areas', type: :request do
 
       expect(response.parsed_body['meta']).to include(
         'current_page' => 1,
+        'total_pages' => 1,
         'total_count' => 2,
         'per_page' => 15
       )
