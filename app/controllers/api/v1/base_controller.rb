@@ -14,7 +14,43 @@ module Api
         render json: { error: 'Not Found' }, status: :not_found
       end
 
+      def current_user
+        return @current_user if defined?(@current_user)
+
+        @current_user = authenticate_with_token
+      end
+
+      def require_authentication!
+        return if current_user
+
+        render json: { error: 'Unauthorized' }, status: :unauthorized
+      end
+
       private
+
+      def authenticate_with_token
+        token = bearer_token
+        return nil if token.blank?
+
+        payload = JwtService.decode(token)
+        User.find_by(id: payload['user_id'])
+      rescue JwtService::Error => e
+        Rails.logger.info("JWT auth failed: #{e.class} #{e.message}")
+        nil
+      end
+
+      def bearer_token
+        header = request.headers['Authorization']
+        return nil unless header.is_a?(String)
+        return nil unless header.start_with?('Bearer ')
+
+        header.split(' ', 2).last
+      end
+
+      def serialize_user_payload(user)
+        serialized = UserSerializer.new(user).serializable_hash
+        flatten_one(serialized[:data])
+      end
 
       def paginate(scope)
         per_page = params[:per_page].to_i

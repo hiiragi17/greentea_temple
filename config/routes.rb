@@ -3,6 +3,10 @@ Rails.application.routes.draw do
     namespace :v1 do
       get 'health', to: 'health#show'
 
+      delete 'auth/logout', to: 'auth#destroy'
+      post 'auth/:provider', to: 'auth#create', constraints: { provider: /twitter|line/ }
+      get 'current_user', to: 'current_user#show'
+
       resources :greenteas, only: %i[index show]
       resources :temples, only: %i[index show]
       resources :genres, only: %i[index]
