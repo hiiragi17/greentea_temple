@@ -11,6 +11,11 @@ Rails.application.routes.draw do
       resources :temples, only: %i[index show]
       resources :genres, only: %i[index]
       resources :areas, only: %i[index]
+
+      resources :greentea_likes, only: %i[index create destroy]
+      resources :temple_likes, only: %i[index create destroy]
+      resources :greenteacomments, only: %i[index create destroy]
+      resources :templecomments, only: %i[index create destroy]
     end
 
     match '*unmatched', to: 'v1/base#route_not_found', via: :all

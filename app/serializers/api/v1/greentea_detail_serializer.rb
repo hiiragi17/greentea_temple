@@ -10,8 +10,8 @@ module Api
         params[:like_count] || obj.greentea_likes.size
       end
 
-      attribute :liked_by_current_user do |_obj, _params|
-        false
+      attribute :liked_by_current_user do |_obj, params|
+        params[:liked_by_current_user] || false
       end
 
       attribute :genres do |obj|
