@@ -73,6 +73,18 @@ RSpec.describe 'Api::V1::GreenteaLikes', type: :request do
         expect(response.parsed_body['data']).to include('liked' => true, 'like_count' => 1)
       end
 
+      it 'is idempotent even when the race raises RecordInvalid (validation)' do
+        GreenteaLike.create!(user: user, greentea: greentea)
+        allow_any_instance_of(ActiveRecord::Relation)
+          .to receive(:find_or_create_by!)
+          .and_raise(ActiveRecord::RecordInvalid.new(GreenteaLike.new))
+
+        post '/api/v1/greentea_likes', params: { greentea_id: greentea.id }, headers: auth
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['data']).to include('liked' => true, 'like_count' => 1)
+      end
+
       it 'returns 404 when greentea does not exist' do
         post '/api/v1/greentea_likes', params: { greentea_id: 999_999 }, headers: auth
         expect(response).to have_http_status(:not_found)

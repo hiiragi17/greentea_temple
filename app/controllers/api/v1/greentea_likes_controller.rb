@@ -27,7 +27,7 @@ module Api
             like_count: greentea.greentea_likes.count
           }
         }, status: :ok
-      rescue ActiveRecord::RecordNotUnique
+      rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
         render json: {
           data: {
             greentea_id: greentea.id,

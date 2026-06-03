@@ -71,6 +71,17 @@ RSpec.describe 'Api::V1::TempleLikes', type: :request do
         expect(response).to have_http_status(:ok)
       end
 
+      it 'is idempotent even when the race raises RecordInvalid (validation)' do
+        TempleLike.create!(user: user, temple: temple)
+        allow_any_instance_of(ActiveRecord::Relation)
+          .to receive(:find_or_create_by!)
+          .and_raise(ActiveRecord::RecordInvalid.new(TempleLike.new))
+
+        post '/api/v1/temple_likes', params: { temple_id: temple.id }, headers: auth
+
+        expect(response).to have_http_status(:ok)
+      end
+
       it 'returns 404 when temple does not exist' do
         post '/api/v1/temple_likes', params: { temple_id: 999_999 }, headers: auth
         expect(response).to have_http_status(:not_found)

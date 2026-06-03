@@ -27,7 +27,7 @@ module Api
             like_count: temple.temple_likes.count
           }
         }, status: :ok
-      rescue ActiveRecord::RecordNotUnique
+      rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
         render json: {
           data: {
             temple_id: temple.id,
