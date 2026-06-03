@@ -4,12 +4,14 @@ module Api
       def index
         scope = Temple.ransack(params[:q]).result(distinct: true).order(:id)
         paginated = paginate(scope).load
-        like_counts = TempleLike.where(temple_id: paginated.map(&:id)).group(:temple_id).count
+        ids = paginated.map(&:id)
+        like_counts = TempleLike.where(temple_id: ids).group(:temple_id).count
+        liked_ids = liked_ids_for(ids)
 
         render_collection(
           paginated,
           serializer: TempleSerializer,
-          serializer_params: { like_counts: like_counts }
+          serializer_params: { like_counts: like_counts, liked_ids: liked_ids }
         )
       end
 
@@ -22,12 +24,25 @@ module Api
           serializer: TempleDetailSerializer,
           serializer_params: {
             like_count: temple.temple_likes.size,
-            nearby_greenteas: nearby_greenteas
+            nearby_greenteas: nearby_greenteas,
+            liked_by_current_user: liked_by_current_user?(temple.id)
           }
         )
       end
 
       private
+
+      def liked_ids_for(ids)
+        return [] unless current_user && ids.any?
+
+        current_user.temple_likes.where(temple_id: ids).pluck(:temple_id).to_set
+      end
+
+      def liked_by_current_user?(temple_id)
+        return false unless current_user
+
+        current_user.temple_likes.exists?(temple_id: temple_id)
+      end
 
       def nearby_greenteas_for(temple)
         return [] unless temple.latitude && temple.longitude

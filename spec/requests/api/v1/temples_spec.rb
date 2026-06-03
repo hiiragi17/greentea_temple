@@ -93,5 +93,15 @@ RSpec.describe 'Api::V1::Temples', type: :request do
       expect(response).to have_http_status(:not_found)
       expect(response.parsed_body).to eq('error' => 'Not Found')
     end
+
+    it 'returns liked_by_current_user=true when the authenticated user liked it' do
+      user = User.create!(name: '神社いいねユーザー')
+      TempleLike.create!(user: user, temple: temple)
+      token = JwtService.encode({ user_id: user.id })
+
+      get "/api/v1/temples/#{temple.id}", headers: { 'Authorization' => "Bearer #{token}" }
+
+      expect(response.parsed_body['data']['liked_by_current_user']).to eq(true)
+    end
   end
 end

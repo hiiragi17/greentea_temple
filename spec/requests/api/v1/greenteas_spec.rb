@@ -92,6 +92,20 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
       payload = response.parsed_body['data'].find { |d| d['id'] == liked.id }
       expect(payload['like_count']).to eq(2)
     end
+
+    it 'reflects liked_by_current_user when authenticated' do
+      user = User.create!(name: 'いいね回帰テスト')
+      liked = greenteas.first
+      GreenteaLike.create!(user: user, greentea: liked)
+      token = JwtService.encode({ user_id: user.id })
+
+      get '/api/v1/greenteas', headers: { 'Authorization' => "Bearer #{token}" }
+
+      liked_payload = response.parsed_body['data'].find { |d| d['id'] == liked.id }
+      unliked_payload = response.parsed_body['data'].find { |d| d['id'] != liked.id }
+      expect(liked_payload['liked_by_current_user']).to eq(true)
+      expect(unliked_payload['liked_by_current_user']).to eq(false)
+    end
   end
 
   describe 'GET /api/v1/greenteas/:id' do
@@ -108,6 +122,16 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
         'like_count', 'liked_by_current_user', 'genres', 'nearby_temples'
       )
       expect(attrs['id']).to eq(greentea.id)
+    end
+
+    it 'returns liked_by_current_user=true when the authenticated user liked it' do
+      user = User.create!(name: '詳細いいねユーザー')
+      GreenteaLike.create!(user: user, greentea: greentea)
+      token = JwtService.encode({ user_id: user.id })
+
+      get "/api/v1/greenteas/#{greentea.id}", headers: { 'Authorization' => "Bearer #{token}" }
+
+      expect(response.parsed_body['data']['liked_by_current_user']).to eq(true)
     end
 
     it 'includes nearby_temples sorted by distance ascending with meter values' do

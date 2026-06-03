@@ -10,8 +10,8 @@ module Api
         params[:like_counts]&.fetch(obj.id, 0) || 0
       end
 
-      attribute :liked_by_current_user do |_obj, _params|
-        false
+      attribute :liked_by_current_user do |obj, params|
+        params[:liked_ids]&.include?(obj.id) || false
       end
     end
   end
