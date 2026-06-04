@@ -12,6 +12,8 @@ Rails.application.routes.draw do
       resources :genres, only: %i[index]
       resources :areas, only: %i[index]
 
+      get 'nearby', to: 'nearby#search'
+
       resources :greentea_likes, only: %i[index create destroy]
       resources :temple_likes, only: %i[index create destroy]
       resources :greenteacomments, only: %i[index create destroy]
