@@ -77,7 +77,7 @@ RSpec.describe 'Api::V1::Nearby', type: :request do
         get '/api/v1/nearby', params: { lat: origin_lat, lng: origin_lng }
 
         origin = Geokit::LatLng.new(origin_lat, origin_lng)
-        expected = (origin.distance_to(Geokit::LatLng.new(near_greentea.latitude, near_greentea.longitude)) * 1000).round
+        expected = (origin.distance_to(Geokit::LatLng.new(near_greentea.latitude, near_greentea.longitude), units: :kms) * 1000).round
         actual = response.parsed_body['greenteas'].find { |g| g['id'] == near_greentea.id }['distance_meters']
         expect(actual).to be_within(5).of(expected)
       end
