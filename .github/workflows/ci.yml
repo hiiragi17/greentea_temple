@@ -65,8 +65,10 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
+      # db:prepare は seed まで走り、seed の geocoding 依存で CI が落ちるため
+      # テスト用にスキーマだけを読み込む（テストは FactoryBot を使うので seed 不要）
       - name: Set up database
-        run: bundle exec rails db:prepare
+        run: bundle exec rails db:create db:schema:load
 
       # NOTE: spec/system は Chrome / driver 周りの整備が必要なため、ここでは除外する（#134）
       - name: Run RSpec
