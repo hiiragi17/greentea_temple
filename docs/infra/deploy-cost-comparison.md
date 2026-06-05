@@ -25,7 +25,12 @@
 | Oracle Cloud Always Free（1 VM 全部入り） | **¥0**（恒久無料・上限内） | **なし** | 高（自前で全管理） | 中 | ○（金額最強だが見栄え弱め） |
 | Fly.io（Rails + Postgres 同居） | ~¥0 〜 $5 | ほぼなし | 中 | 中 | ○ |
 | Render | Web 無料はスピンダウン有 / PG は有料（$6〜） | あり | 低 | 低 | △ |
-| Railway | $5/月クレジット内で収まれば実質無料 | ほぼなし | 低 | 中 | ○ |
+| Railway | $5/月の Hobby サブスク（$5 分のクレジット込み。使用量が $5 以内なら従量課金は発生しないが、**$5/月のサブスク料金自体は発生**） | ほぼなし | 低 | 中 | ○ |
+
+> 💡 **料金・無料枠の数値について（as-of 2026-06-05）**
+> 各社の料金・無料枠は頻繁に改定されます。本表の数値は下記「5. 参考」の公式ページを **2026-06-05 時点**で参照したもので、**実際に採用する前に必ず最新の公式ページを確認**してください。特に以下は公式の単価テーブルを都度確認すること:
+> - **Cloud Run**: 無料枠は月次でリセットされる "spending-based discount"。上限値（vCPU 秒 / GiB 秒 / リクエスト）は参照する表・リージョンで変わる。
+> - **GCS（asia-northeast1 の egress）** / **Fly.io（shared-cpu-1x）**: 本資料では当該リージョン/プランの正確な単価行を確定できていないため、**金額は概算**として扱い、公式ページで確認する。
 
 **結論**: 本プロジェクトの優先軸（無料＋ポートフォリオ価値）では **#118 の Cloud Run + Neon + GCS が最適**。
 純粋な「絶対額の最安・コールドスタート無し」だけを取るなら Oracle Cloud 1 台構成が上だが、見栄え・運用手間で本プロジェクトの軸には合わない。
@@ -112,9 +117,21 @@
 
 ### 4-1. コールドスタート（最大の弱点）
 
-- **¥0 を守るなら**: `min-instance=0` のまま、**Cloud Scheduler で数分おきにヘルスチェックを叩いてウォーム維持**（ヘルスチェックは無料枠内に収まる）。受け入れ条件「5 秒以内」をこれで担保する。
-  - ⚠️ ただし現状の `/api/v1/health`（`app/controllers/api/v1/health_controller.rb`）は `{ status: 'ok' }` を返すだけで **DB に接続しない**。これを叩いても **温まるのは Cloud Run / Rails だけで、Neon は温まらない**（Neon は別途オートサスペンドするため）。
-  - Neon も含めて温めたいなら、**軽い DB アクセスを伴うウォームアップ用エンドポイント**（例: `SELECT 1` 相当のクエリを1回投げる）を用意してそれを叩く。`/api/v1/health` のままなら「これは Cloud Run のコールドスタート対策のみ」と割り切る（Neon 復帰遅延は 4-2 を参照）。
+- **¥0 を守るなら**: `min-instance=0` のまま、**Cloud Scheduler で数分おきにヘルスチェックを叩いてウォーム維持**（ヘルスチェックは無料枠内に収まる）。受け入れ条件「5 秒以内」の達成しやすさを上げる（あくまで緩和策で、SLO を保証するものではない）。
+  - ⚠️ ただし現状の `/api/v1/health`（`app/controllers/api/v1/health_controller.rb`）は `{ status: 'ok' }` を返すだけで **DB に接続しない**。これを叩いても **温まるのは Cloud Run / Rails だけで、Neon は温まらない**（Neon は別途オートサスペンドするため）。`/api/v1/health` は **「Cloud Run のコールドスタート対策のみ・DB 非接続」** と位置づけ、公開のまま使ってよい。
+  - Neon も含めて温めたいなら、**軽い DB アクセスを伴うウォームアップ用エンドポイント**（例: `SELECT 1` 相当のクエリを1回投げる）を用意してそれを叩く。ただしこの経路は **公開のままだと意図しない連打で DB 復帰・課金・負荷を誘発**するため、以下で **Cloud Scheduler など内部呼び出しのみに限定**する:
+    - **認証**: Cloud Scheduler → Cloud Run は **OIDC トークン**（サービスアカウントの ID トークン）で呼ぶのが基本。アプリ側で受け取った `Authorization: Bearer <token>` の検証、もしくは簡易には **共有シークレットヘッダ**（例: `X-Warmup-Token` を `ENV` の値と比較し、一致しなければ `401`）でガードする。
+    - **ネットワーク/Ingress**: 可能なら Cloud Run の **Ingress を internal/allowlist** に寄せる、または warmup 用パスだけ前段（LB / IAM invoker）で絞る。
+    - 例（共有シークレット方式の最小チェック）:
+      ```ruby
+      # warmup#show
+      head :unauthorized and return unless
+        ActiveSupport::SecurityUtils.secure_compare(
+          request.headers['X-Warmup-Token'].to_s, ENV['WARMUP_TOKEN'].to_s
+        )
+      ActiveRecord::Base.connection.execute('SELECT 1')
+      head :ok
+      ```
 - **確実に消したいなら**: `min-instance=1`（常時 1 台起動）。ただし常時課金で **月 ¥800 前後**になるため、¥0 方針とはトレードオフ。
 - 起動高速化: `bootsnap` 有効化（導入済み）、本番 assets は **ビルド時に precompile**（実行時に走らせない）、不要 initializer の見直し。
 - `config/puma.rb` の `WEB_CONCURRENCY` / スレッド数を Cloud Run の CPU1 / 512Mi に合わせて控えめに。
@@ -145,6 +162,18 @@
 - CI で `bundle exec rspec` / `rubocop` をゲートにし、`main` push → build → Artifact Registry → Cloud Run deploy を WIF で鍵レス自動化。
 
 ## 5. 参考
+
+### 料金・無料枠の公式出典（いずれも as-of 2026-06-05 / 採用前に最新を確認）
+
+- **Cloud Run**: 料金 / 無料枠 — https://cloud.google.com/run/pricing
+- **Neon**: プラン — https://neon.com/docs/introduction/plans / 無料枠 FAQ — https://neon.com/faqs/managed-postgres-databases-free-tier
+- **GCS**: 料金 — https://cloud.google.com/storage/pricing （asia-northeast1 の egress 単価は要確認）
+- **Oracle Cloud Always Free**: 無料リソース上限 — https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm
+- **Fly.io**: 料金 — https://fly.io/docs/about/pricing/ （shared-cpu-1x の単価は要確認）
+- **Render**: 料金 — https://render.com/pricing / Postgres — https://render.com/docs/postgresql-refresh
+- **Railway**: プラン — https://docs.railway.com/pricing/plans / FAQ — https://docs.railway.com/pricing/faqs
+
+### その他
 
 - matcha-to-jinja: `docs/migration-plan.md`（「環境構成」「GCP Cloud Run デプロイ手順」「Neon PostgreSQL セットアップ」）
 - 関連 issue: #113 〜 #118（API 化 → デプロイ）
