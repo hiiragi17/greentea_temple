@@ -14,18 +14,12 @@ module OauthUserInfoFetcher
     end
 
     def call
-      raise FetchError, 'access_token is required' if @access_token.blank?
-      raise FetchError, 'access_token_secret is required' if @access_token_secret.blank?
+      validate_tokens!
 
       response = fetch_user_info
       raise FetchError, "Twitter API error: #{response.code}" unless response.code.to_i == 200
 
-      payload = JSON.parse(response.body)
-      {
-        provider: 'twitter',
-        uid: payload['id_str'].to_s,
-        name: payload['name'].presence || payload['screen_name']
-      }
+      build_user_info(JSON.parse(response.body))
     rescue ::OAuth::Unauthorized => e
       raise FetchError, "Twitter unauthorized: #{e.message}"
     rescue ::JSON::ParserError => e
@@ -37,6 +31,19 @@ module OauthUserInfoFetcher
     end
 
     private
+
+    def validate_tokens!
+      raise FetchError, 'access_token is required' if @access_token.blank?
+      raise FetchError, 'access_token_secret is required' if @access_token_secret.blank?
+    end
+
+    def build_user_info(payload)
+      {
+        provider: 'twitter',
+        uid: payload['id_str'].to_s,
+        name: payload['name'].presence || payload['screen_name']
+      }
+    end
 
     def fetch_user_info
       consumer = ::OAuth::Consumer.new(
