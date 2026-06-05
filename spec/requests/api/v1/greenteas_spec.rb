@@ -148,8 +148,8 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
       end
 
       origin = Geokit::LatLng.new(greentea.latitude, greentea.longitude)
-      expected_near = (origin.distance_to(Geokit::LatLng.new(near.latitude, near.longitude)) * 1000).round
-      expected_mid  = (origin.distance_to(Geokit::LatLng.new(mid.latitude, mid.longitude)) * 1000).round
+      expected_near = (origin.distance_to(Geokit::LatLng.new(near.latitude, near.longitude), units: :kms) * 1000).round
+      expected_mid  = (origin.distance_to(Geokit::LatLng.new(mid.latitude, mid.longitude), units: :kms) * 1000).round
       expect(nearby[0]['distance_meters']).to be_within(2).of(expected_near)
       expect(nearby[1]['distance_meters']).to be_within(2).of(expected_mid)
 

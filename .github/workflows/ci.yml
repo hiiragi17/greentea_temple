@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# GITHUB_TOKEN は lint / test に必要な read-only のみに絞る
+permissions:
+  contents: read
+
+# 同一ブランチで連続 push した場合、古い実行をキャンセルする
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rubocop:
+    name: RuboCop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Run RuboCop
+        run: bundle exec rubocop --parallel
+
+  rspec:
+    name: RSpec (request / model / helper)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/greentea_temple_test
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      # db:prepare は seed まで走り、seed の geocoding 依存で CI が落ちるため
+      # テスト用にスキーマだけを読み込む（テストは FactoryBot を使うので seed 不要）
+      - name: Set up database
+        run: bundle exec rails db:create db:schema:load
+
+      # NOTE: spec/system は Chrome / driver 周りの整備が必要なため、ここでは除外する（#134）
+      - name: Run RSpec
+        run: bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
