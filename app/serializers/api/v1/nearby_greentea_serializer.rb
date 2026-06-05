@@ -10,8 +10,10 @@ module Api
           (obj.distance.to_f * 1000).round
         else
           origin = params[:origin]
-          if origin && origin[0] && origin[1]
-            obj.get_distance(origin[0], origin[1])
+          if origin && origin[0] && origin[1] && obj.latitude && obj.longitude
+            origin_point = Geokit::LatLng.new(origin[0], origin[1])
+            target = Geokit::LatLng.new(obj.latitude, obj.longitude)
+            (origin_point.distance_to(target, units: :kms) * 1000).round
           end
         end
       end

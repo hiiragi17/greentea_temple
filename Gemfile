@@ -60,7 +60,7 @@ gem 'rack-cors'
 gem 'jsonapi-serializer', '~> 2.2'
 
 # JWT for API authentication (#115)
-gem 'jwt', '~> 3.2'
+gem 'jwt', '~> 2.7'
 
 # Localization
 gem 'rails-i18n'
@@ -69,7 +69,7 @@ gem 'rails-i18n'
 gem 'kaminari'
 
 # Search
-gem 'ransack'
+gem 'ransack', '~> 4.1'
 
 # Image upload
 gem 'carrierwave', '~> 2.0'

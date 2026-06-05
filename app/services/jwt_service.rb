@@ -8,8 +8,11 @@ class JwtService
   class MissingSecretError < Error; end
 
   class << self
-    def encode(payload, expires_at: EXPIRES_IN.from_now)
-      claims = payload.merge(exp: expires_at.to_i)
+    # payload はハッシュ位置引数でも、キーワード（encode(user_id: 1, ...)）でも受けられるようにする。
+    # Ruby 3 ではキーワード分離により、expires_at を持つ本メソッドへ素のキーワードを渡すと
+    # payload が満たされず ArgumentError になるため、**extra で吸収する。
+    def encode(payload = nil, expires_at: EXPIRES_IN.from_now, **extra)
+      claims = (payload || {}).merge(extra).merge(exp: expires_at.to_i)
       ::JWT.encode(claims, secret_key, ALGORITHM)
     end
 

@@ -96,7 +96,7 @@ RSpec.describe 'Api::V1::Temples', type: :request do
       end
 
       origin = Geokit::LatLng.new(temple.latitude, temple.longitude)
-      expected = (origin.distance_to(Geokit::LatLng.new(near.latitude, near.longitude)) * 1000).round
+      expected = (origin.distance_to(Geokit::LatLng.new(near.latitude, near.longitude), units: :kms) * 1000).round
       near_payload = attrs['nearby_greenteas'].find { |g| g['id'] == near.id }
       expect(near_payload['distance_meters']).to be_within(2).of(expected)
     end
