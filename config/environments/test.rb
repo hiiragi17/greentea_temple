@@ -22,6 +22,11 @@ Rails.application.configure do
     "Cache-Control" => "public, max-age=#{1.hour.to_i}"
   }
 
+  # daisyUI が生成する application.css は `hsla(var(--b1) / ...)` のような
+  # モダン CSS を含み、sassc(libsass) で圧縮すると parse error になる。
+  # 本番 (production.rb) と同様に CSS 圧縮を無効化する（system spec を CI で回すため / #134）。
+  config.assets.css_compressor = nil
+
   # Show full error reports and disable caching.
   config.consider_all_requests_local       = true
   config.action_controller.perform_caching = false

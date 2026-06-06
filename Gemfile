@@ -76,7 +76,8 @@ gem 'carrierwave', '~> 2.0'
 gem 'mini_magick'
 
 # ActiveRecord
-gem 'activerecord-import'
+# 1.5+ で Rails 7.1 に対応（1.4 系は `.import` が ArgumentError になる / #134）
+gem 'activerecord-import', '>= 1.5'
 
 # scraping
 gem 'open-uri'
@@ -137,11 +138,14 @@ end
 
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
-  gem "capybara"
+  # 3.40+ は selenium-webdriver 4.11+ の Logger 仕様変更に対応している（#134）
+  gem "capybara", ">= 3.40"
   gem 'faker'
   gem 'fuubar'
   gem 'shoulda-matchers'
   gem 'timecop'
-  gem "selenium-webdriver"
-  gem "webdrivers"
+  # selenium-webdriver 4.11+ bundles Selenium Manager, which resolves the
+  # matching chromedriver automatically. The webdrivers gem (Chrome 115+ 非対応)
+  # is no longer needed and has been removed (#134).
+  gem "selenium-webdriver", ">= 4.11"
 end

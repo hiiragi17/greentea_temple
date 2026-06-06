@@ -70,6 +70,68 @@ jobs:
       - name: Set up database
         run: bundle exec rails db:create db:schema:load
 
-      # NOTE: spec/system は Chrome / driver 周りの整備が必要なため、ここでは除外する（#134）
+      # spec/system は専用ジョブ（system）で実行するため、ここでは除外する
       - name: Run RSpec
         run: bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
+
+  system:
+    name: RSpec (system)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/greentea_temple_test
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: yarn
+
+      # system spec はビュー描画に jsbundling / cssbundling のビルド成果物
+      # （app/assets/builds）を必要とするため、JS / CSS をビルドしておく
+      - name: Install JS dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build assets
+        run: |
+          yarn build
+          yarn build:css
+
+      # Chrome 本体をセットアップする。chromedriver は selenium-webdriver 4.11+ の
+      # Selenium Manager が自動解決するため、別途インストールは不要（#134）
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Set up database
+        run: bundle exec rails db:create db:schema:load
+
+      - name: Run system spec
+        run: bundle exec rspec spec/system

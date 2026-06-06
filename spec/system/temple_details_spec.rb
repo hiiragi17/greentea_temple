@@ -2,8 +2,9 @@ require 'rails_helper'
 
 RSpec.describe 'TempleDetails', type: :system do
   let!(:temple) { create(:temple) }
-  let!(:near_greentea1) { create(:greentea, latitude: 34.967653, longitude: 135.774144) }
-  let!(:near_greentea2) { create(:greentea, latitude: 34.967673, longitude: 135.774154) }
+  # temple ファクトリのデフォルト座標 (34.9926*, 135.7535*) の 1.5km 圏内に置く
+  let!(:near_greentea1) { create(:greentea, latitude: 34.99265, longitude: 135.75355) }
+  let!(:near_greentea2) { create(:greentea, latitude: 34.99267, longitude: 135.75357) }
   let!(:far_greentea) { create(:greentea, latitude: 35.6476602, longitude: 139.741758) }
   describe 'show temple' do
     context 'access temple#show' do
@@ -21,14 +22,15 @@ RSpec.describe 'TempleDetails', type: :system do
       xit 'display near_greentea' do
         visit temple_path(temple)
         expect(all('.card').count).to eq(2)
-        expect(page).to have_content(near_greentea1), '近い抹茶スイーツ店が表示されていません'
-        expect(page).to have_content(near_greentea2), '近い抹茶スイーツ店が表示されていません'
-        expect(page).not_to have_content(far_greentea), '近くない抹茶スイーツ店が表示されています'
+        expect(page).to have_content(near_greentea1.name), '近い抹茶スイーツ店が表示されていません'
+        expect(page).to have_content(near_greentea2.name), '近い抹茶スイーツ店が表示されていません'
+        expect(page).not_to have_content(far_greentea.name), '近くない抹茶スイーツ店が表示されています'
       end
       it 'show near_greentea' do
         visit temple_path(temple)
         click_link near_greentea1.name
-        expect(current_path).to eq(greentea_path(near_greentea1))
+        # Turbo の非同期遷移を待つため have_current_path（自動リトライ）で検証する
+        expect(page).to have_current_path(greentea_path(near_greentea1))
       end
     end
   end

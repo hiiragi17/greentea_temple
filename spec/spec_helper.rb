@@ -14,8 +14,10 @@
 #
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
+  # CI のフラグ込みの headless Chrome ドライバを使う（登録は spec/support/capybara.rb）。
+  # selenium-webdriver 4.11+ の Selenium Manager が chromedriver を自動解決する（#134）。
   config.before(:each, type: :system) do
-    driven_by :selenium, using: :headless_chrome, screen_size: [1400, 1400]
+    driven_by :headless_chrome
   end
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
