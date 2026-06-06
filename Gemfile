@@ -142,6 +142,8 @@ group :test do
   gem 'fuubar'
   gem 'shoulda-matchers'
   gem 'timecop'
-  gem "selenium-webdriver"
-  gem "webdrivers"
+  # selenium-webdriver 4.11+ bundles Selenium Manager, which resolves the
+  # matching chromedriver automatically. The webdrivers gem (Chrome 115+ 非対応)
+  # is no longer needed and has been removed (#134).
+  gem "selenium-webdriver", ">= 4.11"
 end
