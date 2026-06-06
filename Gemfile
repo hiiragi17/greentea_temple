@@ -137,7 +137,8 @@ end
 
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
-  gem "capybara"
+  # 3.40+ は selenium-webdriver 4.11+ の Logger 仕様変更に対応している（#134）
+  gem "capybara", ">= 3.40"
   gem 'faker'
   gem 'fuubar'
   gem 'shoulda-matchers'
