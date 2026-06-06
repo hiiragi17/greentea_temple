@@ -76,7 +76,8 @@ gem 'carrierwave', '~> 2.0'
 gem 'mini_magick'
 
 # ActiveRecord
-gem 'activerecord-import'
+# 1.5+ で Rails 7.1 に対応（1.4 系は `.import` が ArgumentError になる / #134）
+gem 'activerecord-import', '>= 1.5'
 
 # scraping
 gem 'open-uri'
