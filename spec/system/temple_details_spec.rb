@@ -29,7 +29,8 @@ RSpec.describe 'TempleDetails', type: :system do
       it 'show near_greentea' do
         visit temple_path(temple)
         click_link near_greentea1.name
-        expect(current_path).to eq(greentea_path(near_greentea1))
+        # Turbo の非同期遷移を待つため have_current_path（自動リトライ）で検証する
+        expect(page).to have_current_path(greentea_path(near_greentea1))
       end
     end
   end
