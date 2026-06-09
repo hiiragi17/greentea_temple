@@ -126,7 +126,7 @@ jobs:
       # Chrome 本体をセットアップする。chromedriver は selenium-webdriver 4.11+ の
       # Selenium Manager が自動解決するため、別途インストールは不要（#134）
       - name: Set up Chrome
-        uses: browser-actions/setup-chrome@c785b87e244131f27c9f19c1a33e2ead956ab7ce # v1.7.3
+        uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd # v2.1.2
         with:
           chrome-version: stable
 
