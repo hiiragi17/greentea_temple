@@ -19,12 +19,12 @@ jobs:
     name: RuboCop
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@12fd324f1d0b43274fdc8130f6980590a667c455 # v1.312.0
         with:
           ruby-version: .ruby-version
           bundler-cache: true
@@ -55,12 +55,12 @@ jobs:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/greentea_temple_test
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@12fd324f1d0b43274fdc8130f6980590a667c455 # v1.312.0
         with:
           ruby-version: .ruby-version
           bundler-cache: true
@@ -97,18 +97,18 @@ jobs:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/greentea_temple_test
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@12fd324f1d0b43274fdc8130f6980590a667c455 # v1.312.0
         with:
           ruby-version: .ruby-version
           bundler-cache: true
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 18
           cache: yarn
@@ -126,7 +126,7 @@ jobs:
       # Chrome 本体をセットアップする。chromedriver は selenium-webdriver 4.11+ の
       # Selenium Manager が自動解決するため、別途インストールは不要（#134）
       - name: Set up Chrome
-        uses: browser-actions/setup-chrome@v1
+        uses: browser-actions/setup-chrome@c785b87e244131f27c9f19c1a33e2ead956ab7ce # v1.7.3
         with:
           chrome-version: stable
 
