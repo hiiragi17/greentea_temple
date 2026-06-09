@@ -1,0 +1,14 @@
+# Dependabot 設定
+# - github-actions: SHA ピン留めしたワークフローを週次で更新追従する（#138）
+# - bundler: Gemfile.lock を週次で更新追従する
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "weekly"
