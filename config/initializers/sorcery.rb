@@ -80,7 +80,7 @@ Rails.application.config.sorcery.configure do |config|
   # i.e. [:twitter, :facebook, :github, :linkedin, :xing, :google, :liveid, :salesforce, :slack, :line].
   # Default: `[]`
   #
-  config.external_providers = %i[twitter line]
+  config.external_providers = %i[line google]
 
   # You can change it by your local ca_file. i.e. '/etc/pki/tls/certs/ca-bundle.crt'
   # Path to ca_file. By default use a internal ca-bundle.crt.
@@ -112,14 +112,13 @@ Rails.application.config.sorcery.configure do |config|
   # config.xing.user_info_mapping = {first_name: "first_name", last_name: "last_name"}
   #
   #
-  # Twitter will not accept any requests nor redirect uri containing localhost,
-  # Make sure you use 0.0.0.0:3000 to access your app in development
+  # Google OAuth 2.0 (client id / secret は GCP Console で発行)
   #
-  config.twitter.key = Rails.application.credentials.dig(:twitter, :key)
-  config.twitter.secret = Rails.application.credentials.dig(:twitter, :secret_key)
-  config.twitter.callback_url = Settings.sorcery[:twitter_callback_url]
-  config.twitter.user_info_path = '/1.1/account/verify_credentials.json?include_email=true'
-  # config.twitter.user_info_mapping = {:email: 'email'}
+  config.google.key = ENV['GOOGLE_CLIENT_ID'].presence || Rails.application.credentials.dig(:google, :client_id)
+  config.google.secret = ENV['GOOGLE_CLIENT_SECRET'].presence || Rails.application.credentials.dig(:google, :client_secret)
+  config.google.callback_url = Settings.sorcery[:google_callback_url]
+  config.google.user_info_mapping = { name: 'name' }
+  config.google.scope = 'email profile'
   #
   # config.facebook.key = ""
   # config.facebook.secret = ""

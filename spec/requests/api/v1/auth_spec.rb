@@ -73,19 +73,30 @@ RSpec.describe 'Api::V1::Auth', type: :request do
       end
     end
 
-    context 'with valid Twitter access_token + secret' do
+    context 'with valid Google access_token' do
       before do
         allow(OauthUserInfoFetcher).to receive(:fetch)
-          .with('twitter', hash_including(access_token: 'tw_token', access_token_secret: 'tw_secret'))
-          .and_return(provider: 'twitter', uid: '1234567890', name: 'matcha_san')
+          .with('google', hash_including(access_token: 'google_token'))
+          .and_return(provider: 'google', uid: '1234567890', name: 'matcha_san')
       end
 
-      it 'creates the User via Twitter provider' do
-        post '/api/v1/auth/twitter',
-             params: { access_token: 'tw_token', access_token_secret: 'tw_secret' }
+      it 'creates the User via Google provider' do
+        post '/api/v1/auth/google', params: { access_token: 'google_token' }
 
         expect(response).to have_http_status(:ok)
-        expect(Authentication.last).to have_attributes(provider: 'twitter', uid: '1234567890')
+        body = response.parsed_body
+        expect(body['jwt']).to be_a(String).and be_present
+        expect(body['user']).to include('id', 'name', 'role')
+        expect(body['user']['name']).to eq('matcha_san')
+
+        expect(Authentication.last).to have_attributes(provider: 'google', uid: '1234567890')
+      end
+    end
+
+    context 'with the removed Twitter provider' do
+      it 'returns 404 (route constraint no longer allows twitter)' do
+        post '/api/v1/auth/twitter', params: { access_token: 'tw_token' }
+        expect(response).to have_http_status(:not_found)
       end
     end
 
