@@ -1,12 +1,17 @@
 (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
   var __esm = (fn, res) => function __init() {
     return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
   };
   var __export = (target, all) => {
     for (var name in all)
       __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __publicField = (obj, key, value) => {
+    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+    return value;
   };
 
   // node_modules/@rails/actioncable/src/adapters.js
@@ -6651,7 +6656,108 @@
     }
   };
 
+  // app/javascript/controllers/current_location_map_controller.js
+  var DEFAULT_CENTER = { lat: 34.985, lng: 135.758 };
+  var DEFAULT_ZOOM = 16;
+  var CURRENT_MARKER_STYLE = {
+    fillColor: "#008DBD",
+    fillOpacity: 0.8,
+    scale: 15,
+    strokeColor: "#008DBD",
+    strokeWeight: 1
+  };
+  var GREENTEA_MARKER_STYLE = {
+    fillColor: "#007E66",
+    fillOpacity: 0.8,
+    scale: 15,
+    strokeColor: "#007E66",
+    strokeWeight: 1
+  };
+  var TEMPLE_MARKER_STYLE = {
+    fillColor: "#E9546B",
+    fillOpacity: 0.5,
+    scale: 15,
+    strokeColor: "#E9546B",
+    strokeWeight: 1
+  };
+  var googleMapsLoader = null;
+  function loadGoogleMaps(apiKey) {
+    if (window.google && window.google.maps) {
+      return Promise.resolve(window.google.maps);
+    }
+    if (googleMapsLoader) {
+      return googleMapsLoader;
+    }
+    googleMapsLoader = new Promise((resolve, reject) => {
+      const callbackName = "__matchaInitGoogleMaps";
+      window[callbackName] = () => {
+        delete window[callbackName];
+        resolve(window.google.maps);
+      };
+      const script = document.createElement("script");
+      const params = new URLSearchParams({ key: apiKey, callback: callbackName, v: "3.exp" });
+      script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
+      script.async = true;
+      script.defer = true;
+      script.onerror = (error2) => {
+        googleMapsLoader = null;
+        reject(error2);
+      };
+      document.head.appendChild(script);
+    });
+    return googleMapsLoader;
+  }
+  var current_location_map_controller_default = class extends Controller {
+    connect() {
+      if (!this.apiKeyValue)
+        return;
+      loadGoogleMaps(this.apiKeyValue).then((maps) => this.initMap(maps)).catch((error2) => console.error("Failed to load Google Maps", error2));
+    }
+    initMap(maps) {
+      const map = new maps.Map(this.element, {
+        center: DEFAULT_CENTER,
+        zoom: DEFAULT_ZOOM
+      });
+      this.placeSpots(maps, map, this.greenteasValue, GREENTEA_MARKER_STYLE, "\u8336", "/greenteas");
+      this.placeSpots(maps, map, this.templesValue, TEMPLE_MARKER_STYLE, "\u795E", "/temples");
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          const latLng = new maps.LatLng(position.coords.latitude, position.coords.longitude);
+          new maps.Marker({
+            map,
+            position: latLng,
+            icon: { ...CURRENT_MARKER_STYLE, path: maps.SymbolPath.CIRCLE },
+            label: { text: "\u73FE", color: "#FFFFFF", fontSize: "20px" }
+          });
+          map.setCenter(latLng);
+        });
+      }
+    }
+    placeSpots(maps, map, spots, markerStyle, labelText, urlPrefix) {
+      spots.forEach((spot) => {
+        const marker = new maps.Marker({
+          map,
+          position: { lat: Number(spot.latitude), lng: Number(spot.longitude) },
+          icon: { ...markerStyle, path: maps.SymbolPath.CIRCLE },
+          label: { text: labelText, color: "#FFFFFF", fontSize: "20px" }
+        });
+        const infoWindow = new maps.InfoWindow({
+          content: `<a href="${urlPrefix}/${spot.id}">${spot.name}</a>`
+        });
+        marker.addListener("click", () => {
+          infoWindow.open(map, marker);
+        });
+      });
+    }
+  };
+  __publicField(current_location_map_controller_default, "values", {
+    apiKey: String,
+    greenteas: { type: Array, default: [] },
+    temples: { type: Array, default: [] }
+  });
+
   // app/javascript/controllers/index.js
   application.register("hello", hello_controller_default);
+  application.register("current-location-map", current_location_map_controller_default);
 })();
 //# sourceMappingURL=assets/application.js.map
