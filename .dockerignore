@@ -1,0 +1,61 @@
+.git
+.github
+.gitignore
+.gitattributes
+
+# Local Bundler / Ruby state
+.bundle
+/vendor/bundle
+
+# Node / asset build artifacts（ビルドステージで再生成する）
+node_modules
+yarn-error.log
+yarn-debug.log*
+.yarn-integrity
+/app/assets/builds
+
+# Runtime artifacts
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+!/tmp/pids/.keep
+/storage/*
+!/storage/.keep
+/public/assets
+/public/packs
+/public/packs-test
+/public/uploads
+
+# Tests / docs（コンテナに入れない）
+/spec
+/test
+.rspec
+/docs
+
+# Secrets
+/config/master.key
+/.env
+/.env.*
+config/settings.local.yml
+config/settings/*.local.yml
+config/environments/*.local.yml
+
+# Editor / OS
+.DS_Store
+.idea
+.vscode
+*.swp
+
+# Lint / CI 設定（コンテナでは使わない）
+.rubocop.yml
+.erb-lint.yml
+.byebug_history
+
+# Dev DB
+db/greentea_temple_development
+db/greentea_temple_test
+
+# Dockerfile 自身（自己参照を避ける）
+Dockerfile
+.dockerignore

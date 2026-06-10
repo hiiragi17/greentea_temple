@@ -1,0 +1,148 @@
+name: Deploy to Cloud Run
+
+# 当面は手動トリガのみ。Workload Identity Federation / 各 secrets / vars が
+# 揃ったタイミングで `push: branches: [main]` を有効化する想定（#118）。
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "デプロイするイメージタグ（未指定なら commit SHA の先頭 12 桁）"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write # Workload Identity Federation
+
+env:
+  GCP_REGION: asia-northeast1
+  SERVICE_NAME: greentea-temple
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      # inputs.image_tag を `run:` スクリプトに直接展開すると script injection
+      # の余地があるため、必ず env 経由で受け取る。さらに Docker / OCI のタグ
+      # 仕様 (https://docs.docker.com/reference/cli/docker/image/tag/#description)
+      # に沿った形式かを正規表現で fail-fast 検証する
+      - name: Resolve image tag
+        id: tag
+        env:
+          INPUT_TAG: ${{ inputs.image_tag }}
+        run: |
+          if [ -n "${INPUT_TAG}" ]; then
+            if ! [[ "${INPUT_TAG}" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+              echo "::error::Invalid image_tag: '${INPUT_TAG}'. Must match ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}\$" >&2
+              exit 1
+            fi
+            echo "tag=${INPUT_TAG}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # GitHub Actions の `jobs.<job_id>.env` では `secrets` コンテキストが
+      # 参照できない（github / needs / strategy / matrix / vars / inputs のみ）。
+      # IMAGE_BASE は GCP_PROJECT_ID（secret）を含むため、step output で組み立てる
+      - name: Compose image base
+        id: image
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          AR_REPOSITORY: ${{ vars.AR_REPOSITORY }}
+        run: |
+          echo "base=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${AR_REPOSITORY}/${SERVICE_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate to Google Cloud
+        # TODO(#118): 安定後に SHA ピンする。現状は機能確認のため v2 タグを使用
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        # TODO(#118): SHA ピン
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build image
+        env:
+          IMAGE_BASE: ${{ steps.image.outputs.base }}
+          IMAGE_TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          docker build \
+            --tag "${IMAGE_BASE}:${IMAGE_TAG}" \
+            --tag "${IMAGE_BASE}:latest" \
+            --cache-from "${IMAGE_BASE}:latest" \
+            .
+
+      - name: Push image
+        env:
+          IMAGE_BASE: ${{ steps.image.outputs.base }}
+          IMAGE_TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          docker push "${IMAGE_BASE}:${IMAGE_TAG}"
+          docker push "${IMAGE_BASE}:latest"
+
+      # 環境変数名はアプリ実コードが ENV[..] で参照している名前に合わせている:
+      #   - GMAP_API           : config/initializers/geocoder.rb
+      #   - GOOGLE_MAP_API     : app/views/**/*.erb (Google Maps JS API key)
+      # CLAUDE.md 表記の `GOOGLE_GEOCODING_API_KEY` / `GOOGLE_MAPS_API_KEY`
+      # への統一は別タスクで実施する。
+      #
+      # SECRET_KEY_BASE は credentials.yml.enc に持たせる場合 RAILS_MASTER_KEY
+      # 経由で復号されるため不要。`secrets.SECRET_KEY_BASE` を unconditionally
+      # に渡すと secret 未設定時に空文字で credentials 由来の値を上書きして
+      # しまうため、secret が存在するときのみ env_vars に含める
+      - name: Compose Cloud Run env vars
+        id: env
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          GMAP_API: ${{ secrets.GMAP_API }}
+          GOOGLE_MAP_API: ${{ secrets.GOOGLE_MAP_API }}
+          LINE_KEY: ${{ secrets.LINE_KEY }}
+          LINE_SECRET: ${{ secrets.LINE_SECRET }}
+        run: |
+          {
+            echo "vars<<__ENV_EOF__"
+            echo "RAILS_ENV=production"
+            echo "DATABASE_URL=${DATABASE_URL}"
+            echo "FRONTEND_URL=${FRONTEND_URL}"
+            echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}"
+            echo "RAILS_MASTER_KEY=${RAILS_MASTER_KEY}"
+            echo "GMAP_API=${GMAP_API}"
+            echo "GOOGLE_MAP_API=${GOOGLE_MAP_API}"
+            echo "LINE_KEY=${LINE_KEY}"
+            echo "LINE_SECRET=${LINE_SECRET}"
+            if [ -n "${SECRET_KEY_BASE}" ]; then
+              echo "SECRET_KEY_BASE=${SECRET_KEY_BASE}"
+            fi
+            echo "__ENV_EOF__"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Cloud Run
+        # TODO(#118): SHA ピン（v2 のリリース安定後に切替）
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.GCP_REGION }}
+          image: ${{ steps.image.outputs.base }}:${{ steps.tag.outputs.tag }}
+          flags: --allow-unauthenticated --memory=512Mi --cpu=1 --min-instances=0 --max-instances=4
+          env_vars: ${{ steps.env.outputs.vars }}
+
+      - name: Show service URL
+        run: |
+          gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region ${{ env.GCP_REGION }} \
+            --format='value(status.url)'
