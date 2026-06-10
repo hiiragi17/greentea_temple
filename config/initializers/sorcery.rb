@@ -114,8 +114,8 @@ Rails.application.config.sorcery.configure do |config|
   #
   # Google OAuth 2.0 (client id / secret は GCP Console で発行)
   #
-  config.google.key = ENV['GOOGLE_CLIENT_ID'] || Rails.application.credentials.dig(:google, :client_id)
-  config.google.secret = ENV['GOOGLE_CLIENT_SECRET'] || Rails.application.credentials.dig(:google, :client_secret)
+  config.google.key = ENV['GOOGLE_CLIENT_ID'].presence || Rails.application.credentials.dig(:google, :client_id)
+  config.google.secret = ENV['GOOGLE_CLIENT_SECRET'].presence || Rails.application.credentials.dig(:google, :client_secret)
   config.google.callback_url = Settings.sorcery[:google_callback_url]
   config.google.user_info_mapping = { name: 'name' }
   config.google.scope = 'email profile'

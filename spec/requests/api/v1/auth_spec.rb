@@ -84,6 +84,11 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         post '/api/v1/auth/google', params: { access_token: 'google_token' }
 
         expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body['jwt']).to be_a(String).and be_present
+        expect(body['user']).to include('id', 'name', 'role')
+        expect(body['user']['name']).to eq('matcha_san')
+
         expect(Authentication.last).to have_attributes(provider: 'google', uid: '1234567890')
       end
     end
