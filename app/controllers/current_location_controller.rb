@@ -4,8 +4,8 @@ class CurrentLocationController < ApplicationController
   skip_before_action :require_login, only: %i[search result]
 
   def search
-    @greenteas = Greentea.all.as_json(only: MAP_SPOT_FIELDS)
-    @temples = Temple.all.as_json(only: MAP_SPOT_FIELDS)
+    @greenteas = Greentea.where.not(latitude: nil, longitude: nil).as_json(only: MAP_SPOT_FIELDS)
+    @temples = Temple.where.not(latitude: nil, longitude: nil).as_json(only: MAP_SPOT_FIELDS)
   end
 
   def result; end

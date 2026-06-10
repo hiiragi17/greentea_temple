@@ -6735,15 +6735,19 @@
     }
     placeSpots(maps, map, spots, markerStyle, labelText, urlPrefix) {
       spots.forEach((spot) => {
+        const spotId = Number(spot.id);
+        if (!Number.isInteger(spotId))
+          return;
         const marker = new maps.Marker({
           map,
           position: { lat: Number(spot.latitude), lng: Number(spot.longitude) },
           icon: { ...markerStyle, path: maps.SymbolPath.CIRCLE },
           label: { text: labelText, color: "#FFFFFF", fontSize: "20px" }
         });
-        const infoWindow = new maps.InfoWindow({
-          content: `<a href="${urlPrefix}/${spot.id}">${spot.name}</a>`
-        });
+        const link = document.createElement("a");
+        link.href = `${urlPrefix}/${spotId}`;
+        link.textContent = String(spot.name ?? "");
+        const infoWindow = new maps.InfoWindow({ content: link });
         marker.addListener("click", () => {
           infoWindow.open(map, marker);
         });
