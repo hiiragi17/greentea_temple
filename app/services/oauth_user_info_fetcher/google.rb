@@ -16,12 +16,17 @@ module OauthUserInfoFetcher
       raise FetchError, 'access_token is required' if @access_token.blank?
 
       response = fetch_userinfo
-      raise FetchError, "Google API error: #{response.code}" unless response.code.to_i == 200
+      unless response.code.to_i == 200
+        raise FetchError, "Google API error: #{response.code} - #{response.body}"
+      end
 
       payload = JSON.parse(response.body)
+      uid = payload['sub'].to_s
+      raise FetchError, 'Google response missing sub (uid)' if uid.empty?
+
       {
         provider: 'google',
-        uid: payload['sub'].to_s,
+        uid: uid,
         name: payload['name'].presence || payload['email']
       }
     rescue ::JSON::ParserError => e
