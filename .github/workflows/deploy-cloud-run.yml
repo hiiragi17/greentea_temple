@@ -79,14 +79,19 @@ jobs:
           flags: --allow-unauthenticated --memory=512Mi --cpu=1 --min-instances=0 --max-instances=4
           # 実値はすべて GitHub の secrets / vars から渡す。Cloud Run のサービス
           # 自体に保存される env vars はこの workflow で上書きされる点に注意。
+          # 環境変数名はアプリ実コードが ENV[..] で参照している名前に合わせている:
+          #   - GMAP_API           : config/initializers/geocoder.rb
+          #   - GOOGLE_MAP_API     : app/views/**/*.erb (Google Maps JS API key)
+          # CLAUDE.md 表記の `GOOGLE_GEOCODING_API_KEY` / `GOOGLE_MAPS_API_KEY`
+          # への統一は別タスクで実施する。
           env_vars: |
             RAILS_ENV=production
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             FRONTEND_URL=${{ vars.FRONTEND_URL }}
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
             RAILS_MASTER_KEY=${{ secrets.RAILS_MASTER_KEY }}
-            GOOGLE_GEOCODING_API_KEY=${{ secrets.GOOGLE_GEOCODING_API_KEY }}
-            GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
+            GMAP_API=${{ secrets.GMAP_API }}
+            GOOGLE_MAP_API=${{ secrets.GOOGLE_MAP_API }}
             LINE_KEY=${{ secrets.LINE_KEY }}
             LINE_SECRET=${{ secrets.LINE_SECRET }}
 
