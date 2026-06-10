@@ -62,6 +62,7 @@ ENV RAILS_ENV=production \
     BUNDLE_DEPLOYMENT=1 \
     BUNDLE_PATH=/usr/local/bundle \
     BUNDLE_WITHOUT="development:test" \
+    LD_PRELOAD=libjemalloc.so.2 \
     PORT=8080
 
 WORKDIR /app
@@ -91,5 +92,7 @@ USER app
 
 EXPOSE 8080
 
-# Cloud Run は $PORT をコンテナに渡してくる。0.0.0.0 で listen する必要がある
-CMD ["bash", "-lc", "bundle exec rails server -b 0.0.0.0 -p ${PORT}"]
+# Cloud Run は $PORT をコンテナに渡してくる。0.0.0.0 で listen する必要がある。
+# `exec` を付けて Rails プロセスを PID 1 にし、Cloud Run の SIGTERM が
+# 正しく届くようにする
+CMD ["bash", "-c", "exec bundle exec rails server -b 0.0.0.0 -p ${PORT}"]
