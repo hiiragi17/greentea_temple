@@ -10,7 +10,7 @@
 - Ruby 3.3.11（#119 で 3.1.2 から上げ済み）
 - Ruby on Rails 7.0.3（→ #124 で 7.1.x へ上げる予定）
 - PostgreSQL
-- Sorcery（Twitter / LINE OAuth）
+- Sorcery（LINE / Google OAuth）
 - Ransack（検索）/ Kaminari（ページネーション）
 - Geokit + Geocoder（緯度経度・距離計算）
 - CarrierWave + MiniMagick（画像アップロード）
@@ -43,7 +43,7 @@ bundle exec rubocop
 |---|---|
 | `GOOGLE_GEOCODING_API_KEY` | 住所 → 緯度経度（Geocoder） |
 | `GOOGLE_MAPS_API_KEY` | 地図描画（JS から参照） |
-| `TWITTER_KEY` / `TWITTER_SECRET` | Twitter OAuth |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（#90 で Twitter から移行） |
 | `LINE_KEY` / `LINE_SECRET` | LINE OAuth |
 | `DATABASE_URL` | 本番 PostgreSQL（#118 で Neon へ移行予定） |
 | `FRONTEND_URL` | CORS allowlist。開発: `http://localhost:3000` / 本番: `https://matcha-to-jinja.com`（#113〜） |
@@ -60,7 +60,7 @@ bundle exec rubocop
 
 ユーザー系:
 - `users` — Sorcery core（name, crypted_password 等）
-- `authentications` — Sorcery external（provider, uid。Twitter / LINE）
+- `authentications` — Sorcery external（provider, uid。LINE / Google）
 
 ソーシャル系:
 - `greentea_likes` / `temple_likes` — いいね（`(user_id, *_id)` で UNIQUE）
@@ -119,8 +119,7 @@ spec/                   # RSpec
   - フロー: NextAuth で OAuth → `access_token` を Rails に渡す → Rails が Sorcery で User を upsert → JWT 返却
   - 詳細: #115
 
-外部認証プロバイダ: Twitter / LINE
-将来追加候補: Google（issue #90）
+外部認証プロバイダ: LINE / Google（#90 で Twitter を廃止し Google を追加）
 
 JWT ライブラリ: `jwt` gem（HS256 / 有効期限 14 日。詳細は #115）。
 署名鍵は `Rails.application.credentials.jwt_secret` または `ENV['JWT_SECRET_KEY']`。

@@ -4,7 +4,7 @@ Rails.application.routes.draw do
       get 'health', to: 'health#show'
 
       delete 'auth/logout', to: 'auth#destroy'
-      post 'auth/:provider', to: 'auth#create', constraints: { provider: /twitter|line/ }
+      post 'auth/:provider', to: 'auth#create', constraints: { provider: /line|google/ }
       get 'current_user', to: 'current_user#show'
 
       resources :greenteas, only: %i[index show]
