@@ -1,151 +1,18 @@
 <div class="mx-auto px-1 py-3 sm:px-1 max-w-3xl items-center">
-<div class="w-full max-w-5xl h-screen" id='map'></div>
+  <div
+    id="map"
+    class="w-full max-w-5xl h-screen"
+    data-controller="current-location-map"
+    data-current-location-map-api-key-value="<%= ENV['GOOGLE_MAP_API'] %>"
+    data-current-location-map-greenteas-value="<%= @greenteas.to_json %>"
+    data-current-location-map-temples-value="<%= @temples.to_json %>"
+  ></div>
 
-<script>
-var map;
-var currentMarker;
-var greenteaMarker = []; //マーカーを複数表示させるため配列化
-var templeMarker = []; //マーカーを複数表示させるため配列化
-var greenteaWindow = []; //吹き出しを複数表示させたいので配列化
-var templeWindow = []; //吹き出しを複数表示させたいので配列化
-const greenteas = gon.greenteas; //コントローラで定義したインスタンス変数を変数に代入
-const temples = gon.temples;
-
-function initMap(){
-  // mapの初期位置設定
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: 34.985, lng: 135.758},
-    zoom: 16
-  });
-
-  // 現在位置の特定
-  navigator.geolocation.getCurrentPosition(function (position){
-    // LatLngに位置座標を代入
-    LatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-
-  // 現在位置のマーカーの設定
-  currentMarker = new google.maps.Marker({
-        map: map,
-        position : LatLng,
-        icon: {
-             fillColor: "#008DBD",                //塗り潰し色
-             fillOpacity: 0.8,                    //塗り潰し透過率
-             path: google.maps.SymbolPath.CIRCLE, //円を指定
-             scale: 15,                           //円のサイズ
-             strokeColor: "#008DBD",              //枠の色
-             strokeWeight: 1.0                    //枠の透過率
-        },
-        label: {
-             text: '現',                           //ラベル文字
-             color: '#FFFFFF',                    //文字の色
-             fontSize: '20px'                     //文字のサイズ
-        }
-  });
-
- // map.setCenterで地図が移動
-    map.setCenter(LatLng);
-
-  if (gon.greenteas) {
-
-  // forは繰り返し処理
-    // 変数iを0と定義し、
-    // その後gonで定義したgreenteas分繰り返し加える処理を行う
-    for (let i = 0; i < greenteas.length; i++){
-      // greenteas[i]は変数iのユーザーを取得している
-      greenteaMarker[i] = new google.maps.Marker({
-        map: map,
-        position: {
-          // DBに保存してある、緯度・経度を呼び出す
-          lat: greenteas[i].latitude,
-          lng: greenteas[i].longitude
-        },
-        icon: {
-           fillColor: "#007E66",                //塗り潰し色
-             fillOpacity: 0.8,                    //塗り潰し透過率
-             path: google.maps.SymbolPath.CIRCLE, //円を指定
-             scale: 15,                           //円のサイズ
-             strokeColor: "#007E66",              //枠の色
-             strokeWeight: 1.0                    //枠の透過率
-        },
-        label: {
-             text: '茶',                           //ラベル文字
-             color: '#FFFFFF',                    //文字の色
-             fontSize: '20px'                     //文字のサイズ
-        }
-      });
-
-      // 変数iを変数idに代入
-      let id = greenteas[i]['id']
-
-      // infoWindowは吹き出し
-      greenteaWindow[i] = new google.maps.InfoWindow({
-        // contentで中身を指定
-        // 今回は文字にリンクを貼り付けた形で表示
-        content: `<a href='/greenteas/${id}'>${greenteas[i].name}</a>`
-      })
-
-        // markerがクリックされた時、
-      greenteaMarker[i].addListener("click", function(){
-        // infoWindowを表示
-        greenteaWindow[i].open(map, greenteaMarker[i]);
-      });
-    }
-  }
-
-  if (gon.temples) {
-  // forは繰り返し処理
-    // 変数iを0と定義し、
-    // その後gonで定義したtemples分繰り返し加える処理を行う
-    for (let i = 0; i < temples.length; i++){
-      // temples[i]は変数iのユーザーを取得している
-      templeMarker[i] = new google.maps.Marker({
-        map: map,
-        position: {
-          // DBに保存してある、緯度・経度を呼び出す
-          lat: temples[i].latitude,
-          lng: temples[i].longitude
-        },
-          icon: {
-             fillColor: "#E9546B",                //塗り潰し色
-             fillOpacity: 0.5,                    //塗り潰し透過率
-             path: google.maps.SymbolPath.CIRCLE, //円を指定
-             scale: 15,                           //円のサイズ
-             strokeColor: "#E9546B",              //枠の色
-             strokeWeight: 1.0                    //枠の透過率
-        },
-         label: {
-             text: '神',                           //ラベル文字
-             color: '#FFFFFF',                    //文字の色
-             fontSize: '20px'                     //文字のサイズ
-        }
-      });
-
-      // 変数iを変数idに代入
-      let id = temples[i]['id']
-
-      // infoWindowは吹き出し
-      templeWindow[i] = new google.maps.InfoWindow({
-        // contentで中身を指定
-        // 今回は文字にリンクを貼り付けた形で表示
-        content: `<a href='/temples/${id}'>${temples[i].name}</a>`
-      });
-
-      // markerがクリックされた時、
-      templeMarker[i].addListener("click", function(){
-        // infoWindowを表示
-        templeWindow[i].open(map, templeMarker[i]);
-      });
-    }
-   }
-  });
-}
-</script>
-<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=<%= ENV['GOOGLE_MAP_API'] %>&callback=initMap" async defer>
-</script>
-
-<div class='container mx-auto flex justify-center items-center p-3'>
-  <%= link_to root_path, class: 'btn btn-sm btn-warning-content' do %>
-    <svg class="mr-2 -ml-1 w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-skip-backward-fill" viewBox="0 0 16 16"> <path d="M.5 3.5A.5.5 0 0 0 0 4v8a.5.5 0 0 0 1 0V8.753l6.267 3.636c.54.313 1.233-.066 1.233-.697v-2.94l6.267 3.636c.54.314 1.233-.065 1.233-.696V4.308c0-.63-.693-1.01-1.233-.696L8.5 7.248v-2.94c0-.63-.692-1.01-1.233-.696L1 7.248V4a.5.5 0 0 0-.5-.5z" /></svg>戻る
-  <% end %>
-</div>
+  <div class='container mx-auto flex justify-center items-center p-3'>
+    <%= link_to root_path, class: 'btn btn-sm btn-warning-content' do %>
+      <svg class="mr-2 -ml-1 w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M.5 3.5A.5.5 0 0 0 0 4v8a.5.5 0 0 0 1 0V8.753l6.267 3.636c.54.313 1.233-.066 1.233-.697v-2.94l6.267 3.636c.54.314 1.233-.065 1.233-.696V4.308c0-.63-.693-1.01-1.233-.696L8.5 7.248v-2.94c0-.63-.692-1.01-1.233-.696L1 7.248V4a.5.5 0 0 0-.5-.5z" />
+      </svg>戻る
+    <% end %>
+  </div>
 </div>
