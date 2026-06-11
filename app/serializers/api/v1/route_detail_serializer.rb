@@ -9,7 +9,7 @@ module Api
       attribute :updated_at, &:updated_at
 
       attribute :spots do |obj|
-        ordered = obj.route_spots.to_a
+        ordered = RouteDetailSerializer.ordered_spots(obj)
         ordered.each_with_index.map do |route_spot, index|
           next_spot = ordered[index + 1]
           RouteDetailSerializer.spot_payload(route_spot, next_spot)
@@ -19,12 +19,18 @@ module Api
       # ルート全体の経路距離合計（メートル・整数）。
       # 各 leg は経路距離（leg_distance_meters）優先、無ければ直線距離でフォールバック。
       attribute :total_distance_meters do |obj|
-        RouteDetailSerializer.total_distance_meters(obj.route_spots.to_a)
+        RouteDetailSerializer.total_distance_meters(RouteDetailSerializer.ordered_spots(obj))
       end
 
       # ルート全体の所要時間合計（秒・整数）。算出済みの leg が 1 つも無ければ nil。
       attribute :total_duration_seconds do |obj|
-        RouteDetailSerializer.total_duration_seconds(obj.route_spots.to_a)
+        RouteDetailSerializer.total_duration_seconds(RouteDetailSerializer.ordered_spots(obj))
+      end
+
+      # route_spots を position 順で取得する。association scope（order(:position)）でも
+      # 担保されるが、DB ロード順に依存しないよう明示的に並べ替える（controller と統一）。
+      def self.ordered_spots(route)
+        route.route_spots.to_a.sort_by(&:position)
       end
 
       # ルート内の 1 スポットを表す要素を組み立てる。

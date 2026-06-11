@@ -149,7 +149,8 @@ RSpec.describe 'Api::V1::Routes', type: :request do
     end
 
     it 'computes and stores leg metrics via DirectionsService' do
-      allow(DirectionsService).to receive(:leg)
+      expect(DirectionsService).to receive(:leg)
+        .with(origin: temple, destination: greentea, mode: 'walk')
         .and_return({ distance_meters: 1500, duration_seconds: 1080 })
 
       post '/api/v1/routes', params: valid_params, headers: auth
@@ -165,6 +166,40 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       data = response.parsed_body['data']
       expect(data['spots'].first['route_distance_to_next_meters']).to eq(1500)
       expect(data['total_distance_meters']).to eq(1500)
+      expect(data['total_duration_seconds']).to eq(1080)
+    end
+
+    it 'uses computed metrics for successful legs and falls back for failed ones' do
+      third = create(:greentea)
+      # leg1 は成功、leg2 は失敗（nil）。
+      allow(DirectionsService).to receive(:leg)
+        .and_return({ distance_meters: 1500, duration_seconds: 1080 }, nil)
+
+      post '/api/v1/routes',
+           params: {
+             route: {
+               name: '混在ルート',
+               spots: [
+                 { spot_type: 'temple', spot_id: temple.id, transport: 'walk' },
+                 { spot_type: 'greentea', spot_id: greentea.id, transport: 'train' },
+                 { spot_type: 'greentea', spot_id: third.id }
+               ]
+             }
+           },
+           headers: auth
+
+      expect(response).to have_http_status(:created)
+      data = response.parsed_body['data']
+      spots = data['spots']
+
+      # leg1: 経路距離・所要時間が入る
+      expect(spots[0]['route_distance_to_next_meters']).to eq(1500)
+      expect(spots[0]['duration_to_next_seconds']).to eq(1080)
+      # leg2: 失敗 → 経路値は nil、直線距離フォールバック
+      expect(spots[1]['route_distance_to_next_meters']).to be_nil
+      expect(spots[1]['distance_to_next_meters']).to be_a(Integer)
+      # 合計: 距離は leg1 経路 + leg2 直線、所要時間は算出済みの leg1 のみ
+      expect(data['total_distance_meters']).to eq(1500 + spots[1]['distance_to_next_meters'])
       expect(data['total_duration_seconds']).to eq(1080)
     end
 
@@ -286,6 +321,8 @@ RSpec.describe 'Api::V1::Routes', type: :request do
 
     it 'updates only scalar fields and preserves spots when the spots key is omitted' do
       route = create_route_for(user, [{ spottable: greentea }, { spottable: temple }])
+      # spots 未変更なので leg 再計算（外部 API 呼び出し）は走らない。
+      expect(DirectionsService).not_to receive(:leg)
 
       patch "/api/v1/routes/#{route.id}",
             params: { route: { description: '説明だけ更新' } },
