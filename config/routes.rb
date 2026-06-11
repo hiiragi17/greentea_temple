@@ -14,6 +14,8 @@ Rails.application.routes.draw do
 
       get 'nearby', to: 'nearby#search'
 
+      resources :routes, only: %i[index show create update destroy]
+
       resources :greentea_likes, only: %i[index create destroy]
       resources :temple_likes, only: %i[index create destroy]
       resources :greenteacomments, only: %i[index create destroy]
