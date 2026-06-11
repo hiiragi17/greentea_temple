@@ -261,6 +261,29 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(route.route_spots.first.transport).to eq('train')
     end
 
+    it 'recomputes and stores leg metrics when spots change' do
+      route = create_route_for(user, [{ spottable: greentea }])
+      allow(DirectionsService).to receive(:leg)
+        .and_return({ distance_meters: 2000, duration_seconds: 1500 })
+
+      patch "/api/v1/routes/#{route.id}",
+            params: {
+              route: {
+                spots: [
+                  { spot_type: 'temple', spot_id: temple.id, transport: 'train' },
+                  { spot_type: 'greentea', spot_id: greentea.id }
+                ]
+              }
+            },
+            headers: auth
+
+      expect(response).to have_http_status(:ok)
+      first_spot = route.reload.route_spots.order(:position).first
+      expect(first_spot.leg_distance_meters).to eq(2000)
+      expect(first_spot.leg_duration_seconds).to eq(1500)
+      expect(response.parsed_body['data']['total_distance_meters']).to eq(2000)
+    end
+
     it 'updates only scalar fields and preserves spots when the spots key is omitted' do
       route = create_route_for(user, [{ spottable: greentea }, { spottable: temple }])
 

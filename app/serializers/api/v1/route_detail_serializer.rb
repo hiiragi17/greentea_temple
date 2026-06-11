@@ -58,6 +58,9 @@ module Api
         end
       end
 
+      # 所要時間には直線距離のようなフォールバックが無いため、算出済みの leg のみを
+      # 合算する（一部 leg のみ算出済みなら部分合計）。1 つも無ければ nil。
+      # ＝ total_distance_meters（常に整数）とは非対称だが意図的な契約。
       def self.total_duration_seconds(ordered)
         durations = ordered.each_cons(2).map { |from, _to| from.leg_duration_seconds }.compact
         return nil if durations.empty?

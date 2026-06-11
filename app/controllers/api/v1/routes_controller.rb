@@ -111,13 +111,18 @@ module Api
       # 隣接スポット間の経路距離・所要時間を Directions API で求めて保存する。
       # 外部 API 呼び出しのため DB トランザクション外で実行し、失敗した leg は
       # nil のまま（serializer 側で直線距離フォールバック）。
+      #
+      # build_spots でスポットは spottable 付きでメモリ上にロード済みなので、
+      # reload せずに position 順へ並べ替えて使う（spottable の N+1 を避ける）。
       def compute_and_store_legs(route)
-        spots = route.route_spots.reload.to_a
+        spots = route.route_spots.to_a.sort_by(&:position)
         spots.each_cons(2) do |from, to|
           leg = DirectionsService.leg(origin: from.spottable, destination: to.spottable, mode: from.transport)
           next unless leg
 
-          from.update!(
+          # best-effort（コミット後・トランザクション外）なので bang は使わない。
+          # 失敗しても 500 にせず、その leg は nil のまま（直線距離フォールバック）。
+          from.update(
             leg_distance_meters: leg[:distance_meters],
             leg_duration_seconds: leg[:duration_seconds]
           )

@@ -26,10 +26,11 @@ class DirectionsService
     # mode は route_spots.transport の文字列（"walk" / "train" など、nil 可）。
     # 返り値: { distance_meters: Integer, duration_seconds: Integer } または nil。
     def leg(origin:, destination:, mode: nil)
-      return nil if api_key.blank?
+      key = api_key
+      return nil if key.blank?
       return nil unless coordinates?(origin) && coordinates?(destination)
 
-      body = request(build_url(origin, destination, mode))
+      body = request(build_url(origin, destination, mode, key))
       return nil unless body
 
       parse(body)
@@ -50,11 +51,11 @@ class DirectionsService
       TRANSPORT_MODES.fetch(transport.to_s, DEFAULT_MODE)
     end
 
-    def build_url(origin, destination, transport)
+    def build_url(origin, destination, transport, key)
       params = {
         origin: "#{origin.latitude},#{origin.longitude}",
         destination: "#{destination.latitude},#{destination.longitude}",
-        key: api_key
+        key: key
       }.merge(mode_params(transport))
 
       uri = URI(ENDPOINT)
@@ -75,7 +76,7 @@ class DirectionsService
       # ベストエフォート: 接続リセット/拒否(Errno::*)・タイムアウト・EOF などの
       # 一時的なネットワーク失敗は握りつぶし、呼び出し側で直線距離フォールバックに任せる。
       # （ルート作成・更新はコミット済みのため、ここで例外を伝播させて 500 にしない）
-      Rails.logger.info("DirectionsService request failed: #{e.class} #{e.message}")
+      Rails.logger.warn("DirectionsService request failed: #{e.class} #{e.message}")
       nil
     end
 
