@@ -70,7 +70,11 @@ class DirectionsService
       return nil unless response.code.to_i == 200
 
       JSON.parse(response.body)
-    rescue ::JSON::ParserError, ::Net::OpenTimeout, ::Net::ReadTimeout, ::SocketError, ::OpenSSL::SSL::SSLError => e
+    rescue ::JSON::ParserError, ::Net::ProtocolError, ::SocketError, ::SystemCallError,
+           ::IOError, ::Timeout::Error, ::OpenSSL::SSL::SSLError => e
+      # ベストエフォート: 接続リセット/拒否(Errno::*)・タイムアウト・EOF などの
+      # 一時的なネットワーク失敗は握りつぶし、呼び出し側で直線距離フォールバックに任せる。
+      # （ルート作成・更新はコミット済みのため、ここで例外を伝播させて 500 にしない）
       Rails.logger.info("DirectionsService request failed: #{e.class} #{e.message}")
       nil
     end

@@ -77,6 +77,15 @@ RSpec.describe DirectionsService do
         expect(DirectionsService.leg(origin: origin, destination: destination, mode: 'walk')).to be_nil
       end
 
+      it 'returns nil (does not raise) on transient network failures' do
+        [Errno::ECONNRESET, Errno::ECONNREFUSED, EOFError, Net::ReadTimeout].each do |error|
+          allow(Net::HTTP).to receive(:start).and_raise(error)
+          expect {
+            expect(DirectionsService.leg(origin: origin, destination: destination, mode: 'walk')).to be_nil
+          }.not_to raise_error
+        end
+      end
+
       it 'returns nil when coordinates are missing' do
         no_coords = double('spot', latitude: nil, longitude: nil)
         expect(DirectionsService).not_to receive(:request)
