@@ -8,6 +8,7 @@ class User < ApplicationRecord
   accepts_nested_attributes_for :authentications
   has_many :greenteacomments, dependent: :destroy
   has_many :templecomments, dependent: :destroy
+  has_many :routes, dependent: :destroy
 
   validates :name, presence: true
 

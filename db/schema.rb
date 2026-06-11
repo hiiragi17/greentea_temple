@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_06_03_040345) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_11_054820) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -95,6 +95,28 @@ ActiveRecord::Schema[7.0].define(version: 2026_06_03_040345) do
     t.float "longitude"
   end
 
+  create_table "route_spots", force: :cascade do |t|
+    t.bigint "route_id", null: false
+    t.string "spottable_type", null: false
+    t.bigint "spottable_id", null: false
+    t.integer "position", null: false
+    t.integer "transport"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["route_id", "position"], name: "index_route_spots_on_route_id_and_position"
+    t.index ["route_id"], name: "index_route_spots_on_route_id"
+    t.index ["spottable_type", "spottable_id"], name: "index_route_spots_on_spottable"
+  end
+
+  create_table "routes", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_routes_on_user_id"
+  end
+
   create_table "temple_areas", force: :cascade do |t|
     t.bigint "temple_id", null: false
     t.bigint "area_id", null: false
@@ -153,6 +175,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_06_03_040345) do
   add_foreign_key "greentea_likes", "users"
   add_foreign_key "greenteacomments", "greenteas"
   add_foreign_key "greenteacomments", "users"
+  add_foreign_key "route_spots", "routes"
+  add_foreign_key "routes", "users"
   add_foreign_key "temple_areas", "areas"
   add_foreign_key "temple_areas", "temples"
   add_foreign_key "temple_likes", "temples"
