@@ -9,6 +9,15 @@ RSpec.describe 'Api::V1::Routes', type: :request do
   let(:greentea) { create(:greentea) }
   let(:temple) { create(:temple) }
 
+  # spots: [{ spottable:, transport: }] を順序付きで持つ Route を 1 件作る。
+  def create_route_for(owner, spots)
+    Route.create!(
+      user: owner,
+      name: 'テストルート',
+      route_spots: spots.each_with_index.map { |attrs, i| RouteSpot.new(position: i + 1, **attrs) }
+    )
+  end
+
   describe 'GET /api/v1/routes' do
     context 'when unauthenticated' do
       it 'returns 401' do
@@ -19,9 +28,8 @@ RSpec.describe 'Api::V1::Routes', type: :request do
 
     context 'when authenticated' do
       it 'returns only the current user\'s routes with meta and spot_count' do
-        mine = create(:route, user: user)
-        create(:route_spot, route: mine, spottable: greentea, position: 1)
-        create(:route, user: other_user)
+        mine = create_route_for(user, [{ spottable: greentea }])
+        create_route_for(other_user, [{ spottable: greentea }])
 
         get '/api/v1/routes', headers: auth
 
@@ -42,15 +50,14 @@ RSpec.describe 'Api::V1::Routes', type: :request do
 
   describe 'GET /api/v1/routes/:id' do
     it 'returns 401 when unauthenticated' do
-      route = create(:route, user: user)
+      route = create_route_for(user, [{ spottable: greentea }])
       get "/api/v1/routes/#{route.id}"
       expect(response).to have_http_status(:unauthorized)
     end
 
     it 'returns the route with ordered spots and distance_to_next_meters' do
-      route = create(:route, user: user)
-      create(:route_spot, route: route, spottable: temple, position: 1, transport: :walk)
-      create(:route_spot, route: route, spottable: greentea, position: 2)
+      spots = [{ spottable: temple, transport: :walk }, { spottable: greentea }]
+      route = create_route_for(user, spots)
 
       get "/api/v1/routes/#{route.id}", headers: auth
 
@@ -65,7 +72,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
     end
 
     it 'returns 404 for another user\'s route' do
-      route = create(:route, user: other_user)
+      route = create_route_for(other_user, [{ spottable: greentea }])
       get "/api/v1/routes/#{route.id}", headers: auth
       expect(response).to have_http_status(:not_found)
     end
@@ -104,11 +111,39 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(Route.last.user).to eq(user)
     end
 
+    it 'allows duplicate spots in the same route' do
+      params = valid_params.deep_dup
+      params[:route][:spots] = [
+        { spot_type: 'greentea', spot_id: greentea.id },
+        { spot_type: 'greentea', spot_id: greentea.id }
+      ]
+      expect {
+        post '/api/v1/routes', params: params, headers: auth
+      }.to change(RouteSpot, :count).by(2)
+      expect(response).to have_http_status(:created)
+    end
+
     it 'returns 422 when name is missing' do
       params = valid_params.deep_dup
       params[:route][:name] = ''
       expect {
         post '/api/v1/routes', params: params, headers: auth
+      }.not_to change(Route, :count)
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'returns 422 when spots are empty' do
+      params = valid_params.deep_dup
+      params[:route][:spots] = []
+      expect {
+        post '/api/v1/routes', params: params, headers: auth
+      }.not_to change(Route, :count)
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'returns 422 when the spots key is absent' do
+      expect {
+        post '/api/v1/routes', params: { route: { name: 'スポットなし' } }, headers: auth
       }.not_to change(Route, :count)
       expect(response).to have_http_status(:unprocessable_entity)
     end
@@ -143,8 +178,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
 
   describe 'PATCH /api/v1/routes/:id' do
     it 'replaces the route name and spots' do
-      route = create(:route, user: user, name: '旧ルート')
-      create(:route_spot, route: route, spottable: greentea, position: 1)
+      route = create_route_for(user, [{ spottable: greentea }])
 
       patch "/api/v1/routes/#{route.id}",
             params: {
@@ -162,8 +196,33 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(route.route_spots.first.transport).to eq('train')
     end
 
+    it 'updates only scalar fields and preserves spots when the spots key is omitted' do
+      route = create_route_for(user, [{ spottable: greentea }, { spottable: temple }])
+
+      patch "/api/v1/routes/#{route.id}",
+            params: { route: { description: '説明だけ更新' } },
+            headers: auth
+
+      expect(response).to have_http_status(:ok)
+      route.reload
+      expect(route.description).to eq('説明だけ更新')
+      expect(route.name).to eq('テストルート')
+      expect(route.route_spots.count).to eq(2)
+    end
+
+    it 'returns 422 and keeps existing spots when updating to empty spots' do
+      route = create_route_for(user, [{ spottable: greentea }])
+
+      patch "/api/v1/routes/#{route.id}",
+            params: { route: { name: 'x', spots: [] } },
+            headers: auth
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(route.reload.route_spots.count).to eq(1)
+    end
+
     it 'returns 404 for another user\'s route' do
-      route = create(:route, user: other_user)
+      route = create_route_for(other_user, [{ spottable: greentea }])
       patch "/api/v1/routes/#{route.id}", params: { route: { name: 'x' } }, headers: auth
       expect(response).to have_http_status(:not_found)
     end
@@ -171,14 +230,13 @@ RSpec.describe 'Api::V1::Routes', type: :request do
 
   describe 'DELETE /api/v1/routes/:id' do
     it 'returns 401 when unauthenticated' do
-      route = create(:route, user: user)
+      route = create_route_for(user, [{ spottable: greentea }])
       delete "/api/v1/routes/#{route.id}"
       expect(response).to have_http_status(:unauthorized)
     end
 
     it 'deletes the current user\'s route and its spots' do
-      route = create(:route, user: user)
-      create(:route_spot, route: route, spottable: greentea, position: 1)
+      route = create_route_for(user, [{ spottable: greentea }])
 
       expect {
         delete "/api/v1/routes/#{route.id}", headers: auth
@@ -188,7 +246,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
     end
 
     it 'returns 404 for another user\'s route' do
-      route = create(:route, user: other_user)
+      route = create_route_for(other_user, [{ spottable: greentea }])
       expect {
         delete "/api/v1/routes/#{route.id}", headers: auth
       }.not_to change(Route, :count)

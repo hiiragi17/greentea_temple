@@ -24,7 +24,7 @@ module Api
       end
 
       def create
-        route = current_user.routes.new(name: route_params[:name], description: route_params[:description])
+        route = current_user.routes.new(scalar_params)
 
         ActiveRecord::Base.transaction do
           build_spots(route, spots_params)
@@ -42,9 +42,13 @@ module Api
         route = current_user.routes.find(params[:id])
 
         ActiveRecord::Base.transaction do
-          route.assign_attributes(name: route_params[:name], description: route_params[:description])
-          route.route_spots.destroy_all
-          build_spots(route, spots_params)
+          route.assign_attributes(scalar_params)
+          # spots は明示的に渡されたときだけ総入れ替えする。
+          # 省略時は既存スポットを保持し、name/description のみの部分更新を許す。
+          if route_params.key?(:spots)
+            route.route_spots.destroy_all
+            build_spots(route, spots_params)
+          end
           route.save!
         end
 
@@ -65,6 +69,11 @@ module Api
 
       def route_params
         params.require(:route).permit(:name, :description, spots: %i[spot_type spot_id transport])
+      end
+
+      # 省略されたスカラー項目で既存値を nil 上書きしないよう、渡されたキーだけ取り出す。
+      def scalar_params
+        route_params.slice(:name, :description)
       end
 
       def spots_params
