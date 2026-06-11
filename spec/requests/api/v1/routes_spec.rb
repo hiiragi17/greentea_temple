@@ -20,9 +20,11 @@ RSpec.describe 'Api::V1::Routes', type: :request do
 
   describe 'GET /api/v1/routes' do
     context 'when unauthenticated' do
-      it 'returns 401' do
+      it 'returns 401 with a JSON error body' do
         get '/api/v1/routes'
         expect(response).to have_http_status(:unauthorized)
+        expect(response.media_type).to eq('application/json')
+        expect(response.parsed_body['error']).to be_present
       end
     end
 
@@ -130,6 +132,8 @@ RSpec.describe 'Api::V1::Routes', type: :request do
         post '/api/v1/routes', params: params, headers: auth
       }.not_to change(Route, :count)
       expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.media_type).to eq('application/json')
+      expect(response.parsed_body['error']).to be_present
     end
 
     it 'returns 422 when spots are empty' do
@@ -177,6 +181,12 @@ RSpec.describe 'Api::V1::Routes', type: :request do
   end
 
   describe 'PATCH /api/v1/routes/:id' do
+    it 'returns 401 when unauthenticated' do
+      route = create_route_for(user, [{ spottable: greentea }])
+      patch "/api/v1/routes/#{route.id}", params: { route: { name: 'x' } }
+      expect(response).to have_http_status(:unauthorized)
+    end
+
     it 'replaces the route name and spots' do
       route = create_route_for(user, [{ spottable: greentea }])
 

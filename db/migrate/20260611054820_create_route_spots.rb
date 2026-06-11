@@ -9,6 +9,6 @@ class CreateRouteSpots < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
-    add_index :route_spots, %i[route_id position]
+    add_index :route_spots, %i[route_id position], unique: true
   end
 end
