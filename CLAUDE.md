@@ -23,6 +23,7 @@
 外部 API:
 - Google Geocoding API（住所→緯度経度）
 - Google Maps JavaScript API（地図描画）
+- Google Directions API（モデルルートの経路・所要時間計算。#153）
 
 ## セットアップ / よく使うコマンド
 
@@ -42,7 +43,8 @@ bundle exec rubocop
 | 変数名 | 用途 |
 |---|---|
 | `GOOGLE_GEOCODING_API_KEY` | 住所 → 緯度経度（Geocoder） |
-| `GOOGLE_MAPS_API_KEY` | 地図描画（JS から参照） |
+| `GOOGLE_MAPS_API_KEY` | 地図描画（JS から参照）。`GOOGLE_DIRECTIONS_API_KEY` 未設定時は経路計算でも再利用 |
+| `GOOGLE_DIRECTIONS_API_KEY` | モデルルートの経路・所要時間計算（Directions API・#153）。未設定なら `GOOGLE_MAPS_API_KEY` にフォールバック |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（#90 で Twitter から移行） |
 | `LINE_KEY` / `LINE_SECRET` | LINE OAuth |
 | `DATABASE_URL` | 本番 PostgreSQL（#118 で Neon へ移行予定） |

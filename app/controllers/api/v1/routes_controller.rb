@@ -31,6 +31,7 @@ module Api
           route.save!
         end
 
+        compute_and_store_legs(route)
         render_route_detail(route, status: :created)
       rescue ActiveRecord::RecordInvalid => e
         render_unprocessable(e.record.errors.full_messages)
@@ -40,6 +41,7 @@ module Api
 
       def update
         route = current_user.routes.find(params[:id])
+        spots_changed = false
 
         ActiveRecord::Base.transaction do
           route.assign_attributes(scalar_params)
@@ -48,10 +50,12 @@ module Api
           if route_params.key?(:spots)
             route.route_spots.destroy_all
             build_spots(route, spots_params)
+            spots_changed = true
           end
           route.save!
         end
 
+        compute_and_store_legs(route) if spots_changed
         render_route_detail(route.reload)
       rescue ActiveRecord::RecordInvalid => e
         render_unprocessable(e.record.errors.full_messages)
@@ -102,6 +106,27 @@ module Api
         return value.to_s if RouteSpot.transports.key?(value.to_s)
 
         raise InvalidSpotError, "invalid transport: #{value}"
+      end
+
+      # 隣接スポット間の経路距離・所要時間を Directions API で求めて保存する。
+      # 外部 API 呼び出しのため DB トランザクション外で実行し、失敗した leg は
+      # nil のまま（serializer 側で直線距離フォールバック）。
+      #
+      # build_spots でスポットは spottable 付きでメモリ上にロード済みなので、
+      # reload せずに position 順へ並べ替えて使う（spottable の N+1 を避ける）。
+      def compute_and_store_legs(route)
+        spots = route.route_spots.to_a.sort_by(&:position)
+        spots.each_cons(2) do |from, to|
+          leg = DirectionsService.leg(origin: from.spottable, destination: to.spottable, mode: from.transport)
+          next unless leg
+
+          # best-effort（コミット後・トランザクション外）なので bang は使わない。
+          # 失敗しても 500 にせず、その leg は nil のまま（直線距離フォールバック）。
+          from.update(
+            leg_distance_meters: leg[:distance_meters],
+            leg_duration_seconds: leg[:duration_seconds]
+          )
+        end
       end
 
       def render_route_detail(route, status: :ok)

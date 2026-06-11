@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_11_054820) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_11_063800) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -103,6 +103,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_11_054820) do
     t.integer "transport"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "leg_distance_meters"
+    t.integer "leg_duration_seconds"
     t.index ["route_id", "position"], name: "index_route_spots_on_route_id_and_position", unique: true
     t.index ["route_id"], name: "index_route_spots_on_route_id"
     t.index ["spottable_type", "spottable_id"], name: "index_route_spots_on_spottable"
