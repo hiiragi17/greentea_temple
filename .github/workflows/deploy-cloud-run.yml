@@ -106,6 +106,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          APP_HOSTS: ${{ vars.APP_HOSTS }}
           SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
@@ -119,6 +120,9 @@ jobs:
             echo "RAILS_ENV=production"
             echo "DATABASE_URL=${DATABASE_URL}"
             echo "FRONTEND_URL=${FRONTEND_URL}"
+            if [ -n "${APP_HOSTS}" ]; then
+              echo "APP_HOSTS=${APP_HOSTS}"
+            fi
             echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}"
             echo "RAILS_MASTER_KEY=${RAILS_MASTER_KEY}"
             echo "GMAP_API=${GMAP_API}"

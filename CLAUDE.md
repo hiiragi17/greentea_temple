@@ -51,6 +51,7 @@ bundle exec rubocop
 | `FRONTEND_URL` | CORS allowlist。開発: `http://localhost:3000` / 本番: `https://matcha-to-jinja.com`（#113〜） |
 | `JWT_SECRET_KEY` | API 用 JWT 署名（#115〜） |
 | `RAILS_MASTER_KEY` | `credentials.yml.enc` 復号 |
+| `APP_HOSTS`（任意） | 本番の Host Authorization 許可リスト（カンマ区切り）。未設定なら全ホスト許可。設定時は `*.run.app` を自動許可し `/api/v1/health` は除外（#118） |
 
 ## DB 構成
 
