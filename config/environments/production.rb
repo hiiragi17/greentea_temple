@@ -63,18 +63,20 @@ Rails.application.configure do
   }
 
   # --- Host Authorization (#118) ---
-  # 既定（config.hosts が空）は全ホスト許可。`APP_HOSTS`（カンマ区切り）が
-  # 指定された場合のみ許可リスト方式に切り替える。Cloud Run の `*.run.app` は
-  # 常に許可し、ヘルスチェックは内部ホストからでも通るよう除外する。
+  # 本番では Host Authorization を常時有効化し、許可ホストを明示する（fail-open 回避）。
+  # Cloud Run の `*.run.app` は常に許可。カスタムドメイン等は `APP_HOSTS`
+  # （カンマ区切り）で追加する。`APP_HOSTS` 未設定でも `*.run.app` のみ許可と
+  # なるため、ホスト認可が無効化されることはない。
+  # ヘルスチェックは内部ホストからでも通るよう除外する。
+  config.hosts << /.*\.run\.app\z/
   if ENV["APP_HOSTS"].present?
-    config.hosts << /.*\.run\.app\z/
     ENV["APP_HOSTS"].split(",").map(&:strip).reject(&:empty?).each do |host|
       config.hosts << host
     end
-    config.host_authorization = {
-      exclude: ->(request) { request.path == "/api/v1/health" }
-    }
   end
+  config.host_authorization = {
+    exclude: ->(request) { request.path == "/api/v1/health" }
+  }
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
