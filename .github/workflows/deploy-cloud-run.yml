@@ -121,7 +121,10 @@ jobs:
             echo "DATABASE_URL=${DATABASE_URL}"
             echo "FRONTEND_URL=${FRONTEND_URL}"
             if [ -n "${APP_HOSTS}" ]; then
-              echo "APP_HOSTS=${APP_HOSTS}"
+              # deploy-cloudrun の env_vars はカンマ/改行を区切りとして解釈する。
+              # APP_HOSTS は複数ホストをカンマ区切りで持つため、値内のカンマを
+              # `\,` にエスケープして 1 つの env var として渡す
+              echo "APP_HOSTS=${APP_HOSTS//,/\\,}"
             fi
             echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}"
             echo "RAILS_MASTER_KEY=${RAILS_MASTER_KEY}"
