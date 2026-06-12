@@ -72,6 +72,13 @@ module Api
         render json: { data: flatten_serialized(serialized[:data]) }
       end
 
+      # ジャンル / エリアのような件数の少ない参照リストはページネーションせず全件返す。
+      # フロントの絞り込み選択肢が欠落しないよう meta は付けない。
+      def render_full_collection(records, serializer:, serializer_params: {})
+        serialized = serializer.new(records.to_a, params: serializer_params).serializable_hash
+        render json: { data: flatten_serialized(serialized[:data]) }
+      end
+
       def pagination_meta(records)
         {
           current_page: records.current_page,
