@@ -45,8 +45,38 @@ Rails.application.configure do
   # config.action_cable.url = "wss://example.com/cable"
   # config.action_cable.allowed_request_origins = [ "http://example.com", /http:\/\/example.*/ ]
 
+  # --- Cloud Run / リバースプロキシ配下での HTTPS 設定 (#118) ---
+  # Cloud Run は TLS を終端し、コンテナへは HTTP + `X-Forwarded-Proto: https`
+  # で転送してくる。assume_ssl を有効にすると Rails はリクエストを SSL とみなす
+  # ため、force_ssl による無限リダイレクトを避けつつ secure cookie / HSTS を
+  # 効かせられる。Rails 7.1+ の設定。
+  config.assume_ssl = true
+
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  config.force_ssl = true
+
+  # Cloud Run のヘルスチェック（HTTP プローブ / Uptime check）は内部ホストから
+  # 平文で来ることがあり、force_ssl の 301 リダイレクトで弾かれると 200 を
+  # 期待するプローブが失敗する。ヘルスチェックパスのみ HTTPS 強制から除外する。
+  config.ssl_options = {
+    redirect: { exclude: ->(request) { request.path == "/api/v1/health" } }
+  }
+
+  # --- Host Authorization (#118) ---
+  # 本番では Host Authorization を常時有効化し、許可ホストを明示する（fail-open 回避）。
+  # Cloud Run の `*.run.app` は常に許可。カスタムドメイン等は `APP_HOSTS`
+  # （カンマ区切り）で追加する。`APP_HOSTS` 未設定でも `*.run.app` のみ許可と
+  # なるため、ホスト認可が無効化されることはない。
+  # ヘルスチェックは内部ホストからでも通るよう除外する。
+  config.hosts << /.*\.run\.app\z/
+  if ENV["APP_HOSTS"].present?
+    ENV["APP_HOSTS"].split(",").map(&:strip).reject(&:empty?).each do |host|
+      config.hosts << host
+    end
+  end
+  config.host_authorization = {
+    exclude: ->(request) { request.path == "/api/v1/health" }
+  }
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
