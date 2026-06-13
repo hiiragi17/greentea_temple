@@ -21,15 +21,16 @@ RSpec.describe 'Api::V1::Genres', type: :request do
       expect(ids).to eq(ids.sort)
     end
 
-    it 'includes pagination meta' do
+    it 'does not paginate and returns all genres without meta' do
+      # デフォルトの per_page(15) を超える件数を用意し、全件返ることを確認する。
+      create_list(:genre, 20)
+
       get '/api/v1/genres'
 
-      expect(response.parsed_body['meta']).to include(
-        'current_page' => 1,
-        'total_pages' => 1,
-        'total_count' => 2,
-        'per_page' => 15
-      )
+      json = response.parsed_body
+      expect(json['data'].size).to be > 15
+      expect(json['data'].size).to eq(Genre.count)
+      expect(json).not_to have_key('meta')
     end
   end
 end

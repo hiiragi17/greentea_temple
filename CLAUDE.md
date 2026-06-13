@@ -164,8 +164,8 @@ GET    /api/v1/greenteas              # 一覧。q[name_cont] / q[genres_id_eq] 
 GET    /api/v1/greenteas/:id          # 詳細 + nearby_temples（≤1.5km）
 GET    /api/v1/temples                # 一覧
 GET    /api/v1/temples/:id            # 詳細 + nearby_greenteas
-GET    /api/v1/genres
-GET    /api/v1/areas
+GET    /api/v1/genres                 # 全件返す（ページネーションなし・meta なし）
+GET    /api/v1/areas                  # 全件返す（ページネーションなし・meta なし）
 GET    /api/v1/nearby?lat&lng&radius  # 現在地から radius km 以内
 POST   /api/v1/auth/:provider         # OAuth → JWT 発行
 GET    /api/v1/current_user
