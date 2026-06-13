@@ -18,18 +18,19 @@ RSpec.describe JwtService do
     end
 
     it 'sets the expiry to roughly 14 days from now by default' do
-      freeze_time = Time.zone.local(2026, 6, 13, 12, 0, 0)
-      Timecop.freeze(freeze_time) do
+      Timecop.freeze do
         payload = described_class.decode(described_class.encode(user_id: 1))
         expect(payload['exp']).to eq(14.days.from_now.to_i)
       end
     end
 
     it 'honours an explicit expires_at' do
-      expires_at = 1.hour.from_now
-      payload = described_class.decode(described_class.encode({ user_id: 1 }, expires_at: expires_at))
+      Timecop.freeze do
+        expires_at = 1.hour.from_now
+        payload = described_class.decode(described_class.encode({ user_id: 1 }, expires_at: expires_at))
 
-      expect(payload['exp']).to eq(expires_at.to_i)
+        expect(payload['exp']).to eq(expires_at.to_i)
+      end
     end
   end
 

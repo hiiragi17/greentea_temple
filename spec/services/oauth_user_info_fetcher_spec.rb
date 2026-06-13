@@ -47,11 +47,16 @@ RSpec.describe OauthUserInfoFetcher do
       it 'returns the normalized user info' do
         expect(result).to eq(provider: 'google', uid: 'g-123', name: 'Aoi')
       end
+    end
 
-      it 'falls back to email when name is missing' do
+    context 'when name is missing in the response' do
+      before do
         allow(Net::HTTP).to receive(:start).and_return(
           http_response(200, { sub: 'g-123', email: 'aoi@example.com' }.to_json)
         )
+      end
+
+      it 'falls back to email' do
         expect(result[:name]).to eq('aoi@example.com')
       end
     end
