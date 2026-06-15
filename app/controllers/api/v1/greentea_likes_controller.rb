@@ -19,22 +19,9 @@ module Api
       def create
         greentea = Greentea.find(params[:greentea_id])
         current_user.greentea_likes.find_or_create_by!(greentea: greentea)
-
-        render json: {
-          data: {
-            greentea_id: greentea.id,
-            liked: true,
-            like_count: greentea.greentea_likes.count
-          }
-        }, status: :ok
+        render_like_state(greentea.id, liked: true)
       rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
-        render json: {
-          data: {
-            greentea_id: greentea.id,
-            liked: true,
-            like_count: greentea.greentea_likes.count
-          }
-        }, status: :ok
+        render_like_state(greentea.id, liked: true)
       end
 
       def destroy
@@ -43,10 +30,16 @@ module Api
         return render_not_found unless like
 
         like.destroy!
+        render_like_state(greentea_id, liked: false)
+      end
+
+      private
+
+      def render_like_state(greentea_id, liked:)
         render json: {
           data: {
             greentea_id: greentea_id,
-            liked: false,
+            liked: liked,
             like_count: GreenteaLike.where(greentea_id: greentea_id).count
           }
         }, status: :ok

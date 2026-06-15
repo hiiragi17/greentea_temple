@@ -87,10 +87,10 @@ module Api
       # API の spots 配列（順序 = ルート順）から polymorphic な RouteSpot を組み立てる。
       def build_spots(route, spots)
         spots.each_with_index do |spot, index|
-          spottable_type = RouteSpot.spottable_type_for(spot[:spot_type])
-          raise InvalidSpotError, "invalid spot_type: #{spot[:spot_type]}" unless spottable_type
+          record_class = RouteSpot.spottable_class_for(spot[:spot_type])
+          raise InvalidSpotError, "invalid spot_type: #{spot[:spot_type]}" unless record_class
 
-          record = spottable_type.constantize.find_by(id: spot[:spot_id])
+          record = record_class.find_by(id: spot[:spot_id])
           raise InvalidSpotError, "#{spot[:spot_type]} ##{spot[:spot_id]} not found" unless record
 
           route.route_spots.build(
