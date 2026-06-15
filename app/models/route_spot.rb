@@ -16,6 +16,16 @@ class RouteSpot < ApplicationRecord
     SPOT_TYPES[spot_type.to_s]
   end
 
+  # API で受け取る "greentea" / "temple" を ActiveRecord のモデルクラスに解決する。
+  # ユーザー入力文字列を直接 constantize せず、allowlist (SPOT_TYPES) 経由でのみ解決する。
+  # 未対応の spot_type は nil を返す。
+  def self.spottable_class_for(spot_type)
+    case spottable_type_for(spot_type)
+    when 'Greentea' then Greentea
+    when 'Temple' then Temple
+    end
+  end
+
   # ActiveRecord のクラス名を API の "greentea" / "temple" に戻す。
   def spot_type
     SPOT_TYPES.key(spottable_type)

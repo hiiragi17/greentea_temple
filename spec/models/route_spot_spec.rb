@@ -82,6 +82,20 @@ RSpec.describe RouteSpot, type: :model do
     end
   end
 
+  describe '.spottable_class_for' do
+    it 'maps "greentea" to Greentea' do
+      expect(described_class.spottable_class_for('greentea')).to eq(Greentea)
+    end
+
+    it 'maps "temple" to Temple' do
+      expect(described_class.spottable_class_for('temple')).to eq(Temple)
+    end
+
+    it 'returns nil for an unknown spot type' do
+      expect(described_class.spottable_class_for('unknown')).to be_nil
+    end
+  end
+
   describe '#spot_type' do
     it 'returns "greentea" for a Greentea spottable' do
       expect(build(:route_spot, spottable: build(:greentea)).spot_type).to eq('greentea')
