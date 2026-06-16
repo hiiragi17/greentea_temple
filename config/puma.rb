@@ -14,8 +14,11 @@ threads min_threads_count, max_threads_count
 worker_timeout 3600 if ENV.fetch("RAILS_ENV", "development") == "development"
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
+# Bind host is pinned to IPv4 0.0.0.0 explicitly. Puma 8 changed the default
+# production bind host from 0.0.0.0 to :: (IPv6); Cloud Run expects the container
+# to listen on 0.0.0.0:$PORT, so we keep the historical IPv4 behavior.
 #
-port ENV.fetch("PORT") { 3000 }
+port ENV.fetch("PORT") { 3000 }, "0.0.0.0"
 # if ENV.fetch('RAILS_ENV') { 'development' } == 'development'
 #   ssl_bind '0.0.0.0', '9292', key: "config/certs/localhost-key.pem", cert: "config/certs/localhost.pem"
 # end
