@@ -67,7 +67,7 @@ jobs:
 
       - name: Set up gcloud
         # TODO(#118): SHA ピン
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
