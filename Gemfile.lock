@@ -328,7 +328,8 @@ GEM
     parallel (1.22.1)
     parser (3.1.2.1)
       ast (~> 2.4.1)
-    pg (1.4.3)
+    pg (1.6.3-arm64-darwin)
+    pg (1.6.3-x86_64-linux)
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
@@ -545,7 +546,7 @@ DEPENDENCIES
   oauth2
   open-uri
   open_uri_redirections
-  pg (~> 1.1)
+  pg (~> 1.6)
   pry-byebug
   puma (~> 5.0)
   rack (~> 2.2)
