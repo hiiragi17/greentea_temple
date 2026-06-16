@@ -59,7 +59,7 @@ RSpec.describe Greentea, type: :model do
     it 'returns a positive distance in meters rounded to the nearest 10' do
       distance = greentea.get_distance(34.99, 135.0)
       expect(distance).to be > 0
-      expect((distance % 10)).to be_zero
+      expect(distance % 10).to be_zero
     end
   end
 
