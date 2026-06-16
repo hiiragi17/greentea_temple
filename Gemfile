@@ -13,7 +13,7 @@ gem "sprockets-rails"
 gem "pg", "~> 1.6"
 
 # Use the Puma web server [https://github.com/puma/puma]
-gem "puma", "~> 5.0"
+gem "puma", "~> 8.0"
 
 # Rack 3 は capybara 3.40 + puma 5 と非互換（rack/handler 削除）。
 # Rack 3 化は puma 6 / capybara 更新と合わせて別途対応する。
