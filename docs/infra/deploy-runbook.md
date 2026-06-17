@@ -234,8 +234,8 @@ gcloud run domain-mappings create \
          image_tag: { ... }   # 既存のまま
    ```
 
-2. **Actions の SHA ピン**: `google-github-actions/auth@v3` /
-   `setup-gcloud@v3` / `deploy-cloudrun@v3` を安定版のコミット SHA に固定（workflow 内 TODO）。
+2. ~~**Actions の SHA ピン**~~: 対応済み。`auth` / `setup-gcloud` / `deploy-cloudrun`
+   は `v3` タグの commit SHA に固定済み（`# v3` コメントで版を併記）。
 3. **Artifact Registry の lifecycle policy**: 古い tag を自動削除し 0.5GB 無料枠を維持。
 4. **コールドスタート対策（任意）**: Cloud Scheduler で `/api/v1/health` を定期的に叩いて
    Cloud Run をウォーム維持（`/api/v1/health` は DB 非接続なので Neon は温まらない点に注意）。
