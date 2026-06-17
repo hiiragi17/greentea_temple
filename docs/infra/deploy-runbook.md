@@ -170,12 +170,29 @@ echo "$SA"
 | `JWT_SECRET_KEY` | API 用 JWT 署名鍵 | 任意の十分長い乱数 |
 | `GMAP_API` | Geocoding 用 API キー | Google Cloud Console |
 | `GOOGLE_MAP_API` | Maps JS API キー | Google Cloud Console |
-| `LINE_KEY` | LINE OAuth キー | LINE Developers |
-| `LINE_SECRET` | LINE OAuth シークレット | LINE Developers |
+| `LINE_KEY` | LINE OAuth キー（※下記注意） | LINE Developers |
+| `LINE_SECRET` | LINE OAuth シークレット（※下記注意） | LINE Developers |
 | `SECRET_KEY_BASE` | （任意）未設定なら credentials 由来を使用 | 任意 |
 
 > `SECRET_KEY_BASE` は **secret が存在するときのみ** Cloud Run に渡される実装。
 > credentials.yml.enc 側に持たせるなら未設定で OK（`RAILS_MASTER_KEY` で復号される）。
+
+> ⚠️ **LINE OAuth の認証情報は環境変数では読まれない**（重要）
+> `config/initializers/sorcery.rb` は LINE の key/secret を **encrypted credentials** から読む:
+>
+> ```ruby
+> config.line.key    = Rails.application.credentials.dig(:line, :channel_id)
+> config.line.secret = Rails.application.credentials.dig(:line, :channel_secret)
+> ```
+>
+> そのため上表の `LINE_KEY` / `LINE_SECRET` を Cloud Run に渡しても **Sorcery は参照せず、LINE
+> ログインは有効化されない**（`deploy-cloud-run.yml` がこれらを env で渡しているのは現状
+> アプリ側と未整合）。LINE ログインを本番で動かすには、**`credentials.yml.enc` に
+> `line.channel_id` / `line.channel_secret` を設定**し（`RAILS_MASTER_KEY` で復号）、
+> その値を使うこと。GitHub Secrets の `LINE_KEY` / `LINE_SECRET` は現状不要。
+>
+> （根本対応として initializer を `ENV['LINE_KEY']` 参照へ寄せる選択肢もあるが、認証境界に
+> 触れるため本手順書のスコープ外。別 issue で扱う。）
 
 ### Variables
 
