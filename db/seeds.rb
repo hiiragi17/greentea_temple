@@ -27,22 +27,23 @@ require "csv"
 #   end
 # end
 
-# CSV.foreach('db/csv/area.csv', headers: true) do |row|
-#   Area.find_or_create_by(name:row['name'])
-# end
+CSV.foreach('db/csv/area.csv', headers: true) do |row|
+  Area.find_or_create_by!(name: row['name'])
+end
 
-CSV.foreach('db/csv/temple.csv', headers: true) do |row|
-  temple = Temple.find_or_create_by(
-    name: row['name'],
-    description: row['description'], 
+CSV.foreach('db/csv/temple_info.csv', headers: true) do |row|
+  temple = Temple.find_or_initialize_by(name: row['name'], address: row['address'])
+  temple.assign_attributes(
+    description: row['description'],
     phone_number: row['phone_number'],
     address: row['address'],
     access: row['access'],
     business_hours: row['business_hours'],
     homepage: row['homepage'],
-    holiday: row['holiday'])
-  areas = Area.where(name: row['area'])
-  areas.each do |area|
-    temple.temple_areas.create(area: area)
-  end
+    holiday: row['holiday']
+  )
+  temple.save!
+
+  area = Area.find_by!(name: row['area'])
+  temple.temple_areas.find_or_create_by!(area: area)
 end
