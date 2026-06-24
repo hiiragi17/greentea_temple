@@ -32,16 +32,18 @@ CSV.foreach('db/csv/area.csv', headers: true) do |row|
 end
 
 CSV.foreach('db/csv/temple_info.csv', headers: true) do |row|
-  temple = Temple.find_or_create_by(name: row['name']) do |t|
-    t.description    = row['description']
-    t.phone_number   = row['phone_number']
-    t.address        = row['address']
-    t.access         = row['access']
-    t.business_hours = row['business_hours']
-    t.homepage       = row['homepage']
-    t.holiday        = row['holiday']
-  end
+  temple = Temple.find_or_initialize_by(name: row['name'])
+  temple.assign_attributes(
+    description: row['description'],
+    phone_number: row['phone_number'],
+    address: row['address'],
+    access: row['access'],
+    business_hours: row['business_hours'],
+    homepage: row['homepage'],
+    holiday: row['holiday']
+  )
+  temple.save!
 
-  area = Area.find_by(name: row['area'])
-  temple.temple_areas.find_or_create_by(area: area) if area
+  area = Area.find_by!(name: row['area'])
+  temple.temple_areas.find_or_create_by!(area: area)
 end
