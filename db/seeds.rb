@@ -32,7 +32,7 @@ CSV.foreach('db/csv/area.csv', headers: true) do |row|
 end
 
 CSV.foreach('db/csv/temple_info.csv', headers: true) do |row|
-  temple = Temple.find_or_initialize_by(name: row['name'])
+  temple = Temple.find_or_initialize_by(name: row['name'], address: row['address'])
   temple.assign_attributes(
     description: row['description'],
     phone_number: row['phone_number'],
