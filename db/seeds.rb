@@ -28,7 +28,7 @@ require "csv"
 # end
 
 CSV.foreach('db/csv/area.csv', headers: true) do |row|
-  Area.find_or_create_by(name: row['name'])
+  Area.find_or_create_by!(name: row['name'])
 end
 
 CSV.foreach('db/csv/temple_info.csv', headers: true) do |row|
