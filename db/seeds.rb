@@ -27,22 +27,21 @@ require "csv"
 #   end
 # end
 
-# CSV.foreach('db/csv/area.csv', headers: true) do |row|
-#   Area.find_or_create_by(name:row['name'])
-# end
+CSV.foreach('db/csv/area.csv', headers: true) do |row|
+  Area.find_or_create_by(name: row['name'])
+end
 
-CSV.foreach('db/csv/temple.csv', headers: true) do |row|
-  temple = Temple.find_or_create_by(
-    name: row['name'],
-    description: row['description'], 
-    phone_number: row['phone_number'],
-    address: row['address'],
-    access: row['access'],
-    business_hours: row['business_hours'],
-    homepage: row['homepage'],
-    holiday: row['holiday'])
-  areas = Area.where(name: row['area'])
-  areas.each do |area|
-    temple.temple_areas.create(area: area)
+CSV.foreach('db/csv/temple_info.csv', headers: true) do |row|
+  temple = Temple.find_or_create_by(name: row['name']) do |t|
+    t.description    = row['description']
+    t.phone_number   = row['phone_number']
+    t.address        = row['address']
+    t.access         = row['access']
+    t.business_hours = row['business_hours']
+    t.homepage       = row['homepage']
+    t.holiday        = row['holiday']
   end
+
+  area = Area.find_by(name: row['area'])
+  temple.temple_areas.find_or_create_by(area: area) if area
 end
