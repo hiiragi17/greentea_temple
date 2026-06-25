@@ -20,7 +20,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
 
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
-        expect(body['jwt']).to be_a(String).and be_present
+        expect(body['token']).to be_a(String).and be_present
         expect(body['user']).to include('id', 'name', 'role')
         expect(body['user']['name']).to eq('もちもち抹茶')
 
@@ -41,14 +41,14 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
         expect(body['user']['id']).to eq(existing_user.id)
-        decoded = JwtService.decode(body['jwt'])
+        decoded = JwtService.decode(body['token'])
         expect(decoded['user_id']).to eq(existing_user.id)
       end
 
       it 'embeds user_id and provider in the JWT and sets exp ~14 days ahead' do
         post '/api/v1/auth/line', params: { access_token: 'valid_line_token' }
 
-        decoded = JwtService.decode(response.parsed_body['jwt'])
+        decoded = JwtService.decode(response.parsed_body['token'])
         expect(decoded['user_id']).to eq(User.last.id)
         expect(decoded['provider']).to eq('line')
         expect(decoded['exp']).to be_within(60).of(14.days.from_now.to_i)
@@ -85,7 +85,7 @@ RSpec.describe 'Api::V1::Auth', type: :request do
 
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
-        expect(body['jwt']).to be_a(String).and be_present
+        expect(body['token']).to be_a(String).and be_present
         expect(body['user']).to include('id', 'name', 'role')
         expect(body['user']['name']).to eq('matcha_san')
 

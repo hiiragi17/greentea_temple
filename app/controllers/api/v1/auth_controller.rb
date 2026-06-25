@@ -12,7 +12,7 @@ module Api
         token = JwtService.encode(user_id: user.id, provider: provider)
 
         render json: {
-          jwt: token,
+          token: token,
           user: serialize_user_payload(user)
         }
       rescue OauthUserInfoFetcher::FetchError => e

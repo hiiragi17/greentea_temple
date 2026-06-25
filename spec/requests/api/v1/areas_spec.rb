@@ -9,15 +9,15 @@ RSpec.describe 'Api::V1::Areas', type: :request do
 
       expect(response).to have_http_status(:ok)
       json = response.parsed_body
-      expect(json['data'].size).to eq(2)
-      expect(json['data'].first).to include('id', 'name')
-      expect(json['data'].first['id']).to be_a(Integer)
+      expect(json['areas'].size).to eq(2)
+      expect(json['areas'].first).to include('id', 'name')
+      expect(json['areas'].first['id']).to be_a(Integer)
     end
 
     it 'orders areas by id ascending' do
       get '/api/v1/areas'
 
-      ids = response.parsed_body['data'].map { |a| a['id'] }
+      ids = response.parsed_body['areas'].map { |a| a['id'] }
       expect(ids).to eq(ids.sort)
     end
 
@@ -28,8 +28,8 @@ RSpec.describe 'Api::V1::Areas', type: :request do
       get '/api/v1/areas'
 
       json = response.parsed_body
-      expect(json['data'].size).to be > 15
-      expect(json['data'].size).to eq(Area.count)
+      expect(json['areas'].size).to be > 15
+      expect(json['areas'].size).to eq(Area.count)
       expect(json).not_to have_key('meta')
     end
   end

@@ -59,34 +59,33 @@ module Api
         scope.page(params[:page]).per(per_page)
       end
 
-      def render_collection(records, serializer:, serializer_params: {})
+      def render_collection(records, serializer:, root: :data, serializer_params: {})
         serialized = serializer.new(records.to_a, params: serializer_params).serializable_hash
         render json: {
-          data: flatten_serialized(serialized[:data]),
+          root => flatten_serialized(serialized[:data]),
           meta: pagination_meta(records)
         }
       end
 
-      def render_resource(record, serializer:, serializer_params: {})
+      def render_resource(record, serializer:, root: :data, serializer_params: {})
         serialized = serializer.new(record, params: serializer_params).serializable_hash
-        render json: { data: flatten_serialized(serialized[:data]) }
+        render json: { root => flatten_serialized(serialized[:data]) }
       end
 
       # ジャンル / エリアのような件数の少ない参照リストはページネーションせず全件返す。
       # フロントの絞り込み選択肢が欠落しないよう meta は付けない。
       # NOTE: 全件をメモリにロードするため、件数の少ない参照リスト専用。
       #       大量データを持つテーブルには使わないこと（一覧は render_collection を使う）。
-      def render_full_collection(records, serializer:, serializer_params: {})
+      def render_full_collection(records, serializer:, root: :data, serializer_params: {})
         serialized = serializer.new(records.to_a, params: serializer_params).serializable_hash
-        render json: { data: flatten_serialized(serialized[:data]) }
+        render json: { root => flatten_serialized(serialized[:data]) }
       end
 
       def pagination_meta(records)
         {
           current_page: records.current_page,
           total_pages: records.total_pages,
-          total_count: records.total_count,
-          per_page: records.limit_value
+          total_count: records.total_count
         }
       end
 

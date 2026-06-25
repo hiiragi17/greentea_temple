@@ -4,7 +4,7 @@ module Api
       before_action :require_authentication!
 
       def show
-        render json: { data: serialize_user_payload(current_user) }
+        render json: { user: serialize_user_payload(current_user) }
       end
     end
   end

@@ -9,15 +9,15 @@ RSpec.describe 'Api::V1::Genres', type: :request do
 
       expect(response).to have_http_status(:ok)
       json = response.parsed_body
-      expect(json['data'].size).to eq(2)
-      expect(json['data'].first).to include('id', 'name')
-      expect(json['data'].first['id']).to be_a(Integer)
+      expect(json['genres'].size).to eq(2)
+      expect(json['genres'].first).to include('id', 'name')
+      expect(json['genres'].first['id']).to be_a(Integer)
     end
 
     it 'orders genres by id ascending' do
       get '/api/v1/genres'
 
-      ids = response.parsed_body['data'].map { |g| g['id'] }
+      ids = response.parsed_body['genres'].map { |g| g['id'] }
       expect(ids).to eq(ids.sort)
     end
 
@@ -28,8 +28,8 @@ RSpec.describe 'Api::V1::Genres', type: :request do
       get '/api/v1/genres'
 
       json = response.parsed_body
-      expect(json['data'].size).to be > 15
-      expect(json['data'].size).to eq(Genre.count)
+      expect(json['genres'].size).to be > 15
+      expect(json['genres'].size).to eq(Genre.count)
       expect(json).not_to have_key('meta')
     end
   end

@@ -47,8 +47,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
         expect(json['meta']).to include(
           'current_page' => 1,
           'total_pages' => 1,
-          'total_count' => 1,
-          'per_page' => 15
+          'total_count' => 1
         )
       end
     end
