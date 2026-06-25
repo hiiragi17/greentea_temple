@@ -177,9 +177,9 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 
 ### レスポンス共通フィールド（snake_case）
 
-- スポット系: `id, name, address, access, business_hours, holiday, latitude, longitude, img, like_count, liked_by_current_user`
+- スポット系: `id, name, address, access, business_hours, holiday, latitude, longitude, img, likes_count, liked_by_current_user`（`liked_by_current_user` は詳細のみ。一覧は含めない）
 - 近隣配列の各要素: `id, name, latitude, longitude, distance_meters`（整数）
-- 一覧の `meta`: `{ current_page, total_pages, total_count, per_page }`
+- 一覧の `meta`: `{ current_page, total_pages, total_count }`（`per_page` はフロント (matcha-to-jinja) の fixtures が使わないため返さない）
 
 ## コーディング規約
 
@@ -194,7 +194,7 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 
 - API レスポンスは `jsonapi-serializer` を使う（#114 で導入）
 - 詳細用の `nearby_*` は専用 serializer に切り出す（距離情報を含むため）
-- 一覧の `meta` は `{ current_page, total_pages, total_count, per_page }` で統一
+- 一覧の `meta` は `{ current_page, total_pages, total_count }` で統一（`per_page` は返さない＝フロント未使用）
 
 ### Ransack
 
