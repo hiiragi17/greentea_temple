@@ -192,6 +192,7 @@ EOF
     cat <<'EOF'
 user.id
 user.name
+user.role
 EOF
     ;;
   esac

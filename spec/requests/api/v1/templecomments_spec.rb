@@ -25,7 +25,8 @@ RSpec.describe 'Api::V1::Templecomments', type: :request do
 
         expect(response).to have_http_status(:ok)
         json = response.parsed_body
-        expect(json['meta']).to include('current_page', 'total_pages', 'total_count', 'per_page')
+        expect(json['meta']).to include('current_page', 'total_pages', 'total_count')
+        expect(json['meta']).not_to include('per_page')
         ids = json['data'].map { |d| d['id'] }
         expect(ids).to eq([other.id, own.id])
 

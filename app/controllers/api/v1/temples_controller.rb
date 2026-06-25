@@ -2,41 +2,37 @@ module Api
   module V1
     class TemplesController < BaseController
       def index
-        scope = Temple.ransack(params[:q]).result(distinct: true).order(:id)
+        scope = Temple.includes(:areas).ransack(params[:q]).result(distinct: true).order(:id)
         paginated = paginate(scope).load
         ids = paginated.map(&:id)
         like_counts = TempleLike.where(temple_id: ids).group(:temple_id).count
-        liked_ids = liked_ids_for(ids)
 
         render_collection(
           paginated,
           serializer: TempleSerializer,
-          serializer_params: { like_counts: like_counts, liked_ids: liked_ids }
+          root: :temples,
+          serializer_params: { like_counts: like_counts }
         )
       end
 
       def show
-        temple = Temple.includes(:areas).find(params[:id])
+        temple = Temple.includes(:areas, templecomments: :user).find(params[:id])
         nearby_greenteas = nearby_greenteas_for(temple)
 
         render_resource(
           temple,
           serializer: TempleDetailSerializer,
+          root: :temple,
           serializer_params: {
-            like_count: temple.temple_likes.size,
+            likes_count: temple.temple_likes.size,
             nearby_greenteas: nearby_greenteas,
-            liked_by_current_user: liked_by_current_user?(temple.id)
+            liked_by_current_user: liked_by_current_user?(temple.id),
+            current_user_id: current_user&.id
           }
         )
       end
 
       private
-
-      def liked_ids_for(ids)
-        return [] unless current_user && ids.any?
-
-        current_user.temple_likes.where(temple_id: ids).pluck(:temple_id).to_set
-      end
 
       def liked_by_current_user?(temple_id)
         return false unless current_user

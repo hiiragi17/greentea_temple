@@ -3,15 +3,15 @@ module Api
     class TempleSerializer
       include JSONAPI::Serializer
 
-      attributes :name, :address, :access, :business_hours, :holiday,
-                 :latitude, :longitude, :img
+      attributes :name, :description, :address, :access, :phone_number,
+                 :business_hours, :holiday, :homepage, :latitude, :longitude, :img
 
-      attribute :like_count do |obj, params|
-        params[:like_counts]&.fetch(obj.id, 0) || 0
+      attribute :areas do |obj|
+        obj.areas.map { |a| { id: a.id, name: a.name } }
       end
 
-      attribute :liked_by_current_user do |obj, params|
-        params[:liked_ids]&.include?(obj.id) || false
+      attribute :likes_count do |obj, params|
+        params[:like_counts]&.fetch(obj.id, 0) || 0
       end
     end
   end

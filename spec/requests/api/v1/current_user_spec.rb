@@ -16,11 +16,11 @@ RSpec.describe 'Api::V1::CurrentUser', type: :request do
 
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
-        expect(body['data']).to include(
+        expect(body['user']).to include(
           'id' => user.id,
           'name' => '抹茶ファン1号'
         )
-        expect(body['data']).to have_key('role')
+        expect(body['user']).to have_key('role')
       end
     end
 

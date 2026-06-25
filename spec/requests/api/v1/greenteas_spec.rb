@@ -4,39 +4,41 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
   describe 'GET /api/v1/greenteas' do
     let!(:greenteas) { create_list(:greentea, 3) }
 
-    it 'returns 200 with data and meta' do
+    it 'returns 200 with greenteas and meta' do
       get '/api/v1/greenteas'
 
       expect(response).to have_http_status(:ok)
       json = response.parsed_body
-      expect(json['data']).to be_an(Array)
-      expect(json['data'].size).to eq(3)
+      expect(json['greenteas']).to be_an(Array)
+      expect(json['greenteas'].size).to eq(3)
       expect(json['meta']).to include(
         'current_page' => 1,
-        'total_count' => 3,
-        'per_page' => 15
+        'total_count' => 3
       )
       expect(json['meta']['total_pages']).to eq(1)
+      expect(json['meta']).not_to include('per_page')
     end
 
     it 'returns flat snake_case spot fields' do
       get '/api/v1/greenteas'
 
-      attrs = response.parsed_body['data'].first
+      attrs = response.parsed_body['greenteas'].first
       expect(attrs).to include(
-        'id', 'name', 'address', 'access', 'business_hours', 'holiday',
-        'latitude', 'longitude', 'img', 'like_count', 'liked_by_current_user'
+        'id', 'name', 'description', 'address', 'access', 'phone_number',
+        'business_hours', 'holiday', 'homepage', 'closed', 'img',
+        'latitude', 'longitude', 'genres', 'likes_count'
       )
       expect(attrs['id']).to be_a(Integer)
-      expect(attrs['liked_by_current_user']).to eq(false)
+      # 一覧には liked_by_current_user を含めない（詳細のみ）
+      expect(attrs).not_to include('liked_by_current_user')
     end
 
     it 'paginates with page / per_page params' do
       get '/api/v1/greenteas', params: { per_page: 2, page: 2 }
 
       json = response.parsed_body
-      expect(json['data'].size).to eq(1)
-      expect(json['meta']).to include('current_page' => 2, 'total_pages' => 2, 'per_page' => 2)
+      expect(json['greenteas'].size).to eq(1)
+      expect(json['meta']).to include('current_page' => 2, 'total_pages' => 2)
     end
 
     it 'filters by q[name_cont] (Ransack allowlist)' do
@@ -44,7 +46,7 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
 
       get '/api/v1/greenteas', params: { q: { name_cont: '宇治抹茶' } }
 
-      ids = response.parsed_body['data'].map { |d| d['id'] }
+      ids = response.parsed_body['greenteas'].map { |d| d['id'] }
       expect(ids).to eq([target.id])
     end
 
@@ -55,7 +57,7 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
 
       get '/api/v1/greenteas', params: { q: { genres_id_eq: genre.id } }
 
-      ids = response.parsed_body['data'].map { |d| d['id'] }
+      ids = response.parsed_body['greenteas'].map { |d| d['id'] }
       expect(ids).to eq([target.id])
     end
 
@@ -65,7 +67,7 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
 
       get '/api/v1/greenteas', params: { q: { name_or_description_or_address_or_access_cont: 'とろける宇治抹茶' } }
 
-      ids = response.parsed_body['data'].map { |d| d['id'] }
+      ids = response.parsed_body['greenteas'].map { |d| d['id'] }
       expect(ids).to eq([target.id])
     end
 
@@ -76,11 +78,11 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
 
       get '/api/v1/greenteas', params: { q: { greentea_genres_genre_id_eq_any: [genre.id] } }
 
-      ids = response.parsed_body['data'].map { |d| d['id'] }
+      ids = response.parsed_body['greenteas'].map { |d| d['id'] }
       expect(ids).to eq([target.id])
     end
 
-    it 'returns like_count aggregated per record' do
+    it 'returns likes_count aggregated per record' do
       liked = greenteas.first
       user_a = create(:user)
       user_b = create(:user)
@@ -89,22 +91,15 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
 
       get '/api/v1/greenteas'
 
-      payload = response.parsed_body['data'].find { |d| d['id'] == liked.id }
-      expect(payload['like_count']).to eq(2)
+      payload = response.parsed_body['greenteas'].find { |d| d['id'] == liked.id }
+      expect(payload['likes_count']).to eq(2)
     end
 
-    it 'reflects liked_by_current_user when authenticated' do
-      user = User.create!(name: 'いいね回帰テスト')
-      liked = greenteas.first
-      GreenteaLike.create!(user: user, greentea: liked)
-      token = JwtService.encode({ user_id: user.id })
+    it 'normalizes closed to a boolean' do
+      get '/api/v1/greenteas'
 
-      get '/api/v1/greenteas', headers: { 'Authorization' => "Bearer #{token}" }
-
-      liked_payload = response.parsed_body['data'].find { |d| d['id'] == liked.id }
-      unliked_payload = response.parsed_body['data'].find { |d| d['id'] != liked.id }
-      expect(liked_payload['liked_by_current_user']).to eq(true)
-      expect(unliked_payload['liked_by_current_user']).to eq(false)
+      closed_values = response.parsed_body['greenteas'].map { |d| d['closed'] }
+      expect(closed_values).to all(be_in([true, false]))
     end
   end
 
@@ -115,13 +110,25 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
       get "/api/v1/greenteas/#{greentea.id}"
 
       expect(response).to have_http_status(:ok)
-      attrs = response.parsed_body['data']
+      attrs = response.parsed_body['greentea']
       expect(attrs).to include(
         'id', 'name', 'description', 'address', 'access', 'business_hours',
-        'holiday', 'phone_number', 'homepage', 'latitude', 'longitude', 'img',
-        'like_count', 'liked_by_current_user', 'genres', 'nearby_temples'
+        'holiday', 'phone_number', 'homepage', 'closed', 'latitude', 'longitude', 'img',
+        'likes_count', 'liked_by_current_user', 'genres', 'nearby_temples', 'comments'
       )
       expect(attrs['id']).to eq(greentea.id)
+    end
+
+    it 'includes comments with author and ownership flag' do
+      author = create(:user)
+      create(:greenteacomment, greentea: greentea, user: author, body: '美味しかった')
+
+      get "/api/v1/greenteas/#{greentea.id}"
+
+      comment = response.parsed_body['greentea']['comments'].first
+      expect(comment).to include('id', 'body', 'created_at', 'owned_by_current_user')
+      expect(comment['user']).to include('id' => author.id, 'name' => author.name)
+      expect(comment['owned_by_current_user']).to eq(false)
     end
 
     it 'returns liked_by_current_user=true when the authenticated user liked it' do
@@ -131,7 +138,7 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
 
       get "/api/v1/greenteas/#{greentea.id}", headers: { 'Authorization' => "Bearer #{token}" }
 
-      expect(response.parsed_body['data']['liked_by_current_user']).to eq(true)
+      expect(response.parsed_body['greentea']['liked_by_current_user']).to eq(true)
     end
 
     it 'includes nearby_temples sorted by distance ascending with meter values' do
@@ -140,7 +147,7 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
 
       get "/api/v1/greenteas/#{greentea.id}"
 
-      nearby = response.parsed_body['data']['nearby_temples']
+      nearby = response.parsed_body['greentea']['nearby_temples']
       expect(nearby.map { |t| t['id'] }).to eq([near.id, mid.id])
       nearby.each do |t|
         expect(t).to include('id', 'name', 'latitude', 'longitude', 'distance_meters')

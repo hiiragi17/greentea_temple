@@ -6,8 +6,12 @@ module Api
       attributes :name, :description, :address, :access, :business_hours,
                  :holiday, :phone_number, :homepage, :latitude, :longitude, :img
 
-      attribute :like_count do |obj, params|
-        params[:like_count] || obj.greentea_likes.size
+      attribute :closed do |obj|
+        obj.closed == 1
+      end
+
+      attribute :likes_count do |obj, params|
+        params[:likes_count] || obj.greentea_likes.size
       end
 
       attribute :liked_by_current_user do |_obj, params|
@@ -16,6 +20,19 @@ module Api
 
       attribute :genres do |obj|
         obj.genres.map { |g| { id: g.id, name: g.name } }
+      end
+
+      attribute :comments do |obj, params|
+        obj.greenteacomments.map do |comment|
+          {
+            id: comment.id,
+            body: comment.body,
+            created_at: comment.created_at,
+            owned_by_current_user: params[:current_user_id].present? &&
+              comment.user_id == params[:current_user_id],
+            user: { id: comment.user_id, name: comment.user&.name }
+          }
+        end
       end
 
       attribute :nearby_temples do |obj, params|
