@@ -12,6 +12,7 @@ RSpec.describe 'Api::V1::Temples', type: :request do
       expect(json['temples'].size).to eq(3)
       expect(json['meta']).to include(
         'current_page' => 1,
+        'total_pages' => 1,
         'total_count' => 3
       )
       expect(json['meta']).not_to include('per_page')
