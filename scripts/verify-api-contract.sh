@@ -225,7 +225,7 @@ check() {
 
   local live exp missing extra
   live="$(echo "$body" | keypaths)"
-  exp="$(expected_keypaths "$expkey")"
+  exp="$(expected_keypaths "$expkey" | sort -u)"
 
   missing="$(comm -23 <(echo "$exp") <(echo "$live"))"
   extra="$(comm -13 <(echo "$exp") <(echo "$live"))"

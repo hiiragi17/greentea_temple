@@ -19,7 +19,7 @@ module Api
       end
 
       attribute :comments do |obj, params|
-        obj.templecomments.map do |comment|
+        obj.templecomments.sort_by(&:created_at).map do |comment|
           {
             id: comment.id,
             body: comment.body,

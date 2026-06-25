@@ -113,6 +113,17 @@ RSpec.describe 'Api::V1::Temples', type: :request do
       expect(comment['owned_by_current_user']).to eq(false)
     end
 
+    it 'marks a comment as owned when the authenticated user authored it' do
+      author = create(:user)
+      create(:templecomment, temple: temple, user: author, body: '自分のコメント')
+      token = JwtService.encode({ user_id: author.id })
+
+      get "/api/v1/temples/#{temple.id}", headers: { 'Authorization' => "Bearer #{token}" }
+
+      comment = response.parsed_body['temple']['comments'].first
+      expect(comment['owned_by_current_user']).to eq(true)
+    end
+
     it 'returns 404 with error body for missing id' do
       get '/api/v1/temples/999999'
 

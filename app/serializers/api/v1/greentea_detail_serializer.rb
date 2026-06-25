@@ -23,7 +23,7 @@ module Api
       end
 
       attribute :comments do |obj, params|
-        obj.greenteacomments.map do |comment|
+        obj.greenteacomments.sort_by(&:created_at).map do |comment|
           {
             id: comment.id,
             body: comment.body,

@@ -131,6 +131,17 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
       expect(comment['owned_by_current_user']).to eq(false)
     end
 
+    it 'marks a comment as owned when the authenticated user authored it' do
+      author = create(:user)
+      create(:greenteacomment, greentea: greentea, user: author, body: '自分のコメント')
+      token = JwtService.encode({ user_id: author.id })
+
+      get "/api/v1/greenteas/#{greentea.id}", headers: { 'Authorization' => "Bearer #{token}" }
+
+      comment = response.parsed_body['greentea']['comments'].first
+      expect(comment['owned_by_current_user']).to eq(true)
+    end
+
     it 'returns liked_by_current_user=true when the authenticated user liked it' do
       user = User.create!(name: '詳細いいねユーザー')
       GreenteaLike.create!(user: user, greentea: greentea)
