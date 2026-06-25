@@ -4,7 +4,7 @@ module Api
       before_action :require_authentication!
 
       def index
-        scope = current_user.greenteas.order('greentea_likes.created_at DESC')
+        scope = current_user.greenteas.includes(:genres).order('greentea_likes.created_at DESC')
         paginated = paginate(scope).load
         ids = paginated.map(&:id)
         like_counts = GreenteaLike.where(greentea_id: ids).group(:greentea_id).count

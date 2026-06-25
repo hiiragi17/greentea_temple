@@ -4,7 +4,7 @@ module Api
       before_action :require_authentication!
 
       def index
-        scope = current_user.temples.order('temple_likes.created_at DESC')
+        scope = current_user.temples.includes(:areas).order('temple_likes.created_at DESC')
         paginated = paginate(scope).load
         ids = paginated.map(&:id)
         like_counts = TempleLike.where(temple_id: ids).group(:temple_id).count
