@@ -16,8 +16,10 @@ RSpec.describe 'Api::V1::GreenteaLikes', type: :request do
     end
 
     context 'when authenticated' do
-      it 'returns the current user\'s liked greenteas with meta' do
+      it "returns the current user's likes wrapping the full greentea (no meta)" do
         liked = create(:greentea)
+        genre = create(:genre)
+        create(:greentea_genre, greentea: liked, genre: genre)
         unliked = create(:greentea)
         GreenteaLike.create!(user: user, greentea: liked)
         GreenteaLike.create!(user: other_user, greentea: unliked)
@@ -26,14 +28,22 @@ RSpec.describe 'Api::V1::GreenteaLikes', type: :request do
 
         expect(response).to have_http_status(:ok)
         json = response.parsed_body
-        ids = json['data'].map { |d| d['id'] }
-        expect(ids).to eq([liked.id])
-        expect(json['meta']).to include(
-          'current_page' => 1,
-          'total_pages' => 1,
-          'total_count' => 1
+        expect(json).not_to have_key('meta')
+
+        likes = json['greentea_likes']
+        expect(likes.map { |l| l['greentea']['id'] }).to eq([liked.id])
+
+        element = likes.first
+        expect(element).to include('id', 'created_at', 'greentea')
+        spot = element['greentea']
+        expect(spot).to include(
+          'id', 'name', 'description', 'address', 'access', 'phone_number',
+          'business_hours', 'holiday', 'homepage', 'closed', 'img',
+          'latitude', 'longitude', 'genres', 'likes_count', 'liked_by_current_user'
         )
-        expect(json['meta']).not_to include('per_page')
+        expect(spot['liked_by_current_user']).to eq(true)
+        expect(spot['likes_count']).to eq(1)
+        expect(spot['genres'].map { |g| g['id'] }).to eq([genre.id])
       end
     end
   end
@@ -47,18 +57,17 @@ RSpec.describe 'Api::V1::GreenteaLikes', type: :request do
     end
 
     context 'when authenticated' do
-      it 'creates a like and returns 200 with like_count' do
+      it 'creates a like and returns the wrapped greentea' do
         expect {
           post '/api/v1/greentea_likes', params: { greentea_id: greentea.id }, headers: auth
         }.to change { GreenteaLike.where(user: user, greentea: greentea).count }.from(0).to(1)
 
         expect(response).to have_http_status(:ok)
-        body = response.parsed_body['data']
-        expect(body).to include(
-          'greentea_id' => greentea.id,
-          'liked' => true,
-          'like_count' => 1
-        )
+        like = response.parsed_body['greentea_like']
+        expect(like).to include('id', 'created_at', 'greentea')
+        expect(like['greentea']['id']).to eq(greentea.id)
+        expect(like['greentea']['likes_count']).to eq(1)
+        expect(like['greentea']['liked_by_current_user']).to eq(true)
       end
 
       it 'is idempotent: re-POST returns 200 without creating a duplicate' do
@@ -69,19 +78,7 @@ RSpec.describe 'Api::V1::GreenteaLikes', type: :request do
         }.not_to change(GreenteaLike, :count)
 
         expect(response).to have_http_status(:ok)
-        expect(response.parsed_body['data']).to include('liked' => true, 'like_count' => 1)
-      end
-
-      it 'is idempotent even when the race raises RecordInvalid (validation)' do
-        GreenteaLike.create!(user: user, greentea: greentea)
-        allow_any_instance_of(ActiveRecord::Relation)
-          .to receive(:find_or_create_by!)
-          .and_raise(ActiveRecord::RecordInvalid.new(GreenteaLike.new))
-
-        post '/api/v1/greentea_likes', params: { greentea_id: greentea.id }, headers: auth
-
-        expect(response).to have_http_status(:ok)
-        expect(response.parsed_body['data']).to include('liked' => true, 'like_count' => 1)
+        expect(response.parsed_body['greentea_like']['greentea']['id']).to eq(greentea.id)
       end
 
       it 'returns 404 when greentea does not exist' do
@@ -100,20 +97,14 @@ RSpec.describe 'Api::V1::GreenteaLikes', type: :request do
     end
 
     context 'when authenticated' do
-      it 'deletes the current user\'s like with :id = greentea_id' do
+      it 'deletes the like with :id = greentea_id and returns 204' do
         GreenteaLike.create!(user: user, greentea: greentea)
 
         expect {
           delete "/api/v1/greentea_likes/#{greentea.id}", headers: auth
         }.to change(GreenteaLike, :count).by(-1)
 
-        expect(response).to have_http_status(:ok)
-        body = response.parsed_body['data']
-        expect(body).to include(
-          'greentea_id' => greentea.id,
-          'liked' => false,
-          'like_count' => 0
-        )
+        expect(response).to have_http_status(:no_content)
       end
 
       it 'returns 404 when no like exists' do
@@ -121,7 +112,7 @@ RSpec.describe 'Api::V1::GreenteaLikes', type: :request do
         expect(response).to have_http_status(:not_found)
       end
 
-      it 'never deletes another user\'s like' do
+      it "never deletes another user's like" do
         GreenteaLike.create!(user: other_user, greentea: greentea)
 
         expect {

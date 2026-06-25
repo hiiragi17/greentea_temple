@@ -195,6 +195,61 @@ user.name
 user.role
 EOF
     ;;
+  greentea_likes)
+    cat <<'EOF'
+greentea_likes.[].created_at
+greentea_likes.[].greentea.access
+greentea_likes.[].greentea.address
+greentea_likes.[].greentea.business_hours
+greentea_likes.[].greentea.closed
+greentea_likes.[].greentea.description
+greentea_likes.[].greentea.genres.[].id
+greentea_likes.[].greentea.genres.[].name
+greentea_likes.[].greentea.holiday
+greentea_likes.[].greentea.homepage
+greentea_likes.[].greentea.id
+greentea_likes.[].greentea.img
+greentea_likes.[].greentea.latitude
+greentea_likes.[].greentea.liked_by_current_user
+greentea_likes.[].greentea.likes_count
+greentea_likes.[].greentea.longitude
+greentea_likes.[].greentea.name
+greentea_likes.[].greentea.phone_number
+greentea_likes.[].id
+EOF
+    ;;
+  temple_likes)
+    cat <<'EOF'
+temple_likes.[].created_at
+temple_likes.[].id
+temple_likes.[].temple.access
+temple_likes.[].temple.address
+temple_likes.[].temple.areas.[].id
+temple_likes.[].temple.areas.[].name
+temple_likes.[].temple.business_hours
+temple_likes.[].temple.description
+temple_likes.[].temple.holiday
+temple_likes.[].temple.homepage
+temple_likes.[].temple.id
+temple_likes.[].temple.img
+temple_likes.[].temple.latitude
+temple_likes.[].temple.liked_by_current_user
+temple_likes.[].temple.likes_count
+temple_likes.[].temple.longitude
+temple_likes.[].temple.name
+temple_likes.[].temple.phone_number
+EOF
+    ;;
+  comments)
+    cat <<'EOF'
+comments.[].body
+comments.[].created_at
+comments.[].id
+comments.[].owned_by_current_user
+comments.[].user.id
+comments.[].user.name
+EOF
+    ;;
   esac
 }
 
@@ -253,8 +308,12 @@ check "GET /areas"          GET "/areas"          areas.list
 check "GET /nearby"         GET "/nearby?lat=$LAT&lng=$LNG&radius=$RADIUS" nearby
 
 echo
-echo "[認証系] (JWT 設定時のみ)"
-check "GET /current_user"   GET "/current_user"   current_user 1
+echo "[認証系 / 書き込み系の GET] (JWT 設定時のみ)"
+check "GET /current_user"      GET "/current_user"                    current_user 1
+check "GET /greentea_likes"    GET "/greentea_likes"                  greentea_likes 1
+check "GET /temple_likes"      GET "/temple_likes"                    temple_likes 1
+check "GET /greenteacomments"  GET "/greenteacomments?greentea_id=$GID" comments 1
+check "GET /templecomments"    GET "/templecomments?temple_id=$TID"     comments 1
 
 echo
 echo "----------------------------------------"

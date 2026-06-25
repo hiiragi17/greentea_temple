@@ -3,14 +3,15 @@ module Api
     class GreenteacommentsController < BaseController
       before_action :require_authentication!
 
+      # 指定した抹茶店のコメント一覧（新しい順）。フロント契約に meta なし。
       def index
         greentea_id = params.require(:greentea_id)
-        scope = Greenteacomment.includes(:user).where(greentea_id: greentea_id).order(created_at: :desc)
-        paginated = paginate(scope).load
+        comments = Greenteacomment.includes(:user).where(greentea_id: greentea_id).order(created_at: :desc)
 
-        render_collection(
-          paginated,
+        render_full_collection(
+          comments,
           serializer: GreenteacommentSerializer,
+          root: :comments,
           serializer_params: { current_user_id: current_user.id }
         )
       end
@@ -21,6 +22,7 @@ module Api
           render_resource(
             comment,
             serializer: GreenteacommentSerializer,
+            root: :comment,
             serializer_params: { current_user_id: current_user.id }
           )
         else

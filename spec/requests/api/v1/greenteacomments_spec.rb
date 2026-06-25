@@ -25,16 +25,19 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
 
         expect(response).to have_http_status(:ok)
         json = response.parsed_body
-        expect(json['meta']).to include('current_page', 'total_pages', 'total_count')
-        expect(json['meta']).not_to include('per_page')
-        ids = json['data'].map { |d| d['id'] }
+        # 契約上 meta なし（全件・新しい順）
+        expect(json).not_to have_key('meta')
+        ids = json['comments'].map { |d| d['id'] }
         expect(ids).to eq([other.id, own.id])
 
-        own_payload = json['data'].find { |d| d['id'] == own.id }
+        own_payload = json['comments'].find { |d| d['id'] == own.id }
+        expect(own_payload).to include('id', 'body', 'created_at', 'owned_by_current_user')
         expect(own_payload['owned_by_current_user']).to eq(true)
         expect(own_payload['user']).to include('id' => user.id, 'name' => '口コミ投稿者')
+        # 契約に無いフィールドは返さない
+        expect(own_payload).not_to include('greentea_id', 'updated_at')
 
-        other_payload = json['data'].find { |d| d['id'] == other.id }
+        other_payload = json['comments'].find { |d| d['id'] == other.id }
         expect(other_payload['owned_by_current_user']).to eq(false)
       end
 
@@ -63,12 +66,13 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
         }.to change(Greenteacomment, :count).by(1)
 
         expect(response).to have_http_status(:ok)
-        body = response.parsed_body['data']
+        body = response.parsed_body['comment']
         expect(body).to include(
           'body' => '抹茶ティラミス最高',
-          'greentea_id' => greentea.id,
           'owned_by_current_user' => true
         )
+        expect(body['user']).to include('id' => user.id)
+        expect(body).not_to include('greentea_id', 'updated_at')
       end
 
       it 'returns 422 when body is blank' do

@@ -3,7 +3,7 @@ module Api
     class TemplecommentSerializer
       include JSONAPI::Serializer
 
-      attributes :body, :temple_id, :created_at, :updated_at
+      attributes :body, :created_at
 
       attribute :user do |obj|
         { id: obj.user_id, name: obj.user&.name }
