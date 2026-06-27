@@ -20,6 +20,15 @@ Rails.application.routes.draw do
       resources :temple_likes, only: %i[index create destroy]
       resources :greenteacomments, only: %i[index create destroy]
       resources :templecomments, only: %i[index create destroy]
+
+      # 管理用 API（admin 権限必須）。抹茶店・神社の CRUD とコメントモデレーション。
+      namespace :admin do
+        resources :greenteas, only: %i[create update destroy]
+        resources :temples, only: %i[create update destroy]
+        resources :comments, only: %i[index]
+        resources :greenteacomments, only: %i[destroy]
+        resources :templecomments, only: %i[destroy]
+      end
     end
 
     match '*unmatched', to: 'v1/base#route_not_found', via: :all
