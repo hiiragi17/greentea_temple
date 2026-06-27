@@ -9,6 +9,9 @@ class Greentea < ApplicationRecord
   has_many :greentea_likes, dependent: :destroy
   has_many :users, through: :greentea_likes
   has_many :greenteacomments, dependent: :destroy
+  # モデルルートに含まれる polymorphic な RouteSpot。店舗削除時に孤立行が残ると
+  # RouteDetailSerializer が spottable=nil を参照して 500 になるため一緒に削除する。
+  has_many :route_spots, as: :spottable, dependent: :destroy
 
   validates :name, presence: true
   validates :description, presence: true

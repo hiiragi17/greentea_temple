@@ -64,6 +64,15 @@ RSpec.describe 'Api::V1::Admin::Temples', type: :request do
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.parsed_body['errors']).to include('name', 'description')
       end
+
+      it 'returns 422 (not 500) when latitude/longitude are missing' do
+        post '/api/v1/admin/temples',
+             params: { temple: valid_attributes.merge(latitude: nil, longitude: nil) },
+             headers: admin_auth
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body['errors']).to be_present
+      end
     end
   end
 

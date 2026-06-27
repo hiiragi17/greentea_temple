@@ -69,5 +69,12 @@ RSpec.describe 'Api::V1::Admin::Comments', type: :request do
 
       expect(response).to have_http_status(:no_content)
     end
+
+    it 'returns 403 for a non-admin user' do
+      token = JwtService.encode({ user_id: general.id })
+      delete "/api/v1/admin/templecomments/#{temple_comment.id}",
+             headers: { 'Authorization' => "Bearer #{token}" }
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 end

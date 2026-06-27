@@ -111,5 +111,16 @@ RSpec.describe 'Api::V1::Admin::Greenteas', type: :request do
       delete "/api/v1/admin/greenteas/#{greentea.id}"
       expect(response).to have_http_status(:unauthorized)
     end
+
+    it 'also removes route spots referencing the greentea (no orphan rows)' do
+      route = create(:route)
+      route_spot = create(:route_spot, route: route, spottable: greentea, position: 2)
+
+      expect {
+        delete "/api/v1/admin/greenteas/#{greentea.id}", headers: admin_auth
+      }.to change(RouteSpot, :count).by(-1)
+
+      expect(RouteSpot.exists?(route_spot.id)).to be(false)
+    end
   end
 end
