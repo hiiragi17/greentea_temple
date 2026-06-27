@@ -4,6 +4,9 @@ class Temple < ApplicationRecord
   has_many :temple_likes, dependent: :destroy
   has_many :users, through: :temple_likes
   has_many :templecomments, dependent: :destroy
+  # モデルルートに含まれる polymorphic な RouteSpot。神社削除時に孤立行が残ると
+  # RouteDetailSerializer が spottable=nil を参照して 500 になるため一緒に削除する。
+  has_many :route_spots, as: :spottable, dependent: :destroy
 
   validates :name, presence: true
   validates :description, presence: true

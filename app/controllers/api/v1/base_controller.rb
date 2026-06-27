@@ -26,6 +26,14 @@ module Api
         render json: { error: 'Unauthorized' }, status: :unauthorized
       end
 
+      # 管理用 API の認可境界。未認証は 401 / admin 以外は 403 で弾く。
+      def require_admin!
+        return render json: { error: 'Unauthorized' }, status: :unauthorized unless current_user
+        return if current_user.admin?
+
+        render json: { error: 'Forbidden' }, status: :forbidden
+      end
+
       private
 
       def authenticate_with_token
@@ -53,10 +61,15 @@ module Api
       end
 
       def paginate(scope)
-        per_page = params[:per_page].to_i
-        per_page = DEFAULT_PER_PAGE if per_page <= 0
-        per_page = MAX_PER_PAGE if per_page > MAX_PER_PAGE
         scope.page(params[:page]).per(per_page)
+      end
+
+      def per_page
+        value = params[:per_page].to_i
+        return DEFAULT_PER_PAGE if value <= 0
+        return MAX_PER_PAGE if value > MAX_PER_PAGE
+
+        value
       end
 
       def render_collection(records, serializer:, root: :data, serializer_params: {})
@@ -67,9 +80,9 @@ module Api
         }
       end
 
-      def render_resource(record, serializer:, root: :data, serializer_params: {})
+      def render_resource(record, serializer:, root: :data, serializer_params: {}, status: :ok)
         serialized = serializer.new(record, params: serializer_params).serializable_hash
-        render json: { root => flatten_serialized(serialized[:data]) }
+        render json: { root => flatten_serialized(serialized[:data]) }, status: status
       end
 
       # ジャンル / エリアのような件数の少ない参照リストはページネーションせず全件返す。
