@@ -65,26 +65,28 @@ Rails.application.routes.draw do
   get 'oauth/callback', to: 'oauths#callback'
   get 'oauth/:provider', to: 'oauths#oauth', as: :auth_at_provider
 
-  resources :greenteas, only: %i[index show] do
-    resources :greenteacomments, only: %i[index create edit update destroy], shallow: true
-    collection do
-      get :greentea_likes
-    end
-  end
+  # --- #136 段階1: 旧 Web フロントのルーティング無効化（410 Gone） ---
+  # 抹茶店／神社の閲覧・いいね・口コミ・現在地検索は API(/api/v1) と Next.js
+  # フロント（matcha-to-jinja）へ移行済みのため、これらの HTML ルートは 410 を返す。
+  # まず無効化のみ行い、コントローラ／ビュー本体の削除は後続段階（#136 段階2・3）で実施する。
+  # レイアウト等の残存ビューが参照する名前付きヘルパーは維持し、描画を壊さない。
+  get 'greenteas/greentea_likes', to: 'legacy_routes#gone', as: :greentea_likes_greenteas
+  get 'greenteas', to: 'legacy_routes#gone', as: :greenteas
+  get 'greenteas/:id', to: 'legacy_routes#gone', as: :greentea
+  match 'greenteas/*path', to: 'legacy_routes#gone', via: :all
 
-  resources :greentea_likes, only: %i[create destroy]
+  get 'temples/temple_likes', to: 'legacy_routes#gone', as: :temple_likes_temples
+  get 'temples', to: 'legacy_routes#gone', as: :temples
+  get 'temples/:id', to: 'legacy_routes#gone', as: :temple
+  match 'temples/*path', to: 'legacy_routes#gone', via: :all
 
-  resources :temples, only: %i[index show] do
-    resources :templecomments, only: %i[index create edit update destroy], shallow: true
-    collection do
-      get :temple_likes
-    end
-  end
+  match 'greentea_likes(/*path)', to: 'legacy_routes#gone', via: :all
+  match 'temple_likes(/*path)', to: 'legacy_routes#gone', via: :all
+  match 'greenteacomments(/*path)', to: 'legacy_routes#gone', via: :all
+  match 'templecomments(/*path)', to: 'legacy_routes#gone', via: :all
 
-  resources :temple_likes, only: %i[create destroy]
-
-  get 'current_location', to:'current_location#search'
-  get 'current_location/result', to:'current_location#result'
+  get 'current_location', to: 'legacy_routes#gone', as: :current_location
+  match 'current_location/*path', to: 'legacy_routes#gone', via: :all
 
   get '*path', to: 'application#render_404'
 end
