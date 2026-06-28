@@ -30,6 +30,16 @@ RSpec.describe 'Legacy web routes (#136 段階1)', type: :request do
       expect(response).to have_http_status(:gone)
     end
 
+    it '抹茶店口コミ作成(POST)も 410' do
+      post '/greenteacomments'
+      expect(response).to have_http_status(:gone)
+    end
+
+    it '神社口コミ作成(POST)も 410' do
+      post '/templecomments'
+      expect(response).to have_http_status(:gone)
+    end
+
     it 'JSON リクエストにはエラーボディを返す' do
       get '/greenteas', headers: { 'Accept' => 'application/json' }
       expect(response).to have_http_status(:gone)

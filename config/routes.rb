@@ -82,8 +82,8 @@ Rails.application.routes.draw do
 
   match 'greentea_likes(/*path)', to: 'legacy_routes#gone', via: :all
   match 'temple_likes(/*path)', to: 'legacy_routes#gone', via: :all
-  match 'greenteacomments/*path', to: 'legacy_routes#gone', via: :all
-  match 'templecomments/*path', to: 'legacy_routes#gone', via: :all
+  match 'greenteacomments(/*path)', to: 'legacy_routes#gone', via: :all
+  match 'templecomments(/*path)', to: 'legacy_routes#gone', via: :all
 
   get 'current_location', to: 'legacy_routes#gone', as: :current_location
   match 'current_location/*path', to: 'legacy_routes#gone', via: :all
