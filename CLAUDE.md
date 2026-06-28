@@ -185,7 +185,8 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 
 ### Controller / 認証境界
 
-- 既存の `ApplicationController` は **触らない**（Web 側に影響が出る）
+- 既存の `ApplicationController` は当面 **触らない**（Web 側に影響が出る）。認証境界（Sorcery セッション / `require_login`）の整理は #136 段階5 で実施する
+- 旧 Web フロントの撤去（#136）が進行中。**段階1（ルーティング無効化）着地済み**: 抹茶店／神社の閲覧・いいね・口コミ・現在地検索の HTML ルートは `LegacyRoutesController#gone` 経由で **410 Gone** を返す（残存ビューが参照する名前付きヘルパーは維持）。コントローラ／ビュー本体の削除は後続段階で行う
 - API は `Api::V1::BaseController < ActionController::API` を別系統で持つ
 - API のエラーは JSON で返す: 401 / 403 / 404 / 400 / 422 / 500
 - `current_user` の解決は Web 側 = セッション / API 側 = JWT で完全に分離
@@ -220,7 +221,7 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 ### テスト
 
 - RSpec の request spec を API の正準テストとする
-- 既存 system spec は破壊しない
+- system spec（`spec/system`）は **#136 段階1 で廃止済み**（旧 Web フロント撤去に伴い CI の system ジョブも削除）。新規の system spec は追加しない
 
 ## 著作権・運用上の注意
 
