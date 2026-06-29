@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-ARG RUBY_VERSION=3.3.11
+ARG RUBY_VERSION=3.4.9
 ARG NODE_MAJOR=18
 
 # ---------- build stage ----------

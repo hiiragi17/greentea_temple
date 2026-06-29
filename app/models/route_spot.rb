@@ -5,7 +5,7 @@ class RouteSpot < ApplicationRecord
   belongs_to :spottable, polymorphic: true
 
   # 移動手段（任意）: 次のスポットへの移動手段。未設定可。
-  enum transport: { walk: 0, train: 1, bus: 2, car: 3 }
+  enum :transport, { walk: 0, train: 1, bus: 2, car: 3 }
 
   validates :position, presence: true,
                        numericality: { only_integer: true, greater_than: 0 }

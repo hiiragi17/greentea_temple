@@ -9,7 +9,7 @@ Bundler.require(*Rails.groups)
 module GreenteaTemple
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.0
+    config.load_defaults 8.1
     config.generators do |g|
       g.test_framework false
     end
