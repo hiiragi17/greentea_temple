@@ -88,6 +88,10 @@ gem 'nokogiri'
 gem 'geocoder'
 gem 'geokit-rails'
 
+# Ruby 3.4 で default gem から外れた標準ライブラリ。
+# geocoder が maxmind 連携で require するため明示的に追加（未追加だと LoadError）。
+gem 'csv'
+
 gem 'rexml', '~> 3.2', '>= 3.2.5'
 
 # javascript
