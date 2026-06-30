@@ -12,7 +12,7 @@ class User < ApplicationRecord
 
   validates :name, presence: true
 
-  enum role: { general: 0, admin: 1 }
+  enum :role, { general: 0, admin: 1 }
 
   def greentea_like?(greentea)
     greenteas.include?(greentea)

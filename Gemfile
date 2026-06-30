@@ -1,10 +1,10 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.3.11"
+ruby "3.4.9"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 7.1.0"
+gem "rails", "~> 8.1.0"
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
@@ -87,6 +87,10 @@ gem 'nokogiri'
 # google map
 gem 'geocoder'
 gem 'geokit-rails'
+
+# Ruby 3.4 で default gem から外れた標準ライブラリ。
+# geocoder が maxmind 連携で require するため明示的に追加（未追加だと LoadError）。
+gem 'csv'
 
 gem 'rexml', '~> 3.2', '>= 3.2.5'
 

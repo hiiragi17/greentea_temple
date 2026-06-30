@@ -7,8 +7,8 @@
 
 ## 技術スタック
 
-- Ruby 3.3.11（#119 で 3.1.2 から上げ済み）
-- Ruby on Rails 7.0.3（→ #124 で 7.1.x へ上げる予定）
+- Ruby 3.4.9（#119 で 3.1.2 → 3.3.11、その後 3.4.9 へ）
+- Ruby on Rails 8.1.x（7.0 → 7.1 を経て 8.1 へアップグレード済み。`config.load_defaults 8.1`）
 - PostgreSQL
 - Sorcery（LINE / Google OAuth）
 - Ransack（検索）/ Kaminari（ページネーション）
