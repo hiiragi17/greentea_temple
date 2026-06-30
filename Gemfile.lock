@@ -307,7 +307,7 @@ GEM
       rack (>= 1.2, < 4)
       snaky_hash (~> 2.0, >= 2.0.6)
       version_gem (~> 1.1, >= 1.1.11)
-    open-uri (0.2.0)
+    open-uri (0.5.0)
       stringio
       time
       uri
@@ -477,7 +477,7 @@ GEM
     stringio (3.2.0)
     thor (1.5.0)
     tilt (2.7.0)
-    time (0.2.0)
+    time (0.4.2)
       date
     timecop (0.9.11)
     timeout (0.6.1)
