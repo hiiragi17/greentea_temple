@@ -175,7 +175,7 @@
 
 ### その他
 
-- matcha-to-jinja: `docs/migration-plan.md`（「環境構成」「GCP Cloud Run デプロイ手順」「Neon PostgreSQL セットアップ」）
+- matcha-to-jinja（別リポジトリ）の [`docs/migration-plan.md`](https://github.com/hiiragi17/matcha-to-jinja/blob/main/docs/migration-plan.md)（「環境構成」「GCP Cloud Run デプロイ手順」「Neon PostgreSQL セットアップ」）。**本リポジトリには存在しない**（参照先はフロントエンドのリポジトリ）
 - 関連 issue: #113 〜 #118（API 化 → デプロイ）
 
 ---
@@ -189,7 +189,7 @@
 
 - リポジトリに `Dockerfile.vercel` を置くと、Vercel がイメージをビルド・保存・デプロイし、**Fluid compute 上でオートスケール**する。
 - **Rails は公式にサポート対象**（Rails / Laravel / Spring Boot / Express / FastAPI / nginx など）。唯一のルールは **サーバが `$PORT`（デフォルト 80）で listen** すること。
-- 既存 `Dockerfile` は `CMD ... -p ${PORT}` で **既に `$PORT` listen 対応済み**なので、技術的には流用可能。
+- 既存 `Dockerfile` は `CMD ... -p ${PORT}` で `$PORT` を listen する作りなので流用の下地はある。ただし **イメージに `ENV PORT=8080` が焼き込まれている**点に注意。Vercel はデフォルトで **ポート 80** にルーティングするため、Vercel 版では **Vercel 側の `PORT` を 8080 に設定する**か、**イメージの `ENV PORT` 既定値を外して Vercel の 80 を通す**必要がある（そのまま流用するとビルドは通ってもトラフィックが届かない）。
 
 ### 課金モデルの違い（Cloud Run と比較）
 
@@ -197,13 +197,15 @@
 |---|---|---|
 | 基本料金 | **なし**（従量のみ） | プラン必須。**Hobby=無料（非商用・上限あり）** / Pro=$20/人・月 |
 | CPU 課金 | vCPU 秒。**リクエスト処理中はずっと**（DB 待ちも含む） | **Active CPU $0.128/時**。**コード実行中だけ**（I/O 待ちは課金停止） |
-| メモリ課金 | GiB 秒 | Provisioned Memory $0.0106/GB時（処理中のみ） |
+| メモリ課金 | GiB 秒 | Provisioned Memory $0.0106/GB時。**リクエスト処理中は I/O 待ちも含めて課金**（最後の in-flight リクエストが終わるまで） |
 | リクエスト | 100万 $0.40（月200万まで無料） | Invocations 100万 $0.60 |
 | 無料枠 | **月 18万 vCPU秒 / 36万 GiB秒 / 200万 req** | Hobby プラン枠内 |
 | アイドル | 0円（scale to zero） | リクエスト間は 0 |
 
+> ⚠️ **単位に注意**: Cloud Run は「**秒**」課金、Vercel は「**時**」課金で表記が異なる。ざっくり横並び比較するなら Vercel の「/時」を **3600 で割る**と「/秒」換算になる（例: Active CPU $0.128/時 ≒ $0.0000356/秒）。
+
 - **低トラフィックの本プロジェクトでは、使用量自体はどちらも誤差レベルに安い。** 勝敗は「無料枠と基本料金」で決まる。
-- Vercel は **I/O 待ちを課金しない**のが強みで、DB(Neon)・Google API 待ちが多い Rails と相性は悪くない。ただし **商用運用は Hobby 不可 → Pro $20/月の下駄**が要る。
+- Vercel は **CPU について I/O 待ちを課金しない**のが強みで、DB(Neon)・Google API 待ちが多い Rails と相性は悪くない。**ただしメモリ（Provisioned Memory）はリクエスト処理が続く限り I/O 待ちも含めて課金される**ため、「I/O 待ちは一切タダ」ではない点に注意。さらに **商用運用は Hobby 不可 → Pro $20/月の下駄**が要る。
 
 ### 結論: 現状維持（変更なし）
 
