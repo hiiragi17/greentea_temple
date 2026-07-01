@@ -177,3 +177,51 @@
 
 - matcha-to-jinja: `docs/migration-plan.md`（「環境構成」「GCP Cloud Run デプロイ手順」「Neon PostgreSQL セットアップ」）
 - 関連 issue: #113 〜 #118（API 化 → デプロイ）
+
+---
+
+## 付録: Vercel の Dockerfile 対応の検討（as-of 2026-07-01）
+
+> 背景: Vercel が「任意の Dockerfile を動かせる」機能を発表したのを受け、**Rails 本体も含めて全部 Vercel に寄せられないか / GCP より安くならないか** を検討した記録。
+> 出典: [Run any Dockerfile on Vercel](https://vercel.com/blog/dockerfile-on-vercel) / [Fluid compute pricing](https://vercel.com/docs/functions/usage-and-pricing) / [Active CPU pricing](https://vercel.com/blog/introducing-active-cpu-pricing-for-fluid-compute)
+
+### 何ができるようになったか
+
+- リポジトリに `Dockerfile.vercel` を置くと、Vercel がイメージをビルド・保存・デプロイし、**Fluid compute 上でオートスケール**する。
+- **Rails は公式にサポート対象**（Rails / Laravel / Spring Boot / Express / FastAPI / nginx など）。唯一のルールは **サーバが `$PORT`（デフォルト 80）で listen** すること。
+- 既存 `Dockerfile` は `CMD ... -p ${PORT}` で **既に `$PORT` listen 対応済み**なので、技術的には流用可能。
+
+### 課金モデルの違い（Cloud Run と比較）
+
+| | GCP Cloud Run | Vercel Fluid compute |
+|---|---|---|
+| 基本料金 | **なし**（従量のみ） | プラン必須。**Hobby=無料（非商用・上限あり）** / Pro=$20/人・月 |
+| CPU 課金 | vCPU 秒。**リクエスト処理中はずっと**（DB 待ちも含む） | **Active CPU $0.128/時**。**コード実行中だけ**（I/O 待ちは課金停止） |
+| メモリ課金 | GiB 秒 | Provisioned Memory $0.0106/GB時（処理中のみ） |
+| リクエスト | 100万 $0.40（月200万まで無料） | Invocations 100万 $0.60 |
+| 無料枠 | **月 18万 vCPU秒 / 36万 GiB秒 / 200万 req** | Hobby プラン枠内 |
+| アイドル | 0円（scale to zero） | リクエスト間は 0 |
+
+- **低トラフィックの本プロジェクトでは、使用量自体はどちらも誤差レベルに安い。** 勝敗は「無料枠と基本料金」で決まる。
+- Vercel は **I/O 待ちを課金しない**のが強みで、DB(Neon)・Google API 待ちが多い Rails と相性は悪くない。ただし **商用運用は Hobby 不可 → Pro $20/月の下駄**が要る。
+
+### 結論: 現状維持（変更なし）
+
+- 方針は **「Vercel は無料(Hobby)で使う」**。Hobby は非商用・個人利用向けで、常時稼働のバックエンドを載せる用途には枠・規約的に不向き。
+- よって **Rails は引き続き GCP Cloud Run**（無料枠＋基本料金なしで低トラフィックなら実質 0 円、かつデプロイ定義が既に揃っている）。**現行構成（Vercel=フロント / Cloud Run=Rails / Neon=DB）から変更しない。**
+- **将来 Vercel が Pro 前提になった場合のみ**（フロントで $20/月を払うなら追加固定費なしで載る）、「全部 Vercel に集約して運用を一本化」を再検討する余地あり。
+
+### 「全部 Vercel」にする場合に必要だった対応（＝今回は見送り）
+
+再検討時のためにメモとして残す:
+
+1. `Dockerfile.vercel` を追加（既存 `Dockerfile` ベース。default PORT を 80 に合わせる）。
+2. **画像アップロードを外部ストレージへ**（コンテナはステートレス＝ローカル保存は消える）。元々 GCS 化が前提（runbook「7. 将来対応」）なので方針は同じ。
+3. **Host Authorization に Vercel ドメインを追加**（`config/environments/production.rb` は現状 `*.run.app` のみ自動許可）。`*.vercel.app` / カスタムドメインは `APP_HOSTS` で許可する必要あり。
+4. 同一ドメイン配下にまとめられれば CORS を不要化できる（別ドメインなら現行の `FRONTEND_URL` ベースの CORS のまま）。
+
+### リポジトリ分割について
+
+- フロント(`matcha-to-jinja`) と バックエンド(`greentea_temple`) が **別リポジトリなのは標準的な構成で、デプロイ先が Vercel / GCP どちらでも問題ない**。
+- Vercel でも **1 リポジトリ = 1 プロジェクト**として独立にデプロイでき、モノレポ化は不要。
+- つなぎ込み（フロントに API URL を env で渡す / バックエンドは CORS・`APP_HOSTS` でフロントを許可）は **既に実装済み**（`config/initializers/cors.rb`・`production.rb`）。分割のままで完結する。
