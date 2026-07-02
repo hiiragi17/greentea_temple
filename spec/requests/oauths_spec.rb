@@ -114,9 +114,17 @@ RSpec.describe 'OAuths (Web セッション OAuth)', type: :request do
 
   describe 'GET /oauth/:provider' do
     it 'login_at でプロバイダの認可画面へ委譲する' do
-      expect_any_instance_of(OauthsController).to receive(:login_at).with('google')
+      # login_at は本来プロバイダの認可 URL へリダイレクトする。素の receive で
+      # 潰すと nil を返し、oauths/oauth テンプレート不在で 500 になりうるため、
+      # スタブ側でリダイレクトを再現し、リクエストがエラーで通らないことも担保する。
+      expect_any_instance_of(OauthsController).to receive(:login_at) do |controller, provider|
+        expect(provider).to eq('google')
+        controller.redirect_to(login_path)
+      end
 
       get '/oauth/google'
+
+      expect(response).to redirect_to(login_path)
     end
   end
 end
