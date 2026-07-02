@@ -25,6 +25,9 @@ RSpec.describe 'OAuths (Web セッション OAuth)', type: :request do
         get '/oauth/callback', params: { provider: 'google', denied: '1' }
 
         expect(response).to redirect_to(login_path)
+        # :warning は add_flash_types 未登録のため伝播しない。将来 :warning が
+        # 登録され挙動が変わった場合に気づけるよう、現状を明示的に固定する。
+        expect(flash[:warning]).to be_nil
       end
 
       it 'error=ACCESS_DENIED でもログイン画面へ戻す' do
@@ -33,6 +36,7 @@ RSpec.describe 'OAuths (Web セッション OAuth)', type: :request do
         get '/oauth/callback', params: { provider: 'line', error: 'ACCESS_DENIED' }
 
         expect(response).to redirect_to(login_path)
+        expect(flash[:warning]).to be_nil
       end
 
       it 'キャンセル時はユーザーを作らない' do
