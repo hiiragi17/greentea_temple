@@ -5,27 +5,42 @@
 #
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
+#
+# ⚠️ Greentea / Temple は保存時に住所ジオコーディングを行う（app/models/*.rb の
+#    `after_validation :geocode`）。この seed を流すと 1 レコードにつき Google Geocoding
+#    API を 1 回叩くため、GOOGLE_GEOCODING_API_KEY の設定とクォータ/課金に注意すること。
+#    詳細は docs/infra/deploy-runbook.md の「デプロイ前チェックリスト」を参照。
 require "csv"
 
-# CSV.foreach('db/csv/genre.csv') do |row|
-#   Genre.find_or_create_by(:name => row[0])
-# end
+# ジャンル（抹茶店の分類）。genre.csv はヘッダなし・1 行 1 名称。
+CSV.foreach('db/csv/genre.csv', headers: false) do |row|
+  name = row[0].to_s.strip
+  next if name.blank?
 
-# CSV.foreach('db/csv/greentea.csv', headers: true) do |row|
-#   greentea = Greentea.find_or_create_by(
-#     name: row['name'],
-#     description: row['description'], 
-#     phone_number: row['phone_number'],
-#     address: row['address'],
-#     access: row['access'],
-#     business_hours: row['business_hours'],
-#     homepage: row['homepage'],
-#     holiday: row['holiday'])
-#   genres = Genre.where(name: row['genre'].split(' '))
-#   genres.each do |genre|
-#     greentea.greentea_genres.create(genre: genre)
-#   end
-# end
+  Genre.find_or_create_by!(name: name)
+end
+
+# 抹茶スイーツ店。genre 列は半角スペース区切りの複数ジャンル。
+CSV.foreach('db/csv/greentea_info.csv', headers: true) do |row|
+  greentea = Greentea.find_or_initialize_by(name: row['name'], address: row['address'])
+  greentea.assign_attributes(
+    description: row['description'],
+    phone_number: row['phone_number'],
+    access: row['access'],
+    business_hours: row['business_hours'],
+    homepage: row['homepage'],
+    holiday: row['holiday']
+  )
+  greentea.save!
+
+  row['genre'].to_s.split(/[[:space:]]+/).each do |genre_name|
+    name = genre_name.strip
+    next if name.blank?
+
+    genre = Genre.find_or_create_by!(name: name)
+    greentea.greentea_genres.find_or_create_by!(genre: genre)
+  end
+end
 
 CSV.foreach('db/csv/area.csv', headers: true) do |row|
   Area.find_or_create_by!(name: row['name'])

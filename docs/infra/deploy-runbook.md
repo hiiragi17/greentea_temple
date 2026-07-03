@@ -27,6 +27,51 @@
 
 ---
 
+## ⚠️ デプロイ前チェックリスト（要注意点）
+
+本番反映（特に**本番 DB を作り直す**場合）で踏みやすい落とし穴。上から順に確認する。
+
+### A. データ投入（新規 DB を作り直すケース）
+
+- Cloud Run は**リリース時に `db:migrate` / `db:seed` を自動実行しない**（本書「8. トラブルシュート」）。
+  新規 DB は次のいずれかを**手動 or Cloud Run Job** で流す:
+  - スキーマ: `bin/rails db:schema:load`（`schema.rb` から一括作成。version は最新 migration と一致済み）
+    ／または未適用 migration を `bin/rails db:migrate`
+  - 初期データ: `bin/rails db:seed`
+- **`db/seeds.rb` が投入する対象**（2026-07 更新）:
+  - `genres`（`db/csv/genre.csv`・全17件）
+  - `greenteas` + `greentea_genres`（`db/csv/greentea_info.csv`・72件。genre 列は半角スペース区切り）
+  - `areas`（`db/csv/area.csv`）
+  - `temples` + `temple_areas`（`db/csv/temple_info.csv`・460件）
+  - ※以前は greentea / genre がコメントアウトされ**店・ジャンルが入らなかった**。作り直し前提で有効化済み。
+- seed は `find_or_create_by! / find_or_initialize_by` ベースで**冪等**（再実行しても重複しない）。
+- 本番 DB へ流す場所の選択肢:
+  - ローカルから Neon に向けて `DATABASE_URL=<neon-pooled-url> RAILS_ENV=production bin/rails db:seed`
+  - もしくは Cloud Run Job で同コマンドを実行
+- **既存データを引き継ぐ場合はそもそも seed 不要**。`pg_dump` / `pg_restore`（本書「3-4」）が正。
+
+### B. ジオコーディング API が seed 実行時に走る（重要・課金注意）
+
+- `Greentea` / `Temple` は保存時に住所ジオコーディングする（`after_validation :geocode`）。
+  そのため **seed 1 行につき Google Geocoding API を 1 回**呼ぶ（合計 **≈530 リクエスト**: greentea 72 + temple 460）。
+- 事前確認:
+  - [ ] `GOOGLE_GEOCODING_API_KEY` を seed 実行環境に設定（未設定だと緯度経度が入らず**距離検索 API が壊れる**）
+  - [ ] 当該キーの API クォータ / 課金上限を確認（無料枠を超えると 429 / 課金）
+  - [ ] 大量リクエストでレート制限に当たる場合は分割実行、または投入後に緯度経度 NULL の行がないか検証
+    （`Greentea.where(latitude: nil).count` / `Temple.where(latitude: nil).count` が 0 であること）
+- ローカルで一度流し、**店データと緯度経度が期待どおり入るか**を本番前に必ずリハーサルする。
+
+### C. その他の既知の齟齬
+
+- **LINE ログインは ENV では有効化されない** → `credentials.yml.enc` に `line.channel_id` /
+  `line.channel_secret` が必要（本書「4」の⚠️を参照）。
+- `FRONTEND_URL` を本番値（`https://matcha-to-jinja.com`）にしないと CORS で弾かれる。
+- `DATABASE_URL` は Neon の **pooler 経由 + `sslmode=require`**。
+- `/api/v1/health` は **DB 非接続**なので 200 でも DB 疎通の証明にならない。
+  デプロイ後は `/api/v1/greenteas` など**実データを返すエンドポイント**も叩いて DB 接続まで確認する。
+
+---
+
 ## 1. 必要なもの（事前準備）
 
 - GCP アカウントと課金有効なプロジェクト（無料枠内運用想定）
