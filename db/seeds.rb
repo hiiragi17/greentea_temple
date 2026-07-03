@@ -37,7 +37,10 @@ CSV.foreach('db/csv/greentea_info.csv', headers: true) do |row|
     name = genre_name.strip
     next if name.blank?
 
-    genre = Genre.find_or_create_by!(name: name)
+    # genre.csv を正典とし、未知ジャンル名は黙って作らず fail loud にする。
+    # （表記揺れ―例: ぷるぷるスイーツ ↔ プルプルスイーツ―で重複カテゴリが
+    #   生まれ /api/v1/genres が汚れるのを防ぐ。追加時は genre.csv を更新すること）
+    genre = Genre.find_by!(name: name)
     greentea.greentea_genres.find_or_create_by!(genre: genre)
   end
 end
