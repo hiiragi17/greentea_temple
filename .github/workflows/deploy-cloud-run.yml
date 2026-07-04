@@ -92,8 +92,7 @@ jobs:
       # 環境変数名はアプリ実コードが ENV[..] で参照している名前に合わせている:
       #   - GMAP_API           : config/initializers/geocoder.rb
       #   - GOOGLE_MAP_API     : app/views/**/*.erb (Google Maps JS API key)
-      # CLAUDE.md 表記の `GOOGLE_GEOCODING_API_KEY` / `GOOGLE_MAPS_API_KEY`
-      # への統一は別タスクで実施する。
+      # （CLAUDE.md / .env.example も同名で統一済み）
       #
       # SECRET_KEY_BASE は credentials.yml.enc に持たせる場合 RAILS_MASTER_KEY
       # 経由で復号されるため不要。`secrets.SECRET_KEY_BASE` を unconditionally

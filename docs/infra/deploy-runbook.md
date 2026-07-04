@@ -55,7 +55,7 @@
 - `Greentea` / `Temple` は保存時に住所ジオコーディングする（`after_validation :geocode`）。
   そのため **seed 1 行につき Google Geocoding API を 1 回**呼ぶ（合計 **≈530 リクエスト**: greentea 72 + temple 460）。
 - 事前確認:
-  - [ ] `GOOGLE_GEOCODING_API_KEY` を seed 実行環境に設定（未設定だと緯度経度が入らず**距離検索 API が壊れる**）
+  - [ ] `GMAP_API` を seed 実行環境に設定（`config/initializers/geocoder.rb` が参照。未設定だと緯度経度が入らず**距離検索 API が壊れる**）
   - [ ] 当該キーの API クォータ / 課金上限を確認（無料枠を超えると 429 / 課金）
   - [ ] 大量リクエストでレート制限に当たる場合は分割実行、または投入後に緯度経度 NULL の行がないか検証
     （`Greentea.where(latitude: nil).count` / `Temple.where(latitude: nil).count` が 0 であること）
@@ -238,6 +238,12 @@ echo "$SA"
 >
 > （根本対応として initializer を `ENV['LINE_KEY']` 参照へ寄せる選択肢もあるが、認証境界に
 > 触れるため本手順書のスコープ外。別 issue で扱う。）
+
+> ⚠️ **Directions API キーは現状 Cloud Run に渡されていない**
+> モデルルートの経路・所要時間計算（`app/services/directions_service.rb`・#153）は
+> `GOOGLE_DIRECTIONS_API_KEY`（未設定時は `GOOGLE_MAPS_API_KEY`）を参照するが、
+> `deploy-cloud-run.yml` はどちらの環境変数も渡していないため、本番では経路計算が
+> 無効（nil 返却）になる。本番で有効化する場合は workflow と Secrets への追加が必要。
 
 ### Variables
 
