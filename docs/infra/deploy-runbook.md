@@ -39,8 +39,8 @@
     ／または未適用 migration を `bin/rails db:migrate`
   - 初期データ: `bin/rails db:seed`
 - **`db/seeds.rb` が投入する対象**（2026-07 更新）:
-  - `genres`（`db/csv/genre.csv`・全17件）
-  - `greenteas` + `greentea_genres`（`db/csv/greentea_info.csv`・72件。genre 列は半角スペース区切り）
+  - `genres`（`db/csv/genre.csv`・全18件）
+  - `greenteas` + `greentea_genres`（`db/csv/greentea_info.csv`・74件。genre 列は半角スペース区切り）
   - `areas`（`db/csv/area.csv`）
   - `temples` + `temple_areas`（`db/csv/temple_info.csv`・460件）
   - ※以前は greentea / genre がコメントアウトされ**店・ジャンルが入らなかった**。作り直し前提で有効化済み。
@@ -53,7 +53,7 @@
 ### B. ジオコーディング API が seed 実行時に走る（重要・課金注意）
 
 - `Greentea` / `Temple` は保存時に住所ジオコーディングする（`after_validation :geocode`）。
-  そのため **seed 1 行につき Google Geocoding API を 1 回**呼ぶ（合計 **≈530 リクエスト**: greentea 72 + temple 460）。
+  そのため **seed 1 行につき Google Geocoding API を 1 回**呼ぶ（合計 **≈534 リクエスト**: greentea 74 + temple 460）。
 - 事前確認:
   - [ ] `GOOGLE_GEOCODING_API_KEY` を seed 実行環境に設定（未設定だと緯度経度が入らず**距離検索 API が壊れる**）
   - [ ] 当該キーの API クォータ / 課金上限を確認（無料枠を超えると 429 / 課金）
