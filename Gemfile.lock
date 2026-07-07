@@ -130,7 +130,7 @@ GEM
       dry-validation (~> 1.0, >= 1.0.0)
     connection_pool (3.0.2)
     crass (1.0.7)
-    cssbundling-rails (1.1.1)
+    cssbundling-rails (1.4.3)
       railties (>= 6.0.0)
     csv (3.3.5)
     date (3.5.1)
