@@ -8,7 +8,7 @@
 #
 # ⚠️ Greentea / Temple は保存時に住所ジオコーディングを行う（app/models/*.rb の
 #    `after_validation :geocode`）。この seed を流すと 1 レコードにつき Google Geocoding
-#    API を 1 回叩くため、GOOGLE_GEOCODING_API_KEY の設定とクォータ/課金に注意すること。
+#    API を 1 回叩くため、GMAP_API の設定とクォータ/課金に注意すること。
 #    詳細は docs/infra/deploy-runbook.md の「デプロイ前チェックリスト」を参照。
 require "csv"
 

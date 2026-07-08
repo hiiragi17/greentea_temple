@@ -40,16 +40,19 @@ bundle exec rubocop
 
 ## 必須環境変数
 
+サンプルは `.env.example` を参照（`cp .env.example .env` で開発用に利用。dotenv-rails 導入済み）。
+変数名は**実コードが `ENV[..]` で参照している名前**に合わせる。
+
 | 変数名 | 用途 |
 |---|---|
-| `GOOGLE_GEOCODING_API_KEY` | 住所 → 緯度経度（Geocoder） |
-| `GOOGLE_MAPS_API_KEY` | 地図描画（JS から参照）。`GOOGLE_DIRECTIONS_API_KEY` 未設定時は経路計算でも再利用 |
-| `GOOGLE_DIRECTIONS_API_KEY` | モデルルートの経路・所要時間計算（Directions API・#153）。未設定なら `GOOGLE_MAPS_API_KEY` にフォールバック |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（#90 で Twitter から移行） |
-| `LINE_KEY` / `LINE_SECRET` | LINE OAuth |
-| `DATABASE_URL` | 本番 PostgreSQL（#118 で Neon へ移行予定） |
-| `FRONTEND_URL` | CORS allowlist。開発: `http://localhost:3000` / 本番: `https://matcha-to-jinja.com`（#113〜） |
-| `JWT_SECRET_KEY` | API 用 JWT 署名（#115〜） |
+| `GMAP_API` | 住所 → 緯度経度（Geocoder。`config/initializers/geocoder.rb`）。seed 実行時に必須 |
+| `GOOGLE_MAP_API` | 地図描画（Maps JavaScript API。`app/views/**/*.erb` から HTML に埋め込み） |
+| `GOOGLE_DIRECTIONS_API_KEY` | モデルルートの経路・所要時間計算（Directions API・#153）。未設定なら `GOOGLE_MAPS_API_KEY` にフォールバック（`app/services/directions_service.rb`。地図描画用の `GOOGLE_MAP_API` とは**別名**なので注意） |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（#90 で Twitter から移行）。未設定時は credentials の `google.client_id` / `google.client_secret` にフォールバック |
+| （LINE は ENV 不可） | LINE OAuth は `credentials.yml.enc` の `line.channel_id` / `line.channel_secret` のみ参照（`config/initializers/sorcery.rb`）。環境変数では有効化されない |
+| `DATABASE_URL` | 本番 PostgreSQL（Neon。pooled + `sslmode=require`） |
+| `FRONTEND_URL` | CORS allowlist。開発: `http://localhost:3000`（デフォルト）/ 本番: `https://matcha-to-jinja.com`（#113〜） |
+| `JWT_SECRET_KEY` | API 用 JWT 署名（#115〜）。credentials の `jwt_secret` が優先 |
 | `RAILS_MASTER_KEY` | `credentials.yml.enc` 復号 |
 | `APP_HOSTS`（任意） | 本番の Host Authorization 追加許可リスト（カンマ区切り）。本番は常時有効で `*.run.app` を自動許可。カスタムドメインは本変数で追加する（未設定でも `*.run.app` のみ許可＝fail-open しない）。`/api/v1/health` は除外（#118） |
 
