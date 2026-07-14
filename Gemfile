@@ -70,7 +70,7 @@ gem 'rails-i18n'
 gem 'kaminari'
 
 # Search
-gem 'ransack', '~> 4.1'
+gem 'ransack', '~> 4.4'
 
 # Image upload
 gem 'carrierwave', '~> 2.0'
