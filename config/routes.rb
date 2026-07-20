@@ -55,6 +55,11 @@ Rails.application.routes.draw do
   get 'terms_of_service', to: 'static_pages#terms_of_service'
   get 'privacy_policy', to: 'static_pages#privacy_policy'
 
+  # PWA: Rails 8 標準の Rails::PwaController で app/views/pwa/* を動的配信する
+  # （manifest はレイアウトから pwa_manifest_path(format: :json) で参照）
+  get 'manifest', to: 'rails/pwa#manifest', as: :pwa_manifest
+  get 'service-worker', to: 'rails/pwa#service_worker', as: :pwa_service_worker
+
   resources :users
 
   get 'login', to: 'user_sessions#new'
