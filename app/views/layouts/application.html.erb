@@ -4,6 +4,9 @@
     <title><%= page_title(yield(:title)) %></title>
     <%= display_meta_tags(default_meta_tags) %>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#5E7E5F">
+    <%= tag.link rel: 'manifest', href: pwa_manifest_path(format: :json) %>
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= include_gon %>

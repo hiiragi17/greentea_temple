@@ -6763,5 +6763,14 @@
   // app/javascript/controllers/index.js
   application.register("hello", hello_controller_default);
   application.register("current-location-map", current_location_map_controller_default);
+
+  // app/javascript/application.js
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/service-worker.js").catch((error2) => {
+        console.error("Service Worker registration failed:", error2);
+      });
+    });
+  }
 })();
 //# sourceMappingURL=assets/application.js.map
