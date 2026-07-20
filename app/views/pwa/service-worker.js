@@ -19,10 +19,20 @@ self.addEventListener("activate", (event) => {
   )
 })
 
-// ページ遷移（navigate）のみ処理する。API（/api/v1）や静的アセットは
-// キャッシュせず素通しにして、Turbo・JWT 認証の挙動に影響を与えない。
+// ページ系リクエストのみ処理する。通常のナビゲーション（navigate）に加え、
+// Turbo Drive のページ遷移は fetch（mode: "cors"）になるため、同一オリジン
+// かつ Accept: text/html の GET も対象にする。API（/api/v1、Accept: JSON）や
+// 静的アセットは素通しにして、JWT 認証やアセット配信の挙動に影響を与えない。
+const isPageRequest = (request) => {
+  if (request.method !== "GET") return false
+  if (request.mode === "navigate") return true
+
+  const accept = request.headers.get("Accept") || ""
+  return new URL(request.url).origin === self.location.origin && accept.includes("text/html")
+}
+
 self.addEventListener("fetch", (event) => {
-  if (event.request.mode !== "navigate") return
+  if (!isPageRequest(event.request)) return
 
   event.respondWith(
     fetch(event.request).catch(() => caches.match(OFFLINE_URL))
