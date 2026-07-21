@@ -17,7 +17,7 @@ gem "puma", "~> 8.0"
 
 # Rack 3 は capybara 3.40 + puma 5 と非互換（rack/handler 削除）。
 # Rack 3 化は puma 6 / capybara 更新と合わせて別途対応する。
-gem "rack", "~> 2.2"
+gem "rack", "~> 3.2"
 
 # Bundle and transpile JavaScript [https://github.com/rails/jsbundling-rails]
 gem "jsbundling-rails"
