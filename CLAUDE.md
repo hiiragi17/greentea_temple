@@ -170,12 +170,29 @@ GET    /api/v1/temples/:id            # 詳細 + nearby_greenteas
 GET    /api/v1/genres                 # 全件返す（ページネーションなし・meta なし）
 GET    /api/v1/areas                  # 全件返す（ページネーションなし・meta なし）
 GET    /api/v1/nearby?lat&lng&radius  # 現在地から radius km 以内
-POST   /api/v1/auth/:provider         # OAuth → JWT 発行
+POST   /api/v1/auth/:provider         # OAuth → JWT 発行（provider = line|google）
+DELETE /api/v1/auth/logout            # ログアウト
 GET    /api/v1/current_user
 GET    /api/v1/greentea_likes         # 認証必須
 POST   /api/v1/greentea_likes
 DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 (temple_likes / greenteacomments / templecomments も同型)
+
+# モデルルート（#153。認証必須）
+GET    /api/v1/routes                 # 一覧
+GET    /api/v1/routes/:id             # 詳細（RouteSpot 経由で spot を展開）
+POST   /api/v1/routes                 # 作成
+PATCH  /api/v1/routes/:id             # 更新
+DELETE /api/v1/routes/:id             # 削除
+
+# 管理用 API（#190〜#193。admin 権限必須。未認証 401 / 非 admin 403）
+POST   /api/v1/admin/greenteas            # 作成 → 201 { greentea: <詳細> }
+PATCH  /api/v1/admin/greenteas/:id        # 更新 → 200 { greentea: <詳細> }
+DELETE /api/v1/admin/greenteas/:id        # 削除 → 204
+(temples も同型。closed なし / area_ids で地域関連付け)
+GET    /api/v1/admin/comments             # 抹茶店・神社コメントの横断一覧（type / spot_id で絞り込み）
+DELETE /api/v1/admin/greenteacomments/:id # コメント削除（admin は他人のも可）→ 204
+DELETE /api/v1/admin/templecomments/:id   # 同上
 ```
 
 ### レスポンス共通フィールド（snake_case）
