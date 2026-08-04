@@ -71,7 +71,7 @@ gem 'kaminari'
 gem 'ransack', '~> 4.4'
 
 # Image upload
-gem 'carrierwave', '~> 2.0'
+gem 'carrierwave', '~> 3.1'
 gem 'mini_magick'
 
 # ActiveRecord
