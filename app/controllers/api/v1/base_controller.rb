@@ -5,6 +5,7 @@ module Api
       MAX_PER_PAGE = 100
 
       before_action :set_default_format
+      after_action :set_no_store_cache_headers
 
       rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
       rescue_from ActionController::ParameterMissing, with: :render_bad_request
@@ -118,6 +119,12 @@ module Api
 
       def set_default_format
         request.format = :json
+      end
+
+      # ブラウザが GET レスポンスを ETag/条件付きGETでキャッシュし、
+      # 更新後も古いデータを 304 で返してしまうのを防ぐ（例: いいね一覧）。
+      def set_no_store_cache_headers
+        response.headers['Cache-Control'] = 'no-store'
       end
 
       def render_not_found(exception = nil)
