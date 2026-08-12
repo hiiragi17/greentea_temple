@@ -119,6 +119,7 @@ RSpec.describe 'Api::V1::GreenteaLikes', type: :request do
       it 'returns 404 when no like exists' do
         delete "/api/v1/greentea_likes/#{greentea.id}", headers: auth
         expect(response).to have_http_status(:not_found)
+        expect(response.headers['Cache-Control']).to eq('no-store')
       end
 
       it 'never deletes another user\'s like' do

@@ -4,8 +4,8 @@ module Api
       DEFAULT_PER_PAGE = 15
       MAX_PER_PAGE = 100
 
+      prepend_before_action :set_no_store_cache_headers
       before_action :set_default_format
-      after_action :set_no_store_cache_headers
 
       rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
       rescue_from ActionController::ParameterMissing, with: :render_bad_request
@@ -123,6 +123,8 @@ module Api
 
       # ブラウザが GET レスポンスを ETag/条件付きGETでキャッシュし、
       # 更新後も古いデータを 304 で返してしまうのを防ぐ（例: いいね一覧）。
+      # after_action だと例外(rescue_from)や別の before_action の render で
+      # 途中終了した際にスキップされるため、必ず先頭で実行されるようprepend_before_actionを使う。
       def set_no_store_cache_headers
         response.headers['Cache-Control'] = 'no-store'
       end

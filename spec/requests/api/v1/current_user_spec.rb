@@ -30,6 +30,7 @@ RSpec.describe 'Api::V1::CurrentUser', type: :request do
 
         expect(response).to have_http_status(:unauthorized)
         expect(response.parsed_body).to eq('error' => 'Unauthorized')
+        expect(response.headers['Cache-Control']).to eq('no-store')
       end
     end
 
@@ -92,6 +93,9 @@ RSpec.describe 'Api::V1::CurrentUser', type: :request do
         patch '/api/v1/current_user', params: { user: { name: '' } }, headers: auth_header(token)
 
         expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.media_type).to eq('application/json')
+        expect(response.parsed_body).to have_key('error')
+        expect(response.headers['Cache-Control']).to eq('no-store')
         expect(user.reload.name).to eq('抹茶ファン1号')
       end
 
@@ -101,6 +105,18 @@ RSpec.describe 'Api::V1::CurrentUser', type: :request do
         patch '/api/v1/current_user', params: {}, headers: auth_header(token)
 
         expect(response).to have_http_status(:bad_request)
+        expect(response.media_type).to eq('application/json')
+        expect(response.parsed_body).to have_key('error')
+        expect(response.headers['Cache-Control']).to eq('no-store')
+      end
+
+      it 'returns 400 instead of 500 when user is not a hash' do
+        token = JwtService.encode(user_id: user.id)
+
+        patch '/api/v1/current_user', params: { user: 'not-a-hash' }, headers: auth_header(token)
+
+        expect(response).to have_http_status(:bad_request)
+        expect(user.reload.name).to eq('抹茶ファン1号')
       end
     end
 
@@ -109,6 +125,9 @@ RSpec.describe 'Api::V1::CurrentUser', type: :request do
         patch '/api/v1/current_user', params: { user: { name: '新しい名前' } }
 
         expect(response).to have_http_status(:unauthorized)
+        expect(response.media_type).to eq('application/json')
+        expect(response.parsed_body).to have_key('error')
+        expect(response.headers['Cache-Control']).to eq('no-store')
       end
     end
   end
