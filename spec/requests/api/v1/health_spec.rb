@@ -7,6 +7,7 @@ RSpec.describe 'Api::V1::Health', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body).to eq('status' => 'ok')
+      expect(response.headers['Cache-Control']).to eq('no-store')
     end
   end
 end
