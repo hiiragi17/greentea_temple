@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       delete 'auth/logout', to: 'auth#destroy'
       post 'auth/:provider', to: 'auth#create', constraints: { provider: /line|google/ }
       get 'current_user', to: 'current_user#show'
+      patch 'current_user', to: 'current_user#update'
 
       resources :greenteas, only: %i[index show]
       resources :temples, only: %i[index show]

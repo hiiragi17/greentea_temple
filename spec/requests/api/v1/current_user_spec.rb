@@ -67,4 +67,49 @@ RSpec.describe 'Api::V1::CurrentUser', type: :request do
       end
     end
   end
+
+  describe 'PATCH /api/v1/current_user' do
+    let(:user) { User.create!(name: '抹茶ファン1号') }
+
+    def auth_header(token)
+      { 'Authorization' => "Bearer #{token}" }
+    end
+
+    context 'with a valid JWT' do
+      it 'updates the name and returns 200 with the updated payload' do
+        token = JwtService.encode(user_id: user.id)
+
+        patch '/api/v1/current_user', params: { user: { name: '新しい名前' } }, headers: auth_header(token)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['user']).to include('id' => user.id, 'name' => '新しい名前')
+        expect(user.reload.name).to eq('新しい名前')
+      end
+
+      it 'returns 422 when the name is blank' do
+        token = JwtService.encode(user_id: user.id)
+
+        patch '/api/v1/current_user', params: { user: { name: '' } }, headers: auth_header(token)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(user.reload.name).to eq('抹茶ファン1号')
+      end
+
+      it 'returns 400 when the user param is missing' do
+        token = JwtService.encode(user_id: user.id)
+
+        patch '/api/v1/current_user', params: {}, headers: auth_header(token)
+
+        expect(response).to have_http_status(:bad_request)
+      end
+    end
+
+    context 'without a token' do
+      it 'returns 401' do
+        patch '/api/v1/current_user', params: { user: { name: '新しい名前' } }
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
 end
