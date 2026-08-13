@@ -4,24 +4,26 @@ module Api
       before_action :require_authentication!
 
       def index
-        scope = current_user.greenteas.includes(:genres).order('greentea_likes.created_at DESC')
+        scope = current_user.greentea_likes.includes(greentea: :genres).order(created_at: :desc)
         paginated = paginate(scope).load
-        ids = paginated.map(&:id)
-        like_counts = GreenteaLike.where(greentea_id: ids).group(:greentea_id).count
+        greentea_ids = paginated.map(&:greentea_id)
+        like_counts = GreenteaLike.where(greentea_id: greentea_ids).group(:greentea_id).count
 
         render_collection(
           paginated,
-          serializer: GreenteaSerializer,
-          serializer_params: { like_counts: like_counts, liked_ids: ids.to_set }
+          serializer: GreenteaLikeSerializer,
+          root: :greentea_likes,
+          serializer_params: { like_counts: like_counts }
         )
       end
 
       def create
         greentea = Greentea.find(params[:greentea_id])
-        current_user.greentea_likes.find_or_create_by!(greentea: greentea)
-        render_like_state(greentea.id, liked: true)
+        like = current_user.greentea_likes.find_or_create_by!(greentea: greentea)
+        render_like(like)
       rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
-        render_like_state(greentea.id, liked: true)
+        like = current_user.greentea_likes.find_by!(greentea: greentea)
+        render_like(like)
       end
 
       def destroy
@@ -30,19 +32,19 @@ module Api
         return render_not_found unless like
 
         like.destroy!
-        render_like_state(greentea_id, liked: false)
+        head :no_content
       end
 
       private
 
-      def render_like_state(greentea_id, liked:)
-        render json: {
-          data: {
-            greentea_id: greentea_id,
-            liked: liked,
-            like_count: GreenteaLike.where(greentea_id: greentea_id).count
-          }
-        }, status: :ok
+      def render_like(like)
+        like_counts = { like.greentea_id => GreenteaLike.where(greentea_id: like.greentea_id).count }
+        render_resource(
+          like,
+          serializer: GreenteaLikeSerializer,
+          root: :greentea_like,
+          serializer_params: { like_counts: like_counts }
+        )
       end
     end
   end

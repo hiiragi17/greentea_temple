@@ -16,18 +16,24 @@ RSpec.describe 'Api::V1::TempleLikes', type: :request do
     end
 
     context 'when authenticated' do
-      it 'returns the current user\'s liked temples' do
+      it 'returns the current user\'s likes with nested temple and meta' do
         liked = create(:temple)
         unliked = create(:temple)
-        TempleLike.create!(user: user, temple: liked)
+        like = TempleLike.create!(user: user, temple: liked)
         TempleLike.create!(user: other_user, temple: unliked)
 
         get '/api/v1/temple_likes', headers: auth
 
         expect(response).to have_http_status(:ok)
         json = response.parsed_body
-        ids = json['data'].map { |d| d['id'] }
-        expect(ids).to eq([liked.id])
+        items = json['temple_likes']
+        expect(items.map { |d| d['id'] }).to eq([like.id])
+        expect(items.first['created_at']).to be_present
+        expect(items.first['temple']).to include(
+          'id' => liked.id,
+          'name' => liked.name,
+          'likes_count' => 1
+        )
         expect(json['meta']).to include(
           'current_page' => 1,
           'total_pages' => 1,
@@ -47,17 +53,16 @@ RSpec.describe 'Api::V1::TempleLikes', type: :request do
     end
 
     context 'when authenticated' do
-      it 'creates a like and returns 200' do
+      it 'creates a like and returns temple_like with nested temple' do
         expect {
           post '/api/v1/temple_likes', params: { temple_id: temple.id }, headers: auth
         }.to change { TempleLike.where(user: user, temple: temple).count }.from(0).to(1)
 
         expect(response).to have_http_status(:ok)
-        expect(response.parsed_body['data']).to include(
-          'temple_id' => temple.id,
-          'liked' => true,
-          'like_count' => 1
-        )
+        body = response.parsed_body['temple_like']
+        expect(body['id']).to eq(TempleLike.find_by!(user: user, temple: temple).id)
+        expect(body['created_at']).to be_present
+        expect(body['temple']).to include('id' => temple.id, 'likes_count' => 1)
       end
 
       it 'is idempotent on duplicate POST' do
@@ -68,6 +73,7 @@ RSpec.describe 'Api::V1::TempleLikes', type: :request do
         }.not_to change(TempleLike, :count)
 
         expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['temple_like']['temple']).to include('likes_count' => 1)
       end
 
       it 'is idempotent even when the race raises RecordInvalid (validation)' do
@@ -79,6 +85,7 @@ RSpec.describe 'Api::V1::TempleLikes', type: :request do
         post '/api/v1/temple_likes', params: { temple_id: temple.id }, headers: auth
 
         expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['temple_like']['temple']).to include('likes_count' => 1)
       end
 
       it 'returns 404 when temple does not exist' do
@@ -97,14 +104,15 @@ RSpec.describe 'Api::V1::TempleLikes', type: :request do
     end
 
     context 'when authenticated' do
-      it 'deletes the current user\'s like with :id = temple_id' do
+      it 'deletes the current user\'s like with :id = temple_id and returns 204' do
         TempleLike.create!(user: user, temple: temple)
 
         expect {
           delete "/api/v1/temple_likes/#{temple.id}", headers: auth
         }.to change(TempleLike, :count).by(-1)
 
-        expect(response).to have_http_status(:ok)
+        expect(response).to have_http_status(:no_content)
+        expect(response.body).to be_blank
       end
 
       it 'returns 404 when no like exists' do
