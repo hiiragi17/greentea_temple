@@ -18,7 +18,8 @@ module Api
         expected = ENV['WARMUP_TOKEN'].to_s
         token = request.headers['X-Warmup-Token'].to_s
         return render json: { error: 'Unauthorized' }, status: :unauthorized if expected.blank?
-        return render json: { error: 'Unauthorized' }, status: :unauthorized unless ActiveSupport::SecurityUtils.secure_compare(token, expected)
+
+        render json: { error: 'Unauthorized' }, status: :unauthorized unless ActiveSupport::SecurityUtils.secure_compare(token, expected)
       end
     end
   end
