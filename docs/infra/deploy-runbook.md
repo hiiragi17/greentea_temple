@@ -314,7 +314,8 @@ gcloud run domain-mappings create \
 ## 6.5. 運用: 本番で admin ロールを付与する
 
 `User#role`（`general` / `admin`）はセルフサービスの昇格 API を持たない設計（`app/controllers/api/v1/base_controller.rb`
-の `require_admin!` が唯一のガード）。付与は console 経由の手動作業になる。
+の `require_admin!` が唯一のガード）。**API 経由の自動昇格は存在せず**、最初の1人目は console（方法A/B）で手動付与し、
+2人目以降は既に admin になっているユーザーが Administrate（方法C）から昇格させる、という2段階の運用になる。
 
 Cloud Run には SSH/exec できないが、DB は Neon（外部公開エンドポイント + `sslmode=require`）なので
 **ローカルから `DATABASE_URL` を本番 Neon に向けて `rails console` を起動**すれば足りる
@@ -322,43 +323,88 @@ Cloud Run には SSH/exec できないが、DB は Neon（外部公開エンド�
 
 ### 方法A: ローカルから本番 Neon に向けて console（最初の1人目の bootstrap 用）
 
+`DATABASE_URL` / `RAILS_MASTER_KEY` をコマンドラインに直接書くとシェル履歴に残るため、
+`read -s` で非表示入力し、使用後は環境変数を破棄する。
+
 ```bash
-DATABASE_URL="<Neonのpooled接続文字列。sslmode=require>" \
+read -rsp 'DATABASE_URL: ' DATABASE_URL; echo
+read -rsp 'RAILS_MASTER_KEY: ' RAILS_MASTER_KEY; echo
 RAILS_ENV=production \
-RAILS_MASTER_KEY="<config/master.keyの値>" \
+DATABASE_URL="$DATABASE_URL" \
+RAILS_MASTER_KEY="$RAILS_MASTER_KEY" \
 bin/rails console
+unset DATABASE_URL RAILS_MASTER_KEY
 ```
 
 ```ruby
 # users テーブルに email が無いため、name か Authentication の provider/uid で対象を特定する
-User.where(name: "対象ユーザーの表示名")
+candidates = User.where(name: "対象ユーザーの表示名")
 # または OAuth の provider/uid が分かっている場合
-User.joins(:authentications).where(authentications: { provider: "google", uid: "1234567890" })
+candidates = User.joins(:authentications).where(authentications: { provider: "google", uid: "1234567890" })
 
-# 対象を1件に絞れたら
-user = User.find(<id>)
+# 必ず id / name / provider・uid を出力して「対象は1件だけか」を目視確認してから次に進む
+candidates.map { |u| [u.id, u.name, u.authentications.pluck(:provider, :uid)] }
+# => [[1, "対象ユーザーの表示名", [["google", "1234567890"]]]]
+
+# 上記で確認できた id を使う（対象が複数・0件の場合は絞り込み条件を見直してから中断する）
+user = User.find(<確認済みのid>)
 user.update!(role: :admin)
 ```
 
-- **必ず `update!` の前に検索結果を確認**する（`update_all` や範囲指定はしない）
-- `DATABASE_URL` / `RAILS_MASTER_KEY` は機密情報。シェル履歴に残さない・使用後は破棄する
+- **`update!` の前に必ず候補の件数と id/name/provider/uid を確認**する（`update_all` や範囲指定はしない）
 - 用途は「最初の1人目」の bootstrap に限定する。2人目以降は方法Cで昇格させる
 
 ### 方法B: Cloud Run Job（DB接続文字列をローカルに持ち出したくない場合）
 
+`--set-secrets` は Secret Manager 上のシークレットを参照する。GitHub Actions Secrets（4節）とは別に
+Secret Manager にも登録し、Job 実行 SA に `roles/secretmanager.secretAccessor` を付与しておく（未実施だと
+`--set-secrets` の解決に失敗する）。
+
 ```bash
+# Secret Manager 側の登録（初回のみ。値は標準入力から渡し、コマンドラインに残さない）
+gcloud services enable secretmanager.googleapis.com
+read -rsp 'DATABASE_URL: ' DB_URL; echo
+read -rsp 'RAILS_MASTER_KEY: ' MASTER_KEY; echo
+printf '%s' "$DB_URL"     | gcloud secrets create DATABASE_URL    --data-file=- --replication-policy=automatic
+printf '%s' "$MASTER_KEY" | gcloud secrets create RAILS_MASTER_KEY --data-file=- --replication-policy=automatic
+unset DB_URL MASTER_KEY
+
+# Job 実行 SA（未指定時は Compute Engine default SA）にアクセス権を付与
+export RUN_SA="$(gcloud iam service-accounts list \
+  --filter='displayName:Compute Engine default service account' --format='value(email)')"
+for secret in DATABASE_URL RAILS_MASTER_KEY; do
+  gcloud secrets add-iam-policy-binding "$secret" \
+    --member="serviceAccount:${RUN_SA}" \
+    --role=roles/secretmanager.secretAccessor
+done
+```
+
+対象ユーザーを確認してから昇格させる（誤った id に実行すると別ユーザーが admin になる）:
+
+```bash
+# 1. まず読み取りのみで対象を確認する
 gcloud run jobs create grant-admin \
   --image="<Cloud Runサービスと同じArtifact Registryのイメージ>" \
   --region="$REGION" \
   --set-secrets=DATABASE_URL=DATABASE_URL:latest,RAILS_MASTER_KEY=RAILS_MASTER_KEY:latest \
   --command=bin/rails \
+  --args="runner","puts User.find(123).then { |u| [u.id, u.name, u.authentications.pluck(:provider, :uid)] }.inspect"
+
+gcloud run jobs execute grant-admin --region="$REGION" --wait
+gcloud logging read \
+  'resource.type=cloud_run_job AND resource.labels.job_name=grant-admin' \
+  --limit=5 --format='value(textPayload)'
+
+# 2. ログの id/name/provider/uid が期待どおりであることを確認したうえで、昇格に切り替えて実行する
+gcloud run jobs update grant-admin \
+  --region="$REGION" \
   --args="runner","User.find(123).update!(role: :admin)"
 
 gcloud run jobs execute grant-admin --region="$REGION"
-```
 
-- 対象ユーザーを変えるたびに `gcloud run jobs update grant-admin --args=...` で args を書き換えて execute する
-- 使い終わったら `gcloud run jobs delete grant-admin` で削除する（残すと誤実行のリスクがある）
+# 3. 使い終わったら削除する（残すと誤実行のリスクがある）
+gcloud run jobs delete grant-admin --region="$REGION"
+```
 
 ### 方法C: Administrate 画面（2人目以降・平常運用）
 
