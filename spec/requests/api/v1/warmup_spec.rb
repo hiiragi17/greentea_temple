@@ -34,6 +34,8 @@ RSpec.describe 'Api::V1::Warmup', type: :request do
       end
 
       it 'returns 200 and touches the database when the header matches' do
+        expect(ActiveRecord::Base.connection).to receive(:execute).with('SELECT 1').and_call_original
+
         get '/api/v1/warmup', headers: { 'X-Warmup-Token' => 'test-warmup-token' }
 
         expect(response).to have_http_status(:ok)
