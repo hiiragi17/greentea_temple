@@ -1,8 +1,10 @@
 name: Deploy to Cloud Run
 
-# 当面は手動トリガのみ。Workload Identity Federation / 各 secrets / vars が
-# 揃ったタイミングで `push: branches: [main]` を有効化する想定（#118）。
+# Workload Identity Federation / 各 secrets / vars が揃ったため、
+# main への push で自動デプロイする（#118）。手動デプロイも引き続き可能。
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       image_tag:
