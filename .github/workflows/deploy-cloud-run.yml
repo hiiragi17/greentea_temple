@@ -92,12 +92,15 @@ jobs:
       # 環境変数名はアプリ実コードが ENV[..] で参照している名前に合わせている:
       #   - GMAP_API           : config/initializers/geocoder.rb
       #   - GOOGLE_MAP_API     : app/views/**/*.erb (Google Maps JS API key)
+      #   - GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET : Sorcery Google OAuth
+      #     （config/initializers/sorcery.rb。未設定時は credentials の
+      #     google.client_id / google.client_secret にフォールバック）
       # （CLAUDE.md / .env.example も同名で統一済み）
       #
-      # SECRET_KEY_BASE は credentials.yml.enc に持たせる場合 RAILS_MASTER_KEY
-      # 経由で復号されるため不要。`secrets.SECRET_KEY_BASE` を unconditionally
-      # に渡すと secret 未設定時に空文字で credentials 由来の値を上書きして
-      # しまうため、secret が存在するときのみ env_vars に含める
+      # SECRET_KEY_BASE / GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET は
+      # credentials.yml.enc にフォールバック値を持たせられるため、
+      # unconditionally に渡すと secret 未設定時に空文字でフォールバックを
+      # 上書きしてしまう。secret が存在するときのみ env_vars に含める
       - name: Compose Cloud Run env vars
         id: env
         env:
@@ -109,6 +112,8 @@ jobs:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           GMAP_API: ${{ secrets.GMAP_API }}
           GOOGLE_MAP_API: ${{ secrets.GOOGLE_MAP_API }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           LINE_KEY: ${{ secrets.LINE_KEY }}
           LINE_SECRET: ${{ secrets.LINE_SECRET }}
         run: |
@@ -131,6 +136,12 @@ jobs:
             echo "LINE_SECRET=${LINE_SECRET}"
             if [ -n "${SECRET_KEY_BASE}" ]; then
               echo "SECRET_KEY_BASE=${SECRET_KEY_BASE}"
+            fi
+            if [ -n "${GOOGLE_CLIENT_ID}" ]; then
+              echo "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}"
+            fi
+            if [ -n "${GOOGLE_CLIENT_SECRET}" ]; then
+              echo "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}"
             fi
             echo "__ENV_EOF__"
           } >> "$GITHUB_OUTPUT"
