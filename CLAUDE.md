@@ -55,6 +55,7 @@ bundle exec rubocop
 | `JWT_SECRET_KEY` | API 用 JWT 署名（#115〜）。credentials の `jwt_secret` が優先 |
 | `RAILS_MASTER_KEY` | `credentials.yml.enc` 復号 |
 | `APP_HOSTS`（任意） | 本番の Host Authorization 追加許可リスト（カンマ区切り）。本番は常時有効で `*.run.app` を自動許可。カスタムドメインは本変数で追加する（未設定でも `*.run.app` のみ許可＝fail-open しない）。`/api/v1/health` は除外（#118） |
+| `WARMUP_TOKEN`（任意） | Neon のオートサスペンド対策用ウォームアップエンドポイント（`GET /api/v1/warmup`）の認証トークン。Cloud Scheduler からのみ呼び出せるよう `X-Warmup-Token` ヘッダと比較する。未設定時は常に 401（fail closed。`app/controllers/api/v1/warmup_controller.rb`・#242） |
 
 ## DB 構成
 
