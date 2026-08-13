@@ -2,8 +2,16 @@ name: Deploy to Cloud Run
 
 # Workload Identity Federation / 各 secrets / vars が揃ったため、
 # main への push で自動デプロイする（#118）。手動デプロイも引き続き可能。
+#
+# CI（rubocop / rspec）をゲートにするため push ではなく workflow_run で
+# CI 完了を待ち受ける（docs/infra/deploy-cost-comparison.md 4-5 の設計方針）。
+# workflow_run の GITHUB_SHA はデフォルトブランチの最新コミットを指し、
+# CI が検証した実際のコミットとずれる可能性があるため、
+# github.event.workflow_run.head_sha を明示的に使う
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
     inputs:
@@ -16,19 +24,34 @@ permissions:
   contents: read
   id-token: write # Workload Identity Federation
 
+# 連続 push で新旧のデプロイ実行が競合し、古いビルドが後から完了して
+# 新しいリビジョンを上書きしないよう直列化する。デプロイ先（Cloud Run
+# サービス / Artifact Registry の :latest タグ）はトリガー元のブランチに
+# 関わらず単一のため、グループはブランチで分けず固定名にする。
+# cancel-in-progress は Cloud Run へのデプロイ処理を中途半端な状態で
+# 中断させないよう false にする
+concurrency:
+  group: deploy-cloud-run
+  cancel-in-progress: false
+
 env:
   GCP_REGION: asia-northeast1
   SERVICE_NAME: greentea-temple
+  DEPLOY_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
   deploy:
     name: Build & Deploy
     runs-on: ubuntu-latest
+    # workflow_run は CI の成功/失敗どちらでも発火するため、成功時のみ実行する。
+    # workflow_dispatch には conclusion が存在しないので別途許可する
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ env.DEPLOY_SHA }}
 
       # inputs.image_tag を `run:` スクリプトに直接展開すると script injection
       # の余地があるため、必ず env 経由で受け取る。さらに Docker / OCI のタグ
@@ -46,7 +69,7 @@ jobs:
             fi
             echo "tag=${INPUT_TAG}" >> "$GITHUB_OUTPUT"
           else
-            echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+            echo "tag=${DEPLOY_SHA::12}" >> "$GITHUB_OUTPUT"
           fi
 
       # GitHub Actions の `jobs.<job_id>.env` では `secrets` コンテキストが
