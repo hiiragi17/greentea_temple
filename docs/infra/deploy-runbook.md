@@ -311,6 +311,63 @@ gcloud run domain-mappings create \
 
 ---
 
+## 6.5. 運用: 本番で admin ロールを付与する
+
+`User#role`（`general` / `admin`）はセルフサービスの昇格 API を持たない設計（`app/controllers/api/v1/base_controller.rb`
+の `require_admin!` が唯一のガード）。付与は console 経由の手動作業になる。
+
+Cloud Run には SSH/exec できないが、DB は Neon（外部公開エンドポイント + `sslmode=require`）なので
+**ローカルから `DATABASE_URL` を本番 Neon に向けて `rails console` を起動**すれば足りる
+（3-4 節の seed 投入と同じパターン）。
+
+### 方法A: ローカルから本番 Neon に向けて console（最初の1人目の bootstrap 用）
+
+```bash
+DATABASE_URL="<Neonのpooled接続文字列。sslmode=require>" \
+RAILS_ENV=production \
+RAILS_MASTER_KEY="<config/master.keyの値>" \
+bin/rails console
+```
+
+```ruby
+# users テーブルに email が無いため、name か Authentication の provider/uid で対象を特定する
+User.where(name: "対象ユーザーの表示名")
+# または OAuth の provider/uid が分かっている場合
+User.joins(:authentications).where(authentications: { provider: "google", uid: "1234567890" })
+
+# 対象を1件に絞れたら
+user = User.find(<id>)
+user.update!(role: :admin)
+```
+
+- **必ず `update!` の前に検索結果を確認**する（`update_all` や範囲指定はしない）
+- `DATABASE_URL` / `RAILS_MASTER_KEY` は機密情報。シェル履歴に残さない・使用後は破棄する
+- 用途は「最初の1人目」の bootstrap に限定する。2人目以降は方法Cで昇格させる
+
+### 方法B: Cloud Run Job（DB接続文字列をローカルに持ち出したくない場合）
+
+```bash
+gcloud run jobs create grant-admin \
+  --image="<Cloud Runサービスと同じArtifact Registryのイメージ>" \
+  --region="$REGION" \
+  --set-secrets=DATABASE_URL=DATABASE_URL:latest,RAILS_MASTER_KEY=RAILS_MASTER_KEY:latest \
+  --command=bin/rails \
+  --args="runner","User.find(123).update!(role: :admin)"
+
+gcloud run jobs execute grant-admin --region="$REGION"
+```
+
+- 対象ユーザーを変えるたびに `gcloud run jobs update grant-admin --args=...` で args を書き換えて execute する
+- 使い終わったら `gcloud run jobs delete grant-admin` で削除する（残すと誤実行のリスクがある）
+
+### 方法C: Administrate 画面（2人目以降・平常運用）
+
+既に admin が1人いれば、以降は `/admin/users`（`Admin::ApplicationController` が
+`current_user.admin?` でガード、`UserDashboard` の `FORM_ATTRIBUTES` に `role` あり）から
+その admin が対象ユーザーの `role` を `admin` に変更できる。本番での通常運用はこちらを使う。
+
+---
+
 ## 7. 将来対応（GCS 画像配信・未実装）
 
 現状 `fog-google` 未導入のため、画像の GCS 配信は**コード対応が別途必要**。実装時のタスク:
