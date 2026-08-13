@@ -60,6 +60,7 @@ RSpec.describe 'Api::V1::GreenteaLikes', type: :request do
 
         expect(response).to have_http_status(:ok)
         body = response.parsed_body['greentea_like']
+        expect(body['id']).to eq(GreenteaLike.find_by!(user: user, greentea: greentea).id)
         expect(body['created_at']).to be_present
         expect(body['greentea']).to include('id' => greentea.id, 'likes_count' => 1)
       end

@@ -60,6 +60,7 @@ RSpec.describe 'Api::V1::TempleLikes', type: :request do
 
         expect(response).to have_http_status(:ok)
         body = response.parsed_body['temple_like']
+        expect(body['id']).to eq(TempleLike.find_by!(user: user, temple: temple).id)
         expect(body['created_at']).to be_present
         expect(body['temple']).to include('id' => temple.id, 'likes_count' => 1)
       end
