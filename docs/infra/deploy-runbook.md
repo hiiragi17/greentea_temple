@@ -215,6 +215,7 @@ echo "$SA"
 | `JWT_SECRET_KEY` | API 用 JWT 署名鍵 | 任意の十分長い乱数 |
 | `GMAP_API` | Geocoding 用 API キー | Google Cloud Console |
 | `GOOGLE_MAP_API` | Maps JS API キー | Google Cloud Console |
+| `GOOGLE_DIRECTIONS_API_KEY` | Directions API キー（モデルルートの経路・所要時間計算用） | Google Cloud Console |
 | `LINE_KEY` | LINE OAuth キー（※下記注意） | LINE Developers |
 | `LINE_SECRET` | LINE OAuth シークレット（※下記注意） | LINE Developers |
 | `SECRET_KEY_BASE` | （任意）未設定なら credentials 由来を使用 | 任意 |
@@ -240,11 +241,16 @@ echo "$SA"
 > （根本対応として initializer を `ENV['LINE_KEY']` 参照へ寄せる選択肢もあるが、認証境界に
 > 触れるため本手順書のスコープ外。別 issue で扱う。）
 
-> ⚠️ **Directions API キーは現状 Cloud Run に渡されていない**
+> ℹ️ **Directions API キーについて**
 > モデルルートの経路・所要時間計算（`app/services/directions_service.rb`・#153）は
-> `GOOGLE_DIRECTIONS_API_KEY`（未設定時は `GOOGLE_MAPS_API_KEY`）を参照するが、
-> `deploy-cloud-run.yml` はどちらの環境変数も渡していないため、本番では経路計算が
-> 無効（nil 返却）になる。本番で有効化する場合は workflow と Secrets への追加が必要。
+> `GOOGLE_DIRECTIONS_API_KEY`（未設定時は `GOOGLE_MAPS_API_KEY`）を参照する。
+> `deploy-cloud-run.yml` はこのキーを Cloud Run に渡すようになっているため、
+> 上表の `GOOGLE_DIRECTIONS_API_KEY` を Secrets に登録した後、
+> `Deploy to Cloud Run` を再実行（再デプロイ）すれば Cloud Run で有効化される
+>（Secrets の登録だけでは既存の Cloud Run サービスには反映されない）。
+> また、既存ルートの所要時間は自動では再計算されないため、有効化後に
+> モデルルートを反映させたい場合は該当ルートの `spots` を更新して
+> legs を再計算させること（#153）。
 
 ### Variables
 

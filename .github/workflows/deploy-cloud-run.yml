@@ -117,6 +117,10 @@ jobs:
       # 環境変数名はアプリ実コードが ENV[..] で参照している名前に合わせている:
       #   - GMAP_API           : config/initializers/geocoder.rb
       #   - GOOGLE_MAP_API     : app/views/**/*.erb (Google Maps JS API key)
+      #   - GOOGLE_DIRECTIONS_API_KEY : app/services/directions_service.rb
+      #     （モデルルートの経路・所要時間計算。未設定時は GOOGLE_MAPS_API_KEY に
+      #     フォールバックするが、Cloud Run にはそちらを設定していないため
+      #     このキーを明示的に渡す）
       #   - GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET : Sorcery Google OAuth
       #     （config/initializers/sorcery.rb。未設定時は credentials の
       #     google.client_id / google.client_secret にフォールバック）
@@ -137,6 +141,7 @@ jobs:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           GMAP_API: ${{ secrets.GMAP_API }}
           GOOGLE_MAP_API: ${{ secrets.GOOGLE_MAP_API }}
+          GOOGLE_DIRECTIONS_API_KEY: ${{ secrets.GOOGLE_DIRECTIONS_API_KEY }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           LINE_KEY: ${{ secrets.LINE_KEY }}
@@ -158,6 +163,7 @@ jobs:
             echo "RAILS_MASTER_KEY=${RAILS_MASTER_KEY}"
             echo "GMAP_API=${GMAP_API}"
             echo "GOOGLE_MAP_API=${GOOGLE_MAP_API}"
+            echo "GOOGLE_DIRECTIONS_API_KEY=${GOOGLE_DIRECTIONS_API_KEY}"
             echo "LINE_KEY=${LINE_KEY}"
             echo "LINE_SECRET=${LINE_SECRET}"
             if [ -n "${SECRET_KEY_BASE}" ]; then
