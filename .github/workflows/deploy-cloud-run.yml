@@ -141,6 +141,7 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           LINE_KEY: ${{ secrets.LINE_KEY }}
           LINE_SECRET: ${{ secrets.LINE_SECRET }}
+          WARMUP_TOKEN: ${{ secrets.WARMUP_TOKEN }}
         run: |
           {
             echo "vars<<__ENV_EOF__"
@@ -168,6 +169,12 @@ jobs:
             if [ -n "${GOOGLE_CLIENT_SECRET}" ]; then
               echo "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}"
             fi
+            # WARMUP_TOKEN が未設定なら warmup#show は fail closed で常に 401 を返す
+            # （app/controllers/api/v1/warmup_controller.rb）。secret 未設定時は
+            # 空文字を渡さず未設定のままにする
+            if [ -n "${WARMUP_TOKEN}" ]; then
+              echo "WARMUP_TOKEN=${WARMUP_TOKEN}"
+            fi
             echo "__ENV_EOF__"
           } >> "$GITHUB_OUTPUT"
 
@@ -177,7 +184,7 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.GCP_REGION }}
           image: ${{ steps.image.outputs.base }}:${{ steps.tag.outputs.tag }}
-          flags: --allow-unauthenticated --memory=512Mi --cpu=1 --min-instances=0 --max-instances=4
+          flags: --allow-unauthenticated --memory=512Mi --cpu=1 --min-instances=0 --max-instances=4 --cpu-boost
           env_vars: ${{ steps.env.outputs.vars }}
 
       - name: Show service URL
