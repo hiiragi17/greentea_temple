@@ -244,7 +244,12 @@ echo "$SA"
 > モデルルートの経路・所要時間計算（`app/services/directions_service.rb`・#153）は
 > `GOOGLE_DIRECTIONS_API_KEY`（未設定時は `GOOGLE_MAPS_API_KEY`）を参照する。
 > `deploy-cloud-run.yml` はこのキーを Cloud Run に渡すようになっているため、
-> 上表の `GOOGLE_DIRECTIONS_API_KEY` を Secrets に登録すれば有効化される。
+> 上表の `GOOGLE_DIRECTIONS_API_KEY` を Secrets に登録した後、
+> `Deploy to Cloud Run` を再実行（再デプロイ）すれば Cloud Run で有効化される
+>（Secrets の登録だけでは既存の Cloud Run サービスには反映されない）。
+> また、既存ルートの所要時間は自動では再計算されないため、有効化後に
+> モデルルートを反映させたい場合は該当ルートの `spots` を更新して
+> legs を再計算させること（#153）。
 
 ### Variables
 
