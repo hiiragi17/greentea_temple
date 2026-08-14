@@ -169,12 +169,12 @@ jobs:
             if [ -n "${GOOGLE_CLIENT_SECRET}" ]; then
               echo "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}"
             fi
-            # WARMUP_TOKEN が未設定なら warmup#show は fail closed で常に 401 を返す
-            # （app/controllers/api/v1/warmup_controller.rb）。secret 未設定時は
-            # 空文字を渡さず未設定のままにする
-            if [ -n "${WARMUP_TOKEN}" ]; then
-              echo "WARMUP_TOKEN=${WARMUP_TOKEN}"
-            fi
+            # WARMUP_TOKEN は credentials 側にフォールバックを持たず、未設定/空文字なら
+            # warmup#show が fail closed で常に 401 を返す（app/controllers/api/v1/warmup_controller.rb）。
+            # deploy-cloudrun action の既定 env_vars_update_strategy は merge のため、
+            # ここで条件付きスキップすると GitHub Secret を削除してもトークンが
+            # Cloud Run 側に残り続け失効しない。そのため常に（空文字でも）明示的に渡す
+            echo "WARMUP_TOKEN=${WARMUP_TOKEN}"
             echo "__ENV_EOF__"
           } >> "$GITHUB_OUTPUT"
 

@@ -322,8 +322,11 @@ gcloud run domain-mappings create \
        --uri="https://<cloud-run-url>/api/v1/warmup" \
        --http-method=GET \
        --headers="X-Warmup-Token=<WARMUP_TOKEN の値>" \
-       --attempt-deadline=10s
+       --attempt-deadline=30s
      ```
+
+     - `--attempt-deadline` は Cloud Scheduler の HTTP ターゲットで **15秒未満を指定するとジョブ作成が拒否される**（許容範囲は 15秒〜30分）。
+       Cloud Run + Neon のコールドスタート（実測 3〜8 秒 + Neon 復帰）を待てるよう余裕を見て 30 秒にしている。
 
      - スケジュール間隔は Neon のオートサスペンドまでの時間より短く設定する
        （Neon 無料プランの目安は概ね数分〜十数分でサスペンド。正確な閾値は
