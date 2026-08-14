@@ -262,7 +262,7 @@ echo "$SA"
    - `image_tag` は空でよい（commit SHA の先頭 12 桁が使われる）。
 2. ジョブの流れ:
    - WIF で GCP 認証 → `docker build` → Artifact Registry push → `deploy-cloudrun` で Cloud Run へ。
-   - デプロイ flags: `--allow-unauthenticated --memory=512Mi --cpu=1 --min-instances=0 --max-instances=4`。
+   - デプロイ flags: `--allow-unauthenticated --memory=512Mi --cpu=1 --min-instances=0 --max-instances=4 --cpu-boost`。
 3. 最終ステップでサービス URL が出力される。
 
 ### 受け入れ確認（#118 の受け入れ条件）
@@ -308,7 +308,11 @@ gcloud run domain-mappings create \
 3. **Artifact Registry の lifecycle policy**: 古い tag を自動削除し 0.5GB 無料枠を維持。
 4. **コールドスタート対策**:
    - `--cpu-boost` フラグを deploy 時に付与済み（`deploy-cloud-run.yml`）。起動時のみ CPU を
-     ブーストし Cloud Run 側の起動時間を短縮する（追加コストはほぼ無し）。
+     ブーストし Cloud Run 側の起動時間を短縮する。**課金は完全に無料ではない**点に注意：
+     ブーストされた CPU 分は起動時間中 + 起動完了後 10 秒間課金される
+     （[公式ドキュメント](https://cloud.google.com/run/docs/configuring/services/cpu)）。
+     実際の増分は起動時間・CPU 割り当て・リージョン単価・無料枠消化状況に依存するため、
+     低トラフィックの本プロジェクトでは軽微だが「完全に ¥0」ではない。
    - `/api/v1/health` は DB 非接続なので、これだけ Cloud Scheduler で叩いても **Neon は
      温まらない**。Neon ごと温めるには DB アクセスを伴う `/api/v1/warmup`
      （`app/controllers/api/v1/warmup_controller.rb`）を使う。GitHub Secret に
@@ -336,6 +340,16 @@ gcloud run domain-mappings create \
      - `--headers` にトークンを直書きするとシェル履歴に残るため、CI/CD や
        Secret Manager 経由での設定を検討する（ローカルで一度叩くだけなら
        `read -s` で変数化してから渡す）。
+     - **`WARMUP_TOKEN` をローテーションする場合**: GitHub Secret を更新して再デプロイしても、
+       既存の Cloud Scheduler ジョブは古いトークンをヘッダに保持したままのため、
+       ジョブ側も合わせて更新しないと `/api/v1/warmup` が 401 を返し続ける。
+       両方を更新すること:
+
+       ```bash
+       gcloud scheduler jobs update http warmup-greentea-temple \
+         --location="$REGION" \
+         --update-headers="X-Warmup-Token=<新しい WARMUP_TOKEN の値>"
+       ```
 
 ---
 
