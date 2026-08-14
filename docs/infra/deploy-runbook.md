@@ -218,6 +218,7 @@ echo "$SA"
 | `LINE_KEY` | LINE OAuth キー（※下記注意） | LINE Developers |
 | `LINE_SECRET` | LINE OAuth シークレット（※下記注意） | LINE Developers |
 | `SECRET_KEY_BASE` | （任意）未設定なら credentials 由来を使用 | 任意 |
+| `WARMUP_TOKEN` | （任意）ウォームアップ用エンドポイント（`GET /api/v1/warmup`）の認証トークン。Cloud Scheduler の呼び出しのみに限定するための共有シークレット | `openssl rand -hex 32` 等で生成 |
 
 > `SECRET_KEY_BASE` は **secret が存在するときのみ** Cloud Run に渡される実装。
 > credentials.yml.enc 側に持たせるなら未設定で OK（`RAILS_MASTER_KEY` で復号される）。
@@ -261,7 +262,7 @@ echo "$SA"
    - `image_tag` は空でよい（commit SHA の先頭 12 桁が使われる）。
 2. ジョブの流れ:
    - WIF で GCP 認証 → `docker build` → Artifact Registry push → `deploy-cloudrun` で Cloud Run へ。
-   - デプロイ flags: `--allow-unauthenticated --memory=512Mi --cpu=1 --min-instances=0 --max-instances=4`。
+   - デプロイ flags: `--allow-unauthenticated --memory=512Mi --cpu=1 --min-instances=0 --max-instances=4 --cpu-boost`。
 3. 最終ステップでサービス URL が出力される。
 
 ### 受け入れ確認（#118 の受け入れ条件）
@@ -305,9 +306,50 @@ gcloud run domain-mappings create \
 2. ~~**Actions の SHA ピン**~~: 対応済み。`auth` / `setup-gcloud` / `deploy-cloudrun`
    は `v3` タグの commit SHA に固定済み（`# v3` コメントで版を併記）。
 3. **Artifact Registry の lifecycle policy**: 古い tag を自動削除し 0.5GB 無料枠を維持。
-4. **コールドスタート対策（任意）**: Cloud Scheduler で `/api/v1/health` を定期的に叩いて
-   Cloud Run をウォーム維持（`/api/v1/health` は DB 非接続なので Neon は温まらない点に注意）。
-   詳細は [`deploy-cost-comparison.md`](./deploy-cost-comparison.md) の「4. 弱点克服 Tips」。
+4. **コールドスタート対策**:
+   - `--cpu-boost` フラグを deploy 時に付与済み（`deploy-cloud-run.yml`）。起動時のみ CPU を
+     ブーストし Cloud Run 側の起動時間を短縮する。**課金は完全に無料ではない**点に注意：
+     ブーストされた CPU 分は起動時間中 + 起動完了後 10 秒間課金される
+     （[公式ドキュメント](https://cloud.google.com/run/docs/configuring/services/cpu)）。
+     実際の増分は起動時間・CPU 割り当て・リージョン単価・無料枠消化状況に依存するため、
+     低トラフィックの本プロジェクトでは軽微だが「完全に ¥0」ではない。
+   - `/api/v1/health` は DB 非接続なので、これだけ Cloud Scheduler で叩いても **Neon は
+     温まらない**。Neon ごと温めるには DB アクセスを伴う `/api/v1/warmup`
+     （`app/controllers/api/v1/warmup_controller.rb`）を使う。GitHub Secret に
+     `WARMUP_TOKEN` を設定した上で、Cloud Scheduler から以下のように叩く
+     （未設定の場合 `warmup#show` は fail closed で常に 401 を返す）:
+
+     ```bash
+     gcloud scheduler jobs create http warmup-greentea-temple \
+       --location="$REGION" \
+       --schedule="*/5 * * * *" \
+       --uri="https://<cloud-run-url>/api/v1/warmup" \
+       --http-method=GET \
+       --headers="X-Warmup-Token=<WARMUP_TOKEN の値>" \
+       --attempt-deadline=30s
+     ```
+
+     - `--attempt-deadline` は Cloud Scheduler の HTTP ターゲットで **15秒未満を指定するとジョブ作成が拒否される**（許容範囲は 15秒〜30分）。
+       Cloud Run + Neon のコールドスタート（実測 3〜8 秒 + Neon 復帰）を待てるよう余裕を見て 30 秒にしている。
+
+     - スケジュール間隔は Neon のオートサスペンドまでの時間より短く設定する
+       （Neon 無料プランの目安は概ね数分〜十数分でサスペンド。正確な閾値は
+       Neon 側の設定・プランに依存するため公式ドキュメントで確認する）。
+     - 叩きすぎると Cloud Run の無料枠（月200万リクエスト）や Neon の compute 時間を
+       消費するため、5分間隔程度に留める。
+     - `--headers` にトークンを直書きするとシェル履歴に残るため、CI/CD や
+       Secret Manager 経由での設定を検討する（ローカルで一度叩くだけなら
+       `read -s` で変数化してから渡す）。
+     - **`WARMUP_TOKEN` をローテーションする場合**: GitHub Secret を更新して再デプロイしても、
+       既存の Cloud Scheduler ジョブは古いトークンをヘッダに保持したままのため、
+       ジョブ側も合わせて更新しないと `/api/v1/warmup` が 401 を返し続ける。
+       両方を更新すること:
+
+       ```bash
+       gcloud scheduler jobs update http warmup-greentea-temple \
+         --location="$REGION" \
+         --update-headers="X-Warmup-Token=<新しい WARMUP_TOKEN の値>"
+       ```
 
 ---
 
