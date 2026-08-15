@@ -37,6 +37,10 @@ module Api
       # - distance_to_next_meters: 次スポットまでの直線距離（メートル・整数）。最後は nil。
       # - route_distance_to_next_meters: 次スポットまでの経路距離（Directions API）。未算出は nil。
       # - duration_to_next_seconds: 次スポットまでの所要時間（秒）。未算出は nil。
+      # - route_polyline_to_next: 次スポットまでの道なり経路（Google Encoded Polyline
+      #   Algorithm Format の文字列）。地図に「直線」ではなく実際の道なりを描画するために使う。
+      #   直線距離のようなフォールバックは無い（未算出/未取得なら nil。フロント側は
+      #   nil の場合 distance_to_next_meters の2点間を直線描画するなど任意にフォールバックする）。
       def self.spot_payload(route_spot, next_spot)
         spot = route_spot.spottable
         {
@@ -52,7 +56,8 @@ module Api
           img: spot.img,
           distance_to_next_meters: distance_between(spot, next_spot&.spottable),
           route_distance_to_next_meters: next_spot ? route_spot.leg_distance_meters : nil,
-          duration_to_next_seconds: next_spot ? route_spot.leg_duration_seconds : nil
+          duration_to_next_seconds: next_spot ? route_spot.leg_duration_seconds : nil,
+          route_polyline_to_next: next_spot ? route_spot.leg_polyline : nil
         }
       end
 

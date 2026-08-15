@@ -24,7 +24,7 @@ class DirectionsService
   class << self
     # origin / destination は latitude / longitude を持つオブジェクト（Greentea / Temple）。
     # mode は route_spots.transport の文字列（"walk" / "train" など、nil 可）。
-    # 返り値: { distance_meters: Integer, duration_seconds: Integer } または nil。
+    # 返り値: { distance_meters: Integer, duration_seconds: Integer, polyline: String or nil } または nil。
     def leg(origin:, destination:, mode: nil)
       key = api_key
       return nil if key.blank?
@@ -83,14 +83,19 @@ class DirectionsService
     def parse(body)
       return nil unless body['status'] == 'OK'
 
-      leg = body.dig('routes', 0, 'legs', 0)
+      route = body.dig('routes', 0)
+      leg = route&.dig('legs', 0)
       return nil unless leg
 
       distance = leg.dig('distance', 'value')
       duration = leg.dig('duration', 'value')
       return nil unless distance && duration
 
-      { distance_meters: distance.to_i, duration_seconds: duration.to_i }
+      # 実際の道なりの経路を地図に描画するためのエンコード済みポリライン（Google Encoded
+      # Polyline Algorithm Format）。未取得でも distance/duration は有効に使えるので nil 許容。
+      polyline = route.dig('overview_polyline', 'points')
+
+      { distance_meters: distance.to_i, duration_seconds: duration.to_i, polyline: polyline }
     end
   end
 end

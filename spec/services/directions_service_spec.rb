@@ -8,7 +8,10 @@ RSpec.describe DirectionsService do
     {
       'status' => 'OK',
       'routes' => [
-        { 'legs' => [{ 'distance' => { 'value' => 1500 }, 'duration' => { 'value' => 1080 } }] }
+        {
+          'legs' => [{ 'distance' => { 'value' => 1500 }, 'duration' => { 'value' => 1080 } }],
+          'overview_polyline' => { 'points' => 'abc123encoded' }
+        }
       ]
     }
   end
@@ -26,11 +29,20 @@ RSpec.describe DirectionsService do
     context 'when an API key is configured' do
       before { allow(DirectionsService).to receive(:api_key).and_return('test-key') }
 
-      it 'returns distance and duration from an OK response' do
+      it 'returns distance, duration and polyline from an OK response' do
         allow(DirectionsService).to receive(:request).and_return(ok_body)
 
         result = DirectionsService.leg(origin: origin, destination: destination, mode: 'walk')
-        expect(result).to eq(distance_meters: 1500, duration_seconds: 1080)
+        expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded')
+      end
+
+      it 'returns a nil polyline when overview_polyline is missing' do
+        body = ok_body.deep_dup
+        body['routes'][0].delete('overview_polyline')
+        allow(DirectionsService).to receive(:request).and_return(body)
+
+        result = DirectionsService.leg(origin: origin, destination: destination, mode: 'walk')
+        expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: nil)
       end
 
       it 'maps walk to mode=walking' do
