@@ -82,9 +82,11 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
-    it 'exposes stored route distance/duration per leg and route totals' do
+    it 'exposes stored route distance/duration/polyline per leg and route totals' do
       route = create_route_for(user, [{ spottable: temple, transport: :walk }, { spottable: greentea }])
-      route.route_spots.order(:position).first.update!(leg_distance_meters: 1500, leg_duration_seconds: 1080)
+      route.route_spots.order(:position).first.update!(
+        leg_distance_meters: 1500, leg_duration_seconds: 1080, leg_polyline: 'abc123encoded'
+      )
 
       get "/api/v1/routes/#{route.id}", headers: auth
 
@@ -93,8 +95,10 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       spots = data['spots']
       expect(spots.first['route_distance_to_next_meters']).to eq(1500)
       expect(spots.first['duration_to_next_seconds']).to eq(1080)
+      expect(spots.first['route_polyline_to_next']).to eq('abc123encoded')
       expect(spots.last['route_distance_to_next_meters']).to be_nil
       expect(spots.last['duration_to_next_seconds']).to be_nil
+      expect(spots.last['route_polyline_to_next']).to be_nil
       expect(data['total_distance_meters']).to eq(1500)
       expect(data['total_duration_seconds']).to eq(1080)
     end
@@ -150,7 +154,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
     it 'computes and stores leg metrics via DirectionsService' do
       expect(DirectionsService).to receive(:leg)
         .with(origin: temple, destination: greentea, mode: 'walk')
-        .and_return({ distance_meters: 1500, duration_seconds: 1080 })
+        .and_return({ distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded' })
 
       post '/api/v1/routes', params: valid_params, headers: auth
 
@@ -159,11 +163,13 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       first_spot = route.route_spots.order(:position).first
       expect(first_spot.leg_distance_meters).to eq(1500)
       expect(first_spot.leg_duration_seconds).to eq(1080)
+      expect(first_spot.leg_polyline).to eq('abc123encoded')
       # 最後のスポットには次が無いので leg は保存されない。
       expect(route.route_spots.order(:position).last.leg_distance_meters).to be_nil
 
       data = response.parsed_body['data']
       expect(data['spots'].first['route_distance_to_next_meters']).to eq(1500)
+      expect(data['spots'].first['route_polyline_to_next']).to eq('abc123encoded')
       expect(data['total_distance_meters']).to eq(1500)
       expect(data['total_duration_seconds']).to eq(1080)
     end

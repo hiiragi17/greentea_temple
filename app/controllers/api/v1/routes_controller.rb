@@ -124,7 +124,8 @@ module Api
           # 失敗しても 500 にせず、その leg は nil のまま（直線距離フォールバック）。
           from.update(
             leg_distance_meters: leg[:distance_meters],
-            leg_duration_seconds: leg[:duration_seconds]
+            leg_duration_seconds: leg[:duration_seconds],
+            leg_polyline: leg[:polyline]
           )
         end
       end
