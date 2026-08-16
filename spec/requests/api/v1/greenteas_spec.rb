@@ -95,6 +95,35 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
       expect(ids).not_to include(unrelated.id)
     end
 
+    it 'filters by q[name_cont_all] requiring every keyword to match (AND search)' do
+      both = create(:greentea, name: '宇治抹茶パフェとかき氷の店')
+      only_one = create(:greentea, name: '宇治抹茶パフェの店')
+
+      get '/api/v1/greenteas', params: { q: { name_cont_all: 'パフェ かき氷' } }
+
+      ids = response.parsed_body['greenteas'].map { |d| d['id'] }
+      expect(ids).to eq([both.id])
+      expect(ids).not_to include(only_one.id)
+    end
+
+    it 'splits q[name_cont_any] on full-width spaces, commas, and Japanese commas' do
+      parfait = create(:greentea, name: '宇治抹茶パフェの店')
+      kakigori = create(:greentea, name: '抹茶かき氷専門店')
+      dango = create(:greentea, name: '抹茶だんごの店')
+      unrelated = create(:greentea, name: '普通の甘味処')
+
+      get '/api/v1/greenteas', params: { q: { name_cont_any: 'パフェ　かき氷,だんご' } }
+
+      ids = response.parsed_body['greenteas'].map { |d| d['id'] }
+      expect(ids).to contain_exactly(parfait.id, kakigori.id, dango.id)
+      expect(ids).not_to include(unrelated.id)
+
+      get '/api/v1/greenteas', params: { q: { name_cont_any: 'パフェ、かき氷' } }
+
+      ids = response.parsed_body['greenteas'].map { |d| d['id'] }
+      expect(ids).to contain_exactly(parfait.id, kakigori.id)
+    end
+
     it 'accepts q[greentea_genres_genre_id_eq_any] (legacy web key)' do
       genre = create(:genre)
       target = create(:greentea)
