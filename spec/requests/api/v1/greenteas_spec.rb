@@ -71,6 +71,30 @@ RSpec.describe 'Api::V1::Greenteas', type: :request do
       expect(ids).to eq([target.id])
     end
 
+    it 'filters by q[name_cont_any] with space-separated keywords (OR search)' do
+      parfait = create(:greentea, name: '宇治抹茶パフェの店')
+      kakigori = create(:greentea, name: '抹茶かき氷専門店')
+      unrelated = create(:greentea, name: '普通の甘味処')
+
+      get '/api/v1/greenteas', params: { q: { name_cont_any: 'パフェ かき氷' } }
+
+      ids = response.parsed_body['greenteas'].map { |d| d['id'] }
+      expect(ids).to contain_exactly(parfait.id, kakigori.id)
+      expect(ids).not_to include(unrelated.id)
+    end
+
+    it 'filters by q[name_or_description_or_address_or_access_cont_any] with multiple keywords (OR search)' do
+      parfait = create(:greentea, name: '宇治抹茶パフェの店')
+      kakigori = create(:greentea, description: '抹茶かき氷が人気')
+      unrelated = create(:greentea, name: '普通の甘味処', description: '和菓子のお店')
+
+      get '/api/v1/greenteas', params: { q: { name_or_description_or_address_or_access_cont_any: 'パフェ かき氷' } }
+
+      ids = response.parsed_body['greenteas'].map { |d| d['id'] }
+      expect(ids).to contain_exactly(parfait.id, kakigori.id)
+      expect(ids).not_to include(unrelated.id)
+    end
+
     it 'accepts q[greentea_genres_genre_id_eq_any] (legacy web key)' do
       genre = create(:genre)
       target = create(:greentea)

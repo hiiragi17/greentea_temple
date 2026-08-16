@@ -65,6 +65,30 @@ module Api
         scope.page(params[:page]).per(per_page)
       end
 
+      # 複数条件（OR）検索対応。
+      # 「パフェ かき氷」のように空白/読点区切りで複数キーワードを渡された場合、
+      # Ransack の `_any` / `_all` 複合述語（例: name_cont_any）に配列として渡す。
+      # 例: q[name_cont_any]=パフェ かき氷 → ["パフェ", "かき氷"] で OR 検索
+      # 対象は述語サフィックスが _any / _all のキーのみ（他のキーの空白はそのまま渡す）。
+      MULTI_VALUE_PREDICATE_SUFFIXES = %w[_any _all].freeze
+      KEYWORD_DELIMITER = /[[:space:],、]+/
+
+      def normalize_ransack_params(ransack_params)
+        return ransack_params if ransack_params.blank?
+
+        hash = ransack_params.respond_to?(:to_unsafe_h) ? ransack_params.to_unsafe_h : ransack_params.to_h
+        hash.each_with_object({}) do |(key, value), normalized|
+          normalized[key] = split_multi_keyword_value(key, value)
+        end
+      end
+
+      def split_multi_keyword_value(key, value)
+        return value unless value.is_a?(String)
+        return value unless MULTI_VALUE_PREDICATE_SUFFIXES.any? { |suffix| key.to_s.end_with?(suffix) }
+
+        value.split(KEYWORD_DELIMITER).reject(&:blank?)
+      end
+
       def per_page
         value = params[:per_page].to_i
         return DEFAULT_PER_PAGE if value <= 0

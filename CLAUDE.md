@@ -205,6 +205,7 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 
 - `ransackable_attributes` / `ransackable_associations` を **必ず allowlist で明示**
 - 検索キーは API ドキュメントに記載（`q[name_cont]`, `q[genres_id_eq]`, `q[areas_id_eq]` 等）
+- **複数キーワードの OR 検索**: `q[name_cont_any]` のように述語に `_any` サフィックスを付けると、値を空白（半角/全角）・読点・カンマ区切りで複数キーワードに分割し OR 検索する（例: `q[name_cont_any]=パフェ かき氷` → 「パフェ」または「かき氷」を含む店舗がヒット）。`Api::V1::BaseController#normalize_ransack_params` で正規化しており、対象は述語サフィックスが `_any` / `_all` のキーのみ（他のキーの空白はそのまま渡る）。属性側の allowlist 変更は不要（Ransack の述語サフィックスは allowlist の対象外のため）
 
 ### 距離計算
 

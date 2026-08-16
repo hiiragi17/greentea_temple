@@ -2,7 +2,7 @@ module Api
   module V1
     class TemplesController < BaseController
       def index
-        scope = Temple.includes(:areas).ransack(params[:q]).result(distinct: true).order(:id)
+        scope = Temple.includes(:areas).ransack(normalize_ransack_params(params[:q])).result(distinct: true).order(:id)
         paginated = paginate(scope).load
         ids = paginated.map(&:id)
         like_counts = TempleLike.where(temple_id: ids).group(:temple_id).count
