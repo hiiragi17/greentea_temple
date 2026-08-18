@@ -52,6 +52,18 @@ RSpec.describe 'Api::V1::Temples', type: :request do
       expect(ids).to eq([target.id])
     end
 
+    it 'filters by q[name_or_description_or_address_or_access_cont_any] with multiple keywords (OR search)' do
+      kiyomizu = create(:temple, name: '清水寺')
+      kinkaku = create(:temple, description: '金閣として知られる寺院')
+      unrelated = create(:temple, name: '無関係な神社', description: '特に関連のない説明')
+
+      get '/api/v1/temples', params: { q: { name_or_description_or_address_or_access_cont_any: '清水 金閣' } }
+
+      ids = response.parsed_body['temples'].map { |d| d['id'] }
+      expect(ids).to contain_exactly(kiyomizu.id, kinkaku.id)
+      expect(ids).not_to include(unrelated.id)
+    end
+
     it 'accepts q[temple_areas_area_id_eq_any] (legacy web key)' do
       area = create(:area)
       target = create(:temple)

@@ -2,7 +2,7 @@ module Api
   module V1
     class GreenteasController < BaseController
       def index
-        scope = Greentea.includes(:genres).ransack(params[:q]).result(distinct: true).order(:id)
+        scope = Greentea.includes(:genres).ransack(normalize_ransack_params(params[:q])).result(distinct: true).order(:id)
         paginated = paginate(scope).load
         ids = paginated.map(&:id)
         like_counts = GreenteaLike.where(greentea_id: ids).group(:greentea_id).count
