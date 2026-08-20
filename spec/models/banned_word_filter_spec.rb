@@ -14,6 +14,10 @@ RSpec.describe BannedWordFilter do
       expect(described_class.match?('とても美味しい抹茶パフェでした')).to eq(false)
     end
 
+    it 'does not false-positive on unrelated words containing a banned substring' do
+      expect(described_class.match?('抹茶カステラがおいしかった')).to eq(false)
+    end
+
     it 'returns false for blank text' do
       expect(described_class.match?('')).to eq(false)
     end

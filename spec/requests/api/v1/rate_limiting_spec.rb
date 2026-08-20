@@ -45,4 +45,19 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
 
     expect(response).to have_http_status(:ok)
   end
+
+  it 'throttles requests even when a .json format suffix is used to bypass the exact path match' do
+    10.times do
+      post '/api/v1/greenteacomments.json',
+           params: { greenteacomment: { greentea_id: greentea.id, body: '連投テスト' } },
+           headers: auth
+    end
+    expect(response).to have_http_status(:ok)
+
+    post '/api/v1/greenteacomments.json',
+         params: { greenteacomment: { greentea_id: greentea.id, body: '11件目の連投' } },
+         headers: auth
+
+    expect(response).to have_http_status(:too_many_requests)
+  end
 end

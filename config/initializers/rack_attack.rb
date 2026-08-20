@@ -9,13 +9,16 @@
 # spec/requests/api/v1/rate_limiting_spec.rb で明示的にストアを差し替えて検証する。
 
 # 口コミ投稿: 同一IPから1分間に10件まで
+# `resources` はデフォルトで (.:format) を許容するため、パスの完全一致ではなく
+# 末尾の .json 等のフォーマット拡張子を許容する正規表現でマッチさせる
+# （完全一致だと /api/v1/greenteacomments.json 等でスロットルを回避できてしまう）
 Rack::Attack.throttle('comments/create/ip', limit: 10, period: 1.minute) do |req|
-  req.ip if req.post? && %w[/api/v1/greenteacomments /api/v1/templecomments].include?(req.path)
+  req.ip if req.post? && req.path.match?(%r{\A/api/v1/(?:greenteacomments|templecomments)(?:\.\w+)?\z})
 end
 
 # モデルルート作成: Directions API 呼び出しを伴い外部APIコストがかかるため、より厳しく1分間に5件まで
 Rack::Attack.throttle('routes/create/ip', limit: 5, period: 1.minute) do |req|
-  req.ip if req.post? && req.path == '/api/v1/routes'
+  req.ip if req.post? && req.path.match?(%r{\A/api/v1/routes(?:\.\w+)?\z})
 end
 
 Rack::Attack.throttled_responder = lambda do |req|
