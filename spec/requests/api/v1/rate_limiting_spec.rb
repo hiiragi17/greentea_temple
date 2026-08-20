@@ -126,4 +126,50 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
          headers: auth.merge('X-Forwarded-For' => '203.0.113.2').merge(proxy_env)
     expect(response).to have_http_status(:created)
   end
+
+  it 'scopes the greentea comment throttle per real client IP behind a Cloud Run-style link-local proxy' do
+    proxy_env = { 'REMOTE_ADDR' => '169.254.1.1' }
+    comment_params = { greenteacomment: { greentea_id: greentea.id, body: '連投テスト' } }
+
+    10.times do
+      post '/api/v1/greenteacomments',
+           params: comment_params,
+           headers: auth.merge('X-Forwarded-For' => '203.0.113.1').merge(proxy_env)
+    end
+    expect(response).to have_http_status(:ok)
+
+    post '/api/v1/greenteacomments',
+         params: comment_params,
+         headers: auth.merge('X-Forwarded-For' => '203.0.113.1').merge(proxy_env)
+    expect(response).to have_http_status(:too_many_requests)
+
+    # 別クライアント(別 X-Forwarded-For)からのリクエストは巻き込まれず投稿できる。
+    post '/api/v1/greenteacomments',
+         params: comment_params,
+         headers: auth.merge('X-Forwarded-For' => '203.0.113.2').merge(proxy_env)
+    expect(response).to have_http_status(:ok)
+  end
+
+  it 'scopes the temple comment throttle per real client IP behind a Cloud Run-style link-local proxy' do
+    proxy_env = { 'REMOTE_ADDR' => '169.254.1.1' }
+    comment_params = { templecomment: { temple_id: temple.id, body: '連投テスト' } }
+
+    10.times do
+      post '/api/v1/templecomments',
+           params: comment_params,
+           headers: auth.merge('X-Forwarded-For' => '203.0.113.1').merge(proxy_env)
+    end
+    expect(response).to have_http_status(:ok)
+
+    post '/api/v1/templecomments',
+         params: comment_params,
+         headers: auth.merge('X-Forwarded-For' => '203.0.113.1').merge(proxy_env)
+    expect(response).to have_http_status(:too_many_requests)
+
+    # 別クライアント(別 X-Forwarded-For)からのリクエストは巻き込まれず投稿できる。
+    post '/api/v1/templecomments',
+         params: comment_params,
+         headers: auth.merge('X-Forwarded-For' => '203.0.113.2').merge(proxy_env)
+    expect(response).to have_http_status(:ok)
+  end
 end
