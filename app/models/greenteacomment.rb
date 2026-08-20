@@ -1,4 +1,6 @@
 class Greenteacomment < ApplicationRecord
+  include BannedWordValidatable
+
   belongs_to :user
   belongs_to :greentea
 

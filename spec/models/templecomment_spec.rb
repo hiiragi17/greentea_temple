@@ -36,4 +36,16 @@ RSpec.describe Templecomment, type: :model do
       expect(comment.errors[:body]).to be_present
     end
   end
+
+  describe 'banned word validation' do
+    it 'is invalid when body contains a banned word' do
+      comment = build(:templecomment, body: 'うざい対応をされた')
+      expect(comment).not_to be_valid
+      expect(comment.errors[:body]).to be_present
+    end
+
+    it 'is valid when body does not contain a banned word' do
+      expect(build(:templecomment, body: '静かで落ち着けるお寺でした')).to be_valid
+    end
+  end
 end

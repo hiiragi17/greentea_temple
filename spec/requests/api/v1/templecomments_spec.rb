@@ -73,6 +73,16 @@ RSpec.describe 'Api::V1::Templecomments', type: :request do
 
         expect(response).to have_http_status(:unprocessable_entity)
       end
+
+      it 'returns 422 when body contains a banned word' do
+        expect {
+          post '/api/v1/templecomments',
+               params: { templecomment: { temple_id: temple.id, body: 'うざいくらい混んでた' } },
+               headers: auth
+        }.not_to change(Templecomment, :count)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
     end
   end
 
