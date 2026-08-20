@@ -55,6 +55,9 @@ gem 'config'
 # CORS for API (#113)
 gem 'rack-cors'
 
+# 荒らし対策: API へのリクエストレート制限
+gem 'rack-attack'
+
 # JSON serializer for API (#114)
 gem 'jsonapi-serializer', '~> 2.2'
 

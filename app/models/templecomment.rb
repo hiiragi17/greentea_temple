@@ -1,4 +1,6 @@
 class Templecomment < ApplicationRecord
+  include BannedWordValidatable
+
   belongs_to :user
   belongs_to :temple
 

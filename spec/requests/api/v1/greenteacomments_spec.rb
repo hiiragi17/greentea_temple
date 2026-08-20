@@ -78,6 +78,16 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
 
         expect(response).to have_http_status(:unprocessable_entity)
       end
+
+      it 'returns 422 when body contains a banned word' do
+        expect {
+          post '/api/v1/greenteacomments',
+               params: { greenteacomment: { greentea_id: greentea.id, body: 'マジで死ねばいいのに' } },
+               headers: auth
+        }.not_to change(Greenteacomment, :count)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
     end
   end
 
