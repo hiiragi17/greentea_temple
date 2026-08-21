@@ -105,6 +105,28 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
       expect(response.media_type).to eq('application/json')
       expect(response.parsed_body['error']).to be_present
       expect(response.headers['Retry-After']).to be_present
+      # スロットルされたリクエストはコントローラまで到達せず、LINEへの外部API呼び出しが
+      # 発生していないことを確認する(スロットルの目的そのものである外部APIコスト抑止の検証)
+      expect(OauthUserInfoFetcher).to have_received(:fetch).exactly(5).times
+    end
+  end
+
+  it 'returns 429 with a JSON error body and Retry-After header once the Google auth throttle limit is exceeded' do
+    allow(OauthUserInfoFetcher).to receive(:fetch)
+      .with('google', hash_including(access_token: 'valid_google_token'))
+      .and_return(provider: 'google', uid: '1234567890', name: 'matcha_san')
+
+    travel_to(Time.current) do
+      5.times { post '/api/v1/auth/google', params: { access_token: 'valid_google_token' } }
+      expect(response).to have_http_status(:ok)
+
+      post '/api/v1/auth/google', params: { access_token: 'valid_google_token' }
+
+      expect(response).to have_http_status(:too_many_requests)
+      expect(response.media_type).to eq('application/json')
+      expect(response.parsed_body['error']).to be_present
+      expect(response.headers['Retry-After']).to be_present
+      expect(OauthUserInfoFetcher).to have_received(:fetch).exactly(5).times
     end
   end
 
