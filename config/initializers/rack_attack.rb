@@ -36,6 +36,13 @@ Rack::Attack.throttle('routes/create/ip', limit: 5, period: 1.minute) do |req|
   CLIENT_IP.call(req) if req.post? && req.path.match?(%r{\A/api/v1/routes(?:\.\w+)?\z})
 end
 
+# OAuthログイン: 未認証で誰でも叩ける唯一のPOSTエンドポイントであり、
+# リクエスト毎にLINE/GoogleへのサーバーS2Sリクエスト(タイムアウト5秒)が発生するため、
+# 連打によるPumaスレッド枯渇・外部APIへの負荷を防ぐ目的で1分間に5件までに制限する
+Rack::Attack.throttle('auth/create/ip', limit: 5, period: 1.minute) do |req|
+  CLIENT_IP.call(req) if req.post? && req.path.match?(%r{\A/api/v1/auth/[^/]+(?:\.\w+)?\z})
+end
+
 Rack::Attack.throttled_responder = lambda do |req|
   match_data = req.env['rack.attack.match_data']
   retry_after = match_data[:period] - (match_data[:epoch_time] % match_data[:period])
