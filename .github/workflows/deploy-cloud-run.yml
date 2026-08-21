@@ -199,10 +199,21 @@ jobs:
         env:
           IMAGE_BASE: ${{ steps.image.outputs.base }}
           IMAGE_TAG: ${{ steps.tag.outputs.tag }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # migration は **直結（unpooled）** の接続文字列で流す。
+          # Neon の pooled エンドポイント（`-pooler`。PgBouncer の transaction pooling）は
+          # トランザクションごとにバックエンド接続が入れ替わるため、db:migrate が使う
+          # セッションレベルの advisory lock を維持できず、ロックの取得・解放に失敗して
+          # この step ＝以降のデプロイが止まりうる。
+          # MIGRATION_DATABASE_URL（ホスト名から `-pooler` を除いた直結 URL）を優先し、
+          # 未設定なら従来どおり DATABASE_URL にフォールバックする。
+          DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL || secrets.DATABASE_URL }}
+          MIGRATION_DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
           SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
+          if [ -z "${MIGRATION_DATABASE_URL}" ]; then
+            echo "::warning::MIGRATION_DATABASE_URL is not set; falling back to DATABASE_URL. If it points at Neon's pooled (-pooler) endpoint, db:migrate's advisory lock may fail. Register the direct/unpooled URL as MIGRATION_DATABASE_URL."
+          fi
           docker run --rm \
             -e RAILS_ENV=production \
             -e DATABASE_URL \

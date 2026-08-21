@@ -35,7 +35,8 @@
 
 - **`db:migrate` はデプロイワークフローが自動実行する**（`deploy-cloud-run.yml` の `Run DB migrations` step。
   ビルド済みイメージを `docker run` して新リビジョン投入前に流す）。migration が失敗した時点で
-  ジョブが止まり、古いリビジョンのまま残る。
+  ジョブが止まり、古いリビジョンのまま残る。接続先は **`MIGRATION_DATABASE_URL`（直結 URL）**
+  を優先する（理由は「4. GitHub Secrets」の注意書き）。
 - 一方 **`db:seed` は自動実行しない**。また Cloud Run のリビジョン自体は migration を流さないため、
   ワークフローを経由しない手動デプロイでは従来どおり自分で流す必要がある。
   新規 DB は次のいずれかを**手動 or Cloud Run Job** で流す:
@@ -215,6 +216,7 @@ echo "$SA"
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | WIF provider リソース名 | 2-4 の出力 |
 | `GCP_DEPLOY_SERVICE_ACCOUNT` | デプロイ SA のメール | `$SA` |
 | `DATABASE_URL` | Neon の pooled 接続文字列（`sslmode=require`） | 3 |
+| `MIGRATION_DATABASE_URL` | migration 専用の **直結（unpooled）** 接続文字列。pooled URL のホスト名から `-pooler` を除いたもの（例: `ep-xxx-pooler.<region>.aws.neon.tech` → `ep-xxx.<region>.aws.neon.tech`）。未設定なら `DATABASE_URL` にフォールバックする | 3（Neon コンソールの Connection string で **Pooled connection のチェックを外す**） |
 | `RAILS_MASTER_KEY` | `config/master.key` の値 | ローカル |
 | `JWT_SECRET_KEY` | API 用 JWT 署名鍵 | 任意の十分長い乱数 |
 | `GMAP_API` | Geocoding 用 API キー | Google Cloud Console |
@@ -224,6 +226,14 @@ echo "$SA"
 | `LINE_SECRET` | LINE OAuth シークレット（※下記注意） | LINE Developers |
 | `SECRET_KEY_BASE` | （任意）未設定なら credentials 由来を使用 | 任意 |
 | `WARMUP_TOKEN` | （任意）ウォームアップ用エンドポイント（`GET /api/v1/warmup`）の認証トークン。Cloud Scheduler の呼び出しのみに限定するための共有シークレット | `openssl rand -hex 32` 等で生成 |
+
+> ⚠️ **migration は pooled エンドポイントで流さない**
+> Neon の pooled エンドポイント（`-pooler`）は PgBouncer の **transaction pooling** で、
+> トランザクションごとにバックエンド接続が入れ替わる。`db:migrate` が使う
+> **セッションレベルの advisory lock** はこの方式では維持できず、ロックの取得・解放に
+> 失敗して `Run DB migrations` step（＝以降のデプロイ全体）が止まりうる。
+> そのため `MIGRATION_DATABASE_URL` に直結 URL を登録すること。
+> Cloud Run のアプリ本体は従来どおり pooled の `DATABASE_URL` を使う。
 
 > `SECRET_KEY_BASE` は **secret が存在するときのみ** Cloud Run に渡される実装。
 > credentials.yml.enc 側に持たせるなら未設定で OK（`RAILS_MASTER_KEY` で復号される）。
