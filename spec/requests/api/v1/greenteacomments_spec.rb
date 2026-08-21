@@ -49,7 +49,7 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
   describe 'POST /api/v1/greenteacomments' do
     context 'when unauthenticated' do
       it 'returns 401' do
-        post '/api/v1/greenteacomments', params: { greenteacomment: { greentea_id: greentea.id, body: 'いいね' } }
+        post '/api/v1/greenteacomments', params: { greentea_id: greentea.id, body: 'いいね' }
         expect(response).to have_http_status(:unauthorized)
       end
     end
@@ -58,7 +58,7 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
       it 'creates a comment and returns the serialized payload' do
         expect {
           post '/api/v1/greenteacomments',
-               params: { greenteacomment: { greentea_id: greentea.id, body: '抹茶ティラミス最高' } },
+               params: { greentea_id: greentea.id, body: '抹茶ティラミス最高' },
                headers: auth
         }.to change(Greenteacomment, :count).by(1)
 
@@ -73,7 +73,7 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
 
       it 'returns 422 when body is blank' do
         post '/api/v1/greenteacomments',
-             params: { greenteacomment: { greentea_id: greentea.id, body: '' } },
+             params: { greentea_id: greentea.id, body: '' },
              headers: auth
 
         expect(response).to have_http_status(:unprocessable_entity)
@@ -82,7 +82,7 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
       it 'returns 422 when body contains a banned word' do
         expect {
           post '/api/v1/greenteacomments',
-               params: { greenteacomment: { greentea_id: greentea.id, body: 'マジで死ねばいいのに' } },
+               params: { greentea_id: greentea.id, body: 'マジで死ねばいいのに' },
                headers: auth
         }.not_to change(Greenteacomment, :count)
 

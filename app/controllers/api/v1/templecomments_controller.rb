@@ -40,7 +40,7 @@ module Api
       private
 
       def comment_params
-        params.require(:templecomment).permit(:body, :temple_id)
+        params.permit(:body, :temple_id)
       end
 
       def render_forbidden

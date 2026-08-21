@@ -31,13 +31,13 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
   it 'returns 429 with a JSON error body and Retry-After header once the greentea comment throttle limit is exceeded' do
     10.times do
       post '/api/v1/greenteacomments',
-           params: { greenteacomment: { greentea_id: greentea.id, body: '連投テスト' } },
+           params: { greentea_id: greentea.id, body: '連投テスト' },
            headers: auth
     end
     expect(response).to have_http_status(:ok)
 
     post '/api/v1/greenteacomments',
-         params: { greenteacomment: { greentea_id: greentea.id, body: '11件目の連投' } },
+         params: { greentea_id: greentea.id, body: '11件目の連投' },
          headers: auth
 
     expect(response).to have_http_status(:too_many_requests)
@@ -49,13 +49,13 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
   it 'returns 429 with a JSON error body and Retry-After header once the temple comment throttle limit is exceeded' do
     10.times do
       post '/api/v1/templecomments',
-           params: { templecomment: { temple_id: temple.id, body: '連投テスト' } },
+           params: { temple_id: temple.id, body: '連投テスト' },
            headers: auth
     end
     expect(response).to have_http_status(:ok)
 
     post '/api/v1/templecomments',
-         params: { templecomment: { temple_id: temple.id, body: '11件目の連投' } },
+         params: { temple_id: temple.id, body: '11件目の連投' },
          headers: auth
 
     expect(response).to have_http_status(:too_many_requests)
@@ -87,13 +87,13 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
   it 'throttles requests even when a .json format suffix is used to bypass the exact path match' do
     10.times do
       post '/api/v1/greenteacomments.json',
-           params: { greenteacomment: { greentea_id: greentea.id, body: '連投テスト' } },
+           params: { greentea_id: greentea.id, body: '連投テスト' },
            headers: auth
     end
     expect(response).to have_http_status(:ok)
 
     post '/api/v1/greenteacomments.json',
-         params: { greenteacomment: { greentea_id: greentea.id, body: '11件目の連投' } },
+         params: { greentea_id: greentea.id, body: '11件目の連投' },
          headers: auth
 
     expect(response).to have_http_status(:too_many_requests)
@@ -129,7 +129,7 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
 
   it 'scopes the greentea comment throttle per real client IP behind a Cloud Run-style link-local proxy' do
     proxy_env = { 'REMOTE_ADDR' => '169.254.1.1' }
-    comment_params = { greenteacomment: { greentea_id: greentea.id, body: '連投テスト' } }
+    comment_params = { greentea_id: greentea.id, body: '連投テスト' }
 
     10.times do
       post '/api/v1/greenteacomments',
@@ -152,7 +152,7 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
 
   it 'scopes the temple comment throttle per real client IP behind a Cloud Run-style link-local proxy' do
     proxy_env = { 'REMOTE_ADDR' => '169.254.1.1' }
-    comment_params = { templecomment: { temple_id: temple.id, body: '連投テスト' } }
+    comment_params = { temple_id: temple.id, body: '連投テスト' }
 
     10.times do
       post '/api/v1/templecomments',

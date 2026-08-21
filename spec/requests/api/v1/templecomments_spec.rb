@@ -45,7 +45,7 @@ RSpec.describe 'Api::V1::Templecomments', type: :request do
   describe 'POST /api/v1/templecomments' do
     context 'when unauthenticated' do
       it 'returns 401' do
-        post '/api/v1/templecomments', params: { templecomment: { temple_id: temple.id, body: '良い' } }
+        post '/api/v1/templecomments', params: { temple_id: temple.id, body: '良い' }
         expect(response).to have_http_status(:unauthorized)
       end
     end
@@ -54,7 +54,7 @@ RSpec.describe 'Api::V1::Templecomments', type: :request do
       it 'creates a comment' do
         expect {
           post '/api/v1/templecomments',
-               params: { templecomment: { temple_id: temple.id, body: '荘厳' } },
+               params: { temple_id: temple.id, body: '荘厳' },
                headers: auth
         }.to change(Templecomment, :count).by(1)
 
@@ -68,7 +68,7 @@ RSpec.describe 'Api::V1::Templecomments', type: :request do
 
       it 'returns 422 when body is blank' do
         post '/api/v1/templecomments',
-             params: { templecomment: { temple_id: temple.id, body: '' } },
+             params: { temple_id: temple.id, body: '' },
              headers: auth
 
         expect(response).to have_http_status(:unprocessable_entity)
@@ -77,7 +77,7 @@ RSpec.describe 'Api::V1::Templecomments', type: :request do
       it 'returns 422 when body contains a banned word' do
         expect {
           post '/api/v1/templecomments',
-               params: { templecomment: { temple_id: temple.id, body: 'うざいくらい混んでた' } },
+               params: { temple_id: temple.id, body: 'うざいくらい混んでた' },
                headers: auth
         }.not_to change(Templecomment, :count)
 
