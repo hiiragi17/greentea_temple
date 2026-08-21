@@ -40,7 +40,7 @@ module Api
       private
 
       def comment_params
-        params.require(:greenteacomment).permit(:body, :greentea_id)
+        params.permit(:body, :greentea_id)
       end
 
       def render_forbidden
