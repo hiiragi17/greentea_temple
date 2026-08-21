@@ -15,8 +15,14 @@
 - `deploy-cloud-run.yml` のトリガーは **CI（`ci.yml`）が `main` で成功したとき**（`workflow_run`）
   と **手動実行（`workflow_dispatch`）** の 2 つ。RuboCop / RSpec をゲートにするため
   push ではなく CI の完了を待ち受ける構成になっている。
+  - ⚠️ **手動実行は CI ゲートを迂回する**。`conclusion == 'success'` を要求しているのは
+    `workflow_run` のみで、`workflow_dispatch` は `ci.yml` の成否を検証しない。
 - 新リビジョン投入前に **`db:migrate` が自動実行**される（`Run DB migrations` step）。
   migration が失敗した時点でジョブが止まり、デプロイはされない。
+  - ⚠️ **migration は「旧リビジョンが稼働したまま」適用される**（migration → デプロイの順）。
+    そのため migration は列追加のような**後方互換な変更**であることが前提。列の削除・改名など
+    破壊的な変更は、旧コードが動かなくなるため「コード先行 → 次のリリースで migration」の
+    2 段階に分けること。
 - 構成図:
 
   ```text
@@ -220,7 +226,7 @@ echo "$SA"
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | WIF provider リソース名 | 2-4 の出力 |
 | `GCP_DEPLOY_SERVICE_ACCOUNT` | デプロイ SA のメール | `$SA` |
 | `DATABASE_URL` | Neon の pooled 接続文字列（`sslmode=require`） | 3 |
-| `MIGRATION_DATABASE_URL` | migration 専用の **直結（unpooled）** 接続文字列。pooled URL のホスト名から `-pooler` を除いたもの（例: `ep-xxx-pooler.<region>.aws.neon.tech` → `ep-xxx.<region>.aws.neon.tech`）。未設定なら `DATABASE_URL` にフォールバックする | 3（Neon コンソールの Connection string で **Pooled connection のチェックを外す**） |
+| `MIGRATION_DATABASE_URL` | migration 専用の **直結（unpooled）** 接続文字列。pooled URL のホスト名から `-pooler` を除いたもの（例: `ep-xxx-pooler.<region>.aws.neon.tech` → `ep-xxx.<region>.aws.neon.tech`）。**本番では必ず登録する**（未設定時は `DATABASE_URL` にフォールバックするが、それが pooled endpoint だと advisory lock に失敗してデプロイが止まりうる。フォールバックは緊急時の逃げ道であり通常運用では非推奨） | 3（Neon コンソールの Connection string で **Pooled connection のチェックを外す**） |
 | `RAILS_MASTER_KEY` | `config/master.key` の値 | ローカル |
 | `JWT_SECRET_KEY` | API 用 JWT 署名鍵 | 任意の十分長い乱数 |
 | `GMAP_API` | Geocoding 用 API キー | Google Cloud Console |
