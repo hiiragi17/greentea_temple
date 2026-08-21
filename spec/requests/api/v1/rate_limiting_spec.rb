@@ -137,6 +137,22 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
     end
   end
 
+  it 'does not let requests to unsupported providers consume the auth throttle bucket for real logins' do
+    allow(OauthUserInfoFetcher).to receive(:fetch)
+      .with('line', hash_including(access_token: 'valid_line_token'))
+      .and_return(provider: 'line', uid: 'U1234567890abcdef', name: 'もちもち抹茶')
+
+    travel_to(Time.current) do
+      5.times do
+        post '/api/v1/auth/twitter', params: { access_token: 'dummy' }
+        expect(response).to have_http_status(:not_found)
+      end
+
+      post '/api/v1/auth/line', params: { access_token: 'valid_line_token' }
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   it 'does not throttle requests to unrelated API paths' do
     11.times { get '/api/v1/health' }
 

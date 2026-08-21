@@ -38,9 +38,11 @@ end
 
 # OAuthログイン: 未認証で誰でも叩ける唯一のPOSTエンドポイントであり、
 # リクエスト毎にLINE/GoogleへのサーバーS2Sリクエスト(タイムアウト5秒)が発生するため、
-# 連打によるPumaスレッド枯渇・外部APIへの負荷を防ぐ目的で1分間に5件までに制限する
+# 連打によるPumaスレッド枯渇・外部APIへの負荷を防ぐ目的で1分間に5件までに制限する。
+# provider 部分は routes.rb の constraints (line|google) と揃え、未対応プロバイダへの
+# 空振りリクエスト(即404)で正規のログイン試行のバケツを消費されないようにする
 Rack::Attack.throttle('auth/create/ip', limit: 5, period: 1.minute) do |req|
-  CLIENT_IP.call(req) if req.post? && req.path.match?(%r{\A/api/v1/auth/[^/]+(?:\.\w+)?\z})
+  CLIENT_IP.call(req) if req.post? && req.path.match?(%r{\A/api/v1/auth/(?:line|google)(?:\.\w+)?\z})
 end
 
 Rack::Attack.throttled_responder = lambda do |req|
