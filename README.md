@@ -7,7 +7,7 @@
 <img src="https://user-images.githubusercontent.com/94298144/189052247-e5390c19-8701-49c7-83ec-3e9793c8d363.png" width="400" height="400">
 
 ## サービスURL
-https://www.matcha-to-jinja.com/
+現在リニューアル中
 
 # ■サービス概要
 　京都にある抹茶スイーツのお店の近くにある神社仏閣を調べたり、  
