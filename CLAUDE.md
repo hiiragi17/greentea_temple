@@ -18,6 +18,7 @@
 - Tailwind CSS + daisyUI（jsbundling-rails / cssbundling-rails）
 - RSpec + FactoryBot + Capybara
 - デプロイ: GCP Cloud Run + Neon PostgreSQL（#118 で移行予定）
+  - `deploy-cloud-run.yml` は **CI（`ci.yml`）が main で成功したとき**（`workflow_run`）に発火する。手動実行（`workflow_dispatch`）も可能。**`db:migrate` は新リビジョン投入前に自動実行**される（`Run DB migrations` step）。migration は列追加など後方互換な変更にすること
   - ⚠️ **Heroku には今後デプロイしない**（過去運用）
 
 外部 API:
@@ -184,6 +185,11 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 - スポット系: `id, name, address, access, business_hours, holiday, latitude, longitude, img, likes_count, liked_by_current_user`（`liked_by_current_user` は詳細のみ。一覧は含めない）
 - 近隣配列の各要素: `id, name, latitude, longitude, distance_meters`（整数）
 - 一覧の `meta`: `{ current_page, total_pages, total_count }`（`per_page` はフロント (matcha-to-jinja) の fixtures が使わないため返さない）
+- **ルートキーはリソース名**（`greenteas` / `greentea` / `temples` / `temple` / `genres` / `areas` /
+  `greentea_likes` / `comments` / `comment` …）。`data` を使うのは `routes`（モデルコース）だけで、
+  他のエンドポイントで `data` を返すとフロントが値を取り出せない
+  （例: 口コミ投稿を `data` で返して投稿直後に「匿名ユーザー」の空カードが出る不具合があった）。
+  正本は matcha-to-jinja の `docs/api-contract-checklist.md`
 
 ## コーディング規約
 

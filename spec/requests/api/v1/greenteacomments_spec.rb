@@ -27,14 +27,16 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
         json = response.parsed_body
         expect(json['meta']).to include('current_page', 'total_pages', 'total_count')
         expect(json['meta']).not_to include('per_page')
-        ids = json['data'].map { |d| d['id'] }
+        expect(json).to have_key('comments')
+        expect(json).not_to have_key('data')
+        ids = json['comments'].map { |d| d['id'] }
         expect(ids).to eq([other.id, own.id])
 
-        own_payload = json['data'].find { |d| d['id'] == own.id }
+        own_payload = json['comments'].find { |d| d['id'] == own.id }
         expect(own_payload['owned_by_current_user']).to eq(true)
         expect(own_payload['user']).to include('id' => user.id, 'name' => '口コミ投稿者')
 
-        other_payload = json['data'].find { |d| d['id'] == other.id }
+        other_payload = json['comments'].find { |d| d['id'] == other.id }
         expect(other_payload['owned_by_current_user']).to eq(false)
       end
 
@@ -63,12 +65,27 @@ RSpec.describe 'Api::V1::Greenteacomments', type: :request do
         }.to change(Greenteacomment, :count).by(1)
 
         expect(response).to have_http_status(:ok)
-        body = response.parsed_body['data']
+        body = response.parsed_body['comment']
         expect(body).to include(
           'body' => '抹茶ティラミス最高',
           'greentea_id' => greentea.id,
           'owned_by_current_user' => true
         )
+      end
+
+      # レスポンスのルートキーは契約（matcha-to-jinja/docs/api-contract-checklist.md #25-26）で
+      # comment / comments と決まっている。ここが data だとフロントが投稿直後の口コミを
+      # 取り出せず、本文・投稿日時が空のまま「匿名ユーザー」として描画される回帰が起きる。
+      it 'returns the created comment under the "comment" root key with the author name' do
+        post '/api/v1/greenteacomments',
+             params: { greentea_id: greentea.id, body: '抹茶ティラミス最高' },
+             headers: auth
+
+        json = response.parsed_body
+        expect(json).to have_key('comment')
+        expect(json).not_to have_key('data')
+        expect(json['comment']['user']).to eq('id' => user.id, 'name' => user.name)
+        expect(json['comment']['created_at']).to be_present
       end
 
       it 'returns 422 when body is blank' do

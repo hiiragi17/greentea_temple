@@ -12,8 +12,17 @@
   - `.dockerignore`
   - `.github/workflows/ci.yml`（RuboCop / RSpec / system spec）
   - `.github/workflows/deploy-cloud-run.yml`（Build → Artifact Registry → Cloud Run deploy）
-- `deploy-cloud-run.yml` は現状 **手動トリガ（`workflow_dispatch`）のみ**。
-  GCP 側のセットアップと各 secrets / vars が揃ったら `main` push 自動デプロイに切り替える。
+- `deploy-cloud-run.yml` のトリガーは **CI（`ci.yml`）が `main` で成功したとき**（`workflow_run`）
+  と **手動実行（`workflow_dispatch`）** の 2 つ。RuboCop / RSpec をゲートにするため
+  push ではなく CI の完了を待ち受ける構成になっている。
+  - ⚠️ **手動実行は CI ゲートを迂回する**。`conclusion == 'success'` を要求しているのは
+    `workflow_run` のみで、`workflow_dispatch` は `ci.yml` の成否を検証しない。
+- 新リビジョン投入前に **`db:migrate` が自動実行**される（`Run DB migrations` step）。
+  migration が失敗した時点でジョブが止まり、デプロイはされない。
+  - ⚠️ **migration は「旧リビジョンが稼働したまま」適用される**（migration → デプロイの順）。
+    そのため migration は列追加のような**後方互換な変更**であることが前提。列の削除・改名など
+    破壊的な変更は、旧コードが動かなくなるため「コード先行 → 次のリリースで migration」の
+    2 段階に分けること。
 - 構成図:
 
   ```text
@@ -33,11 +42,17 @@
 
 ### A. データ投入（新規 DB を作り直すケース）
 
-- Cloud Run は**リリース時に `db:migrate` / `db:seed` を自動実行しない**（本書「8. トラブルシュート」）。
-  新規 DB は次のいずれかを**手動 or Cloud Run Job** で流す:
+- **`db:migrate` はデプロイワークフローが自動実行する**（`deploy-cloud-run.yml` の `Run DB migrations` step。
+  ビルド済みイメージを `docker run` して新リビジョン投入前に流す）。migration が失敗した時点で
+  ジョブが止まり、古いリビジョンのまま残る。接続先は **`MIGRATION_DATABASE_URL`（直結 URL）**
+  を優先する（理由は「4. GitHub Secrets」の注意書き）。
+- 一方 **`db:seed` は自動実行しない**。ワークフロー経由でデプロイする場合、新規 DB で
+  手動実行が必要なのは初期データ投入だけ:
+  - 初期データ: `bin/rails db:seed`（**手動 or Cloud Run Job**）
+- **ワークフローを経由しない**デプロイ（`gcloud run deploy` を直接叩く等）では、Cloud Run の
+  リビジョン差し替え自体は migration を流さないため、スキーマ適用も自分で行う:
   - スキーマ: `bin/rails db:schema:load`（`schema.rb` から一括作成。version は最新 migration と一致済み）
     ／または未適用 migration を `bin/rails db:migrate`
-  - 初期データ: `bin/rails db:seed`
 - **`db/seeds.rb` が投入する対象**（2026-07 更新）:
   - `genres`（`db/csv/genre.csv`・全18件）
   - `greenteas` + `greentea_genres`（`db/csv/greentea_info.csv`・74件。genre 列は半角スペース区切り）
@@ -192,9 +207,9 @@ echo "$SA"
 
 5. この接続文字列を GitHub Secret `DATABASE_URL` に設定する。
 
-> ⚠️ 新規 DB の場合はスキーマ適用が必要。`bin/rails db:schema:load` を流すか、
-> 初回起動前に migration を当てる運用を決めておく（Cloud Run はリリース時に migration を
-> 自動実行しないため、必要なら別途 Cloud Run Job / 手動で `db:migrate` を実行する）。
+> ⚠️ 新規 DB の場合は初回のスキーマ適用が必要。`bin/rails db:schema:load` を流すか、
+> 空 DB のままデプロイして `deploy-cloud-run.yml` の `Run DB migrations` step に
+> 全 migration を流させる（Cloud Run のリビジョン自体は migration を実行しない）。
 
 ---
 
@@ -211,6 +226,7 @@ echo "$SA"
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | WIF provider リソース名 | 2-4 の出力 |
 | `GCP_DEPLOY_SERVICE_ACCOUNT` | デプロイ SA のメール | `$SA` |
 | `DATABASE_URL` | Neon の pooled 接続文字列（`sslmode=require`） | 3 |
+| `MIGRATION_DATABASE_URL` | migration 専用の **直結（unpooled）** 接続文字列。pooled URL のホスト名から `-pooler` を除いたもの（例: `ep-xxx-pooler.<region>.aws.neon.tech` → `ep-xxx.<region>.aws.neon.tech`）。**本番では必ず登録する**（未設定時は `DATABASE_URL` にフォールバックするが、それが pooled endpoint だと advisory lock に失敗してデプロイが止まりうる。フォールバックは緊急時の逃げ道であり通常運用では非推奨） | 3（Neon コンソールの Connection string で **Pooled connection のチェックを外す**） |
 | `RAILS_MASTER_KEY` | `config/master.key` の値 | ローカル |
 | `JWT_SECRET_KEY` | API 用 JWT 署名鍵 | 任意の十分長い乱数 |
 | `GMAP_API` | Geocoding 用 API キー | Google Cloud Console |
@@ -221,6 +237,14 @@ echo "$SA"
 | `SECRET_KEY_BASE` | （任意）未設定なら credentials 由来を使用 | 任意 |
 | `WARMUP_TOKEN` | （任意）ウォームアップ用エンドポイント（`GET /api/v1/warmup`）の認証トークン。Cloud Scheduler の呼び出しのみに限定するための共有シークレット | `openssl rand -hex 32` 等で生成 |
 
+> ⚠️ **migration は pooled エンドポイントで流さない**
+> Neon の pooled エンドポイント（`-pooler`）は PgBouncer の **transaction pooling** で、
+> トランザクションごとにバックエンド接続が入れ替わる。`db:migrate` が使う
+> **セッションレベルの advisory lock** はこの方式では維持できず、ロックの取得・解放に
+> 失敗して `Run DB migrations` step（＝以降のデプロイ全体）が止まりうる。
+> そのため `MIGRATION_DATABASE_URL` に直結 URL を登録すること。
+> Cloud Run のアプリ本体は従来どおり pooled の `DATABASE_URL` を使う。
+>
 > `SECRET_KEY_BASE` は **secret が存在するときのみ** Cloud Run に渡される実装。
 > credentials.yml.enc 側に持たせるなら未設定で OK（`RAILS_MASTER_KEY` で復号される）。
 
@@ -298,16 +322,9 @@ gcloud run domain-mappings create \
 
 ## 6. 確認後の仕上げ（自動化・運用）
 
-1. **自動デプロイ化**: `deploy-cloud-run.yml` の `on:` に以下を追加。
-
-   ```yaml
-   on:
-     push:
-       branches: [main]
-     workflow_dispatch:
-       inputs:
-         image_tag: { ... }   # 既存のまま
-   ```
+1. ~~**自動デプロイ化**~~: 対応済み。`deploy-cloud-run.yml` は CI（`ci.yml`）が `main` で
+   成功したときに `workflow_run` で発火し、`workflow_dispatch` による手動実行も引き続き可能。
+   デプロイ直前に `db:migrate` を自動実行する step も入っている。
 
 2. ~~**Actions の SHA ピン**~~: 対応済み。`auth` / `setup-gcloud` / `deploy-cloudrun`
    は `v3` タグの commit SHA に固定済み（`# v3` コメントで版を併記）。
@@ -484,4 +501,5 @@ gcloud run jobs delete grant-admin --region="$REGION"
 | 起動後 500 / DB 接続不可 | `DATABASE_URL` の `sslmode=require`、pooler ホスト、Neon オートサスペンドからの復帰 |
 | Host Authorization で弾かれる | `APP_HOSTS` にカスタムドメインを追加（`*.run.app` は本番自動許可） |
 | アセットが出ない | Dockerfile の `assets:precompile` 成否、`RAILS_SERVE_STATIC_FILES=1`（runtime で設定済み） |
-| migration 未反映 | Cloud Run は自動で `db:migrate` しない。Cloud Run Job か手動で実行する |
+| migration 未反映（コードは新しいが DB のスキーマが古い） | デプロイワークフローの `Run DB migrations` step の成否。手動デプロイ・別経路で入れた場合は Cloud Run Job か手動で `db:migrate` を実行する |
+| モデルコースの取得/作成だけ 500 | `route_spots` の `leg_distance_meters` / `leg_duration_seconds` / `leg_polyline` が本番 DB にあるか（未適用 migration の典型例）|

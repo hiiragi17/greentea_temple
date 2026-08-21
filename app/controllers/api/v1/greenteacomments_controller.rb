@@ -11,6 +11,7 @@ module Api
         render_collection(
           paginated,
           serializer: GreenteacommentSerializer,
+          root: :comments,
           serializer_params: { current_user_id: current_user.id }
         )
       end
@@ -21,6 +22,7 @@ module Api
           render_resource(
             comment,
             serializer: GreenteacommentSerializer,
+            root: :comment,
             serializer_params: { current_user_id: current_user.id }
           )
         else

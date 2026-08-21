@@ -39,8 +39,32 @@ RSpec.describe 'Api::V1::Warmup', type: :request do
         get '/api/v1/warmup', headers: { 'X-Warmup-Token' => 'test-warmup-token' }
 
         expect(response).to have_http_status(:ok)
-        expect(response.parsed_body).to eq('status' => 'ok')
+        expect(response.parsed_body).to eq('status' => 'ok', 'pending_migrations' => false)
         expect(response.headers['Cache-Control']).to eq('no-store')
+      end
+
+      # コードと本番 DB のスキーマがずれていることを外から確認するための指標。
+      it 'reports pending migrations when the schema is behind the code' do
+        # connection_pool#migration_context は呼び出しごとに新しいインスタンスを返すため、
+        # インスタンスではなく pool 側を差し替える。
+        migration_context = instance_double(ActiveRecord::MigrationContext, needs_migration?: true)
+        allow(ActiveRecord::Base.connection_pool).to receive(:migration_context).and_return(migration_context)
+
+        get '/api/v1/warmup', headers: { 'X-Warmup-Token' => 'test-warmup-token' }
+
+        expect(response.parsed_body['pending_migrations']).to eq(true)
+      end
+
+      # 判定に失敗したまま status: 'ok' を返すと、監視側がスキーマのズレを見逃す。
+      it 'returns 500 JSON when the migration status check itself fails' do
+        migration_context = instance_double(ActiveRecord::MigrationContext)
+        allow(migration_context).to receive(:needs_migration?).and_raise(ActiveRecord::StatementInvalid, 'boom')
+        allow(ActiveRecord::Base.connection_pool).to receive(:migration_context).and_return(migration_context)
+
+        get '/api/v1/warmup', headers: { 'X-Warmup-Token' => 'test-warmup-token' }
+
+        expect(response).to have_http_status(:internal_server_error)
+        expect(response.parsed_body['error']).to eq('Internal Server Error')
       end
     end
   end
