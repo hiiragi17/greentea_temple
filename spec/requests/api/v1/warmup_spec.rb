@@ -54,6 +54,18 @@ RSpec.describe 'Api::V1::Warmup', type: :request do
 
         expect(response.parsed_body['pending_migrations']).to eq(true)
       end
+
+      # 判定に失敗したまま status: 'ok' を返すと、監視側がスキーマのズレを見逃す。
+      it 'returns 500 JSON when the migration status check itself fails' do
+        migration_context = instance_double(ActiveRecord::MigrationContext)
+        allow(migration_context).to receive(:needs_migration?).and_raise(ActiveRecord::StatementInvalid, 'boom')
+        allow(ActiveRecord::Base.connection_pool).to receive(:migration_context).and_return(migration_context)
+
+        get '/api/v1/warmup', headers: { 'X-Warmup-Token' => 'test-warmup-token' }
+
+        expect(response).to have_http_status(:internal_server_error)
+        expect(response.parsed_body['error']).to eq('Internal Server Error')
+      end
     end
   end
 end

@@ -214,11 +214,19 @@ jobs:
           if [ -z "${MIGRATION_DATABASE_URL}" ]; then
             echo "::warning::MIGRATION_DATABASE_URL is not set; falling back to DATABASE_URL. If it points at Neon's pooled (-pooler) endpoint, db:migrate's advisory lock may fail. Register the direct/unpooled URL as MIGRATION_DATABASE_URL."
           fi
-          docker run --rm \
-            -e RAILS_ENV=production \
-            -e DATABASE_URL \
-            -e SECRET_KEY_BASE \
-            -e RAILS_MASTER_KEY \
+          # SECRET_KEY_BASE / RAILS_MASTER_KEY は secret 未設定でも空文字の環境変数として
+          # 存在するため、`-e NAME` で無条件に渡すと空文字がコンテナへ入る。Rails は
+          # ENV["SECRET_KEY_BASE"] を credentials より優先し、空文字だと
+          # 「Missing secret_key_base」で migration が落ちる（credentials フォールバックが
+          # 無効化される）。Cloud Run の env 組み立てと同じく、非空のときだけ渡す。
+          docker_args=(--rm -e RAILS_ENV=production -e DATABASE_URL)
+          if [ -n "${SECRET_KEY_BASE}" ]; then
+            docker_args+=(-e SECRET_KEY_BASE)
+          fi
+          if [ -n "${RAILS_MASTER_KEY}" ]; then
+            docker_args+=(-e RAILS_MASTER_KEY)
+          fi
+          docker run "${docker_args[@]}" \
             "${IMAGE_BASE}:${IMAGE_TAG}" \
             bundle exec rails db:migrate
 

@@ -12,8 +12,11 @@
   - `.dockerignore`
   - `.github/workflows/ci.yml`（RuboCop / RSpec / system spec）
   - `.github/workflows/deploy-cloud-run.yml`（Build → Artifact Registry → Cloud Run deploy）
-- `deploy-cloud-run.yml` は現状 **手動トリガ（`workflow_dispatch`）のみ**。
-  GCP 側のセットアップと各 secrets / vars が揃ったら `main` push 自動デプロイに切り替える。
+- `deploy-cloud-run.yml` のトリガーは **CI（`ci.yml`）が `main` で成功したとき**（`workflow_run`）
+  と **手動実行（`workflow_dispatch`）** の 2 つ。RuboCop / RSpec をゲートにするため
+  push ではなく CI の完了を待ち受ける構成になっている。
+- 新リビジョン投入前に **`db:migrate` が自動実行**される（`Run DB migrations` step）。
+  migration が失敗した時点でジョブが止まり、デプロイはされない。
 - 構成図:
 
   ```text
@@ -312,16 +315,9 @@ gcloud run domain-mappings create \
 
 ## 6. 確認後の仕上げ（自動化・運用）
 
-1. **自動デプロイ化**: `deploy-cloud-run.yml` の `on:` に以下を追加。
-
-   ```yaml
-   on:
-     push:
-       branches: [main]
-     workflow_dispatch:
-       inputs:
-         image_tag: { ... }   # 既存のまま
-   ```
+1. ~~**自動デプロイ化**~~: 対応済み。`deploy-cloud-run.yml` は CI（`ci.yml`）が `main` で
+   成功したときに `workflow_run` で発火し、`workflow_dispatch` による手動実行も引き続き可能。
+   デプロイ直前に `db:migrate` を自動実行する step も入っている。
 
 2. ~~**Actions の SHA ピン**~~: 対応済み。`auth` / `setup-gcloud` / `deploy-cloudrun`
    は `v3` タグの commit SHA に固定済み（`# v3` コメントで版を併記）。

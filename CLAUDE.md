@@ -18,7 +18,7 @@
 - Tailwind CSS + daisyUI（jsbundling-rails / cssbundling-rails）
 - RSpec + FactoryBot + Capybara
 - デプロイ: GCP Cloud Run + Neon PostgreSQL（#118 で移行予定）
-  - main への push（CI 成功）で `deploy-cloud-run.yml` が動く。**`db:migrate` は新リビジョン投入前に自動実行**される（`Run DB migrations` step）。migration は列追加など後方互換な変更にすること
+  - `deploy-cloud-run.yml` は **CI（`ci.yml`）が main で成功したとき**（`workflow_run`）に発火する。手動実行（`workflow_dispatch`）も可能。**`db:migrate` は新リビジョン投入前に自動実行**される（`Run DB migrations` step）。migration は列追加など後方互換な変更にすること
   - ⚠️ **Heroku には今後デプロイしない**（過去運用）
 
 外部 API:
