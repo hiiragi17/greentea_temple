@@ -11,6 +11,7 @@ module Api
         render_collection(
           paginated,
           serializer: TemplecommentSerializer,
+          root: :comments,
           serializer_params: { current_user_id: current_user.id }
         )
       end
@@ -21,6 +22,7 @@ module Api
           render_resource(
             comment,
             serializer: TemplecommentSerializer,
+            root: :comment,
             serializer_params: { current_user_id: current_user.id }
           )
         else

@@ -184,6 +184,33 @@ jobs:
             echo "__ENV_EOF__"
           } >> "$GITHUB_OUTPUT"
 
+      # Cloud Run のリビジョン差し替えでは migration が流れないため、
+      # ビルド済みイメージをそのまま使い、新リビジョン投入前に db:migrate を実行する。
+      # 手動運用だと適用漏れが起きる（コードだけ新しく DB のスキーマが古い状態になる。
+      # 例: route_spots.leg_polyline 未適用でモデルコースの詳細取得・作成が 500）。
+      #
+      # migration → デプロイの順にするため、migration は「旧コードでも壊れない
+      # 後方互換な変更」（列追加など）であることが前提。列削除・リネームのような
+      # 破壊的変更はコード側を先に出す 2 段階リリースにすること。
+      #
+      # Rails は production 起動時に secret_key_base を要求するため、
+      # SECRET_KEY_BASE / RAILS_MASTER_KEY を deploy step と同じ扱いで渡す。
+      - name: Run DB migrations
+        env:
+          IMAGE_BASE: ${{ steps.image.outputs.base }}
+          IMAGE_TAG: ${{ steps.tag.outputs.tag }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+        run: |
+          docker run --rm \
+            -e RAILS_ENV=production \
+            -e DATABASE_URL \
+            -e SECRET_KEY_BASE \
+            -e RAILS_MASTER_KEY \
+            "${IMAGE_BASE}:${IMAGE_TAG}" \
+            bundle exec rails db:migrate
+
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@2028e2d7d30a78c6910e0632e48dd561b064884d # v3
         with:

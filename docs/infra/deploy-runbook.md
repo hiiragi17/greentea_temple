@@ -33,7 +33,11 @@
 
 ### A. データ投入（新規 DB を作り直すケース）
 
-- Cloud Run は**リリース時に `db:migrate` / `db:seed` を自動実行しない**（本書「8. トラブルシュート」）。
+- **`db:migrate` はデプロイワークフローが自動実行する**（`deploy-cloud-run.yml` の `Run DB migrations` step。
+  ビルド済みイメージを `docker run` して新リビジョン投入前に流す）。migration が失敗した時点で
+  ジョブが止まり、古いリビジョンのまま残る。
+- 一方 **`db:seed` は自動実行しない**。また Cloud Run のリビジョン自体は migration を流さないため、
+  ワークフローを経由しない手動デプロイでは従来どおり自分で流す必要がある。
   新規 DB は次のいずれかを**手動 or Cloud Run Job** で流す:
   - スキーマ: `bin/rails db:schema:load`（`schema.rb` から一括作成。version は最新 migration と一致済み）
     ／または未適用 migration を `bin/rails db:migrate`
@@ -192,9 +196,9 @@ echo "$SA"
 
 5. この接続文字列を GitHub Secret `DATABASE_URL` に設定する。
 
-> ⚠️ 新規 DB の場合はスキーマ適用が必要。`bin/rails db:schema:load` を流すか、
-> 初回起動前に migration を当てる運用を決めておく（Cloud Run はリリース時に migration を
-> 自動実行しないため、必要なら別途 Cloud Run Job / 手動で `db:migrate` を実行する）。
+> ⚠️ 新規 DB の場合は初回のスキーマ適用が必要。`bin/rails db:schema:load` を流すか、
+> 空 DB のままデプロイして `deploy-cloud-run.yml` の `Run DB migrations` step に
+> 全 migration を流させる（Cloud Run のリビジョン自体は migration を実行しない）。
 
 ---
 
@@ -484,4 +488,5 @@ gcloud run jobs delete grant-admin --region="$REGION"
 | 起動後 500 / DB 接続不可 | `DATABASE_URL` の `sslmode=require`、pooler ホスト、Neon オートサスペンドからの復帰 |
 | Host Authorization で弾かれる | `APP_HOSTS` にカスタムドメインを追加（`*.run.app` は本番自動許可） |
 | アセットが出ない | Dockerfile の `assets:precompile` 成否、`RAILS_SERVE_STATIC_FILES=1`（runtime で設定済み） |
-| migration 未反映 | Cloud Run は自動で `db:migrate` しない。Cloud Run Job か手動で実行する |
+| migration 未反映（コードは新しいが DB のスキーマが古い） | デプロイワークフローの `Run DB migrations` step の成否。手動デプロイ・別経路で入れた場合は Cloud Run Job か手動で `db:migrate` を実行する |
+| モデルコースの取得/作成だけ 500 | `route_spots` の `leg_distance_meters` / `leg_duration_seconds` / `leg_polyline` が本番 DB にあるか（未適用 migration の典型例）|
