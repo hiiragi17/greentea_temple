@@ -40,12 +40,13 @@
   ビルド済みイメージを `docker run` して新リビジョン投入前に流す）。migration が失敗した時点で
   ジョブが止まり、古いリビジョンのまま残る。接続先は **`MIGRATION_DATABASE_URL`（直結 URL）**
   を優先する（理由は「4. GitHub Secrets」の注意書き）。
-- 一方 **`db:seed` は自動実行しない**。また Cloud Run のリビジョン自体は migration を流さないため、
-  ワークフローを経由しない手動デプロイでは従来どおり自分で流す必要がある。
-  新規 DB は次のいずれかを**手動 or Cloud Run Job** で流す:
+- 一方 **`db:seed` は自動実行しない**。ワークフロー経由でデプロイする場合、新規 DB で
+  手動実行が必要なのは初期データ投入だけ:
+  - 初期データ: `bin/rails db:seed`（**手動 or Cloud Run Job**）
+- **ワークフローを経由しない**デプロイ（`gcloud run deploy` を直接叩く等）では、Cloud Run の
+  リビジョン差し替え自体は migration を流さないため、スキーマ適用も自分で行う:
   - スキーマ: `bin/rails db:schema:load`（`schema.rb` から一括作成。version は最新 migration と一致済み）
     ／または未適用 migration を `bin/rails db:migrate`
-  - 初期データ: `bin/rails db:seed`
 - **`db/seeds.rb` が投入する対象**（2026-07 更新）:
   - `genres`（`db/csv/genre.csv`・全18件）
   - `greenteas` + `greentea_genres`（`db/csv/greentea_info.csv`・74件。genre 列は半角スペース区切り）
@@ -237,7 +238,7 @@ echo "$SA"
 > 失敗して `Run DB migrations` step（＝以降のデプロイ全体）が止まりうる。
 > そのため `MIGRATION_DATABASE_URL` に直結 URL を登録すること。
 > Cloud Run のアプリ本体は従来どおり pooled の `DATABASE_URL` を使う。
-
+>
 > `SECRET_KEY_BASE` は **secret が存在するときのみ** Cloud Run に渡される実装。
 > credentials.yml.enc 側に持たせるなら未設定で OK（`RAILS_MASTER_KEY` で復号される）。
 
