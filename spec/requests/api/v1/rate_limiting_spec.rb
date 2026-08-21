@@ -90,6 +90,91 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
     end
   end
 
+  it 'returns 429 with a JSON error body and Retry-After header once the auth throttle limit is exceeded' do
+    allow(OauthUserInfoFetcher).to receive(:fetch)
+      .with('line', hash_including(access_token: 'valid_line_token'))
+      .and_return(provider: 'line', uid: 'U1234567890abcdef', name: 'もちもち抹茶')
+
+    travel_to(Time.current) do
+      5.times { post '/api/v1/auth/line', params: { access_token: 'valid_line_token' } }
+      expect(response).to have_http_status(:ok)
+
+      post '/api/v1/auth/line', params: { access_token: 'valid_line_token' }
+
+      expect(response).to have_http_status(:too_many_requests)
+      expect(response.media_type).to eq('application/json')
+      expect(response.parsed_body['error']).to be_present
+      expect(response.headers['Retry-After']).to be_present
+      # スロットルされたリクエストはコントローラまで到達せず、LINEへの外部API呼び出しが
+      # 発生していないことを確認する(スロットルの目的そのものである外部APIコスト抑止の検証)
+      expect(OauthUserInfoFetcher).to have_received(:fetch).exactly(5).times
+    end
+  end
+
+  it 'returns 429 with a JSON error body and Retry-After header once the Google auth throttle limit is exceeded' do
+    allow(OauthUserInfoFetcher).to receive(:fetch)
+      .with('google', hash_including(access_token: 'valid_google_token'))
+      .and_return(provider: 'google', uid: '1234567890', name: 'matcha_san')
+
+    travel_to(Time.current) do
+      5.times { post '/api/v1/auth/google', params: { access_token: 'valid_google_token' } }
+      expect(response).to have_http_status(:ok)
+
+      post '/api/v1/auth/google', params: { access_token: 'valid_google_token' }
+
+      expect(response).to have_http_status(:too_many_requests)
+      expect(response.media_type).to eq('application/json')
+      expect(response.parsed_body['error']).to be_present
+      expect(response.headers['Retry-After']).to be_present
+      expect(OauthUserInfoFetcher).to have_received(:fetch).exactly(5).times
+    end
+  end
+
+  it 'scopes the auth throttle per real client IP behind a Cloud Run-style link-local proxy' do
+    allow(OauthUserInfoFetcher).to receive(:fetch)
+      .with('line', hash_including(access_token: 'valid_line_token'))
+      .and_return(provider: 'line', uid: 'U1234567890abcdef', name: 'もちもち抹茶')
+
+    travel_to(Time.current) do
+      proxy_env = { 'REMOTE_ADDR' => '169.254.1.1' }
+      auth_params = { access_token: 'valid_line_token' }
+
+      5.times do
+        post '/api/v1/auth/line',
+             params: auth_params,
+             headers: { 'X-Forwarded-For' => '203.0.113.1' }.merge(proxy_env)
+      end
+      expect(response).to have_http_status(:ok)
+
+      post '/api/v1/auth/line',
+           params: auth_params,
+           headers: { 'X-Forwarded-For' => '203.0.113.1' }.merge(proxy_env)
+      expect(response).to have_http_status(:too_many_requests)
+
+      # 別クライアント(別 X-Forwarded-For)からのリクエストは巻き込まれずログインできる。
+      post '/api/v1/auth/line',
+           params: auth_params,
+           headers: { 'X-Forwarded-For' => '203.0.113.2' }.merge(proxy_env)
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
+  it 'does not let requests to unsupported providers consume the auth throttle bucket for real logins' do
+    allow(OauthUserInfoFetcher).to receive(:fetch)
+      .with('line', hash_including(access_token: 'valid_line_token'))
+      .and_return(provider: 'line', uid: 'U1234567890abcdef', name: 'もちもち抹茶')
+
+    travel_to(Time.current) do
+      5.times do
+        post '/api/v1/auth/twitter', params: { access_token: 'dummy' }
+        expect(response).to have_http_status(:not_found)
+      end
+
+      post '/api/v1/auth/line', params: { access_token: 'valid_line_token' }
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   it 'does not throttle requests to unrelated API paths' do
     11.times { get '/api/v1/health' }
 
