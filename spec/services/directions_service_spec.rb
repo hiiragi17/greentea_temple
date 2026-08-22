@@ -207,8 +207,8 @@ RSpec.describe DirectionsService do
 
       it 'returns nil when even the relaxed transit fallback is ZERO_RESULTS' do
         Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
-          expect(DirectionsService).to receive(:request).exactly(3).times
-                                                          .and_return('status' => 'ZERO_RESULTS', 'routes' => [])
+          expect(DirectionsService).to receive(:request)
+            .exactly(3).times.and_return('status' => 'ZERO_RESULTS', 'routes' => [])
           expect(DirectionsService.leg(origin: origin, destination: destination, mode: 'bus')).to be_nil
         end
       end

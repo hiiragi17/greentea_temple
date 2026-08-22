@@ -48,38 +48,37 @@ class DirectionsService
     # mode は route_spots.transport の文字列（"walk" / "train" など、nil 可）。
     # 返り値: { distance_meters: Integer, duration_seconds: Integer, polyline: String or nil } または nil。
     def leg(origin:, destination:, mode: nil)
-      key = api_key
-      return nil if key.blank?
+      return nil if api_key.blank?
       return nil unless coordinates?(origin) && coordinates?(destination)
-      return fetch_leg(origin, destination, mode, key, nil).result unless transit?(mode)
+      return fetch_leg(origin, destination, mode, nil).result unless transit?(mode)
 
-      transit_leg(origin, destination, mode, key)
+      transit_leg(origin, destination, mode)
     end
 
     private
 
-    def transit_leg(origin, destination, mode, key)
+    def transit_leg(origin, destination, mode)
       # サービス時間内でも、路線ごとの始発・終電時刻外なら「今」を出発時刻にした
       # 問い合わせは ZERO_RESULTS になりうる。その場合のみ翌日の妥当な時間帯で
       # 再試行する（1路線ごとの時刻表までは把握できないための best-effort）。
       departure = departure_time
-      attempt = fetch_leg(origin, destination, mode, key, departure)
+      attempt = fetch_leg(origin, destination, mode, departure)
 
       if attempt.retryable
         retry_departure = retry_departure_time
         if retry_departure != departure
           departure = retry_departure
-          attempt = fetch_leg(origin, destination, mode, key, departure)
+          attempt = fetch_leg(origin, destination, mode, departure)
         end
       end
       return attempt.result unless attempt.retryable
 
-      fetch_leg(origin, destination, mode, key, departure,
+      fetch_leg(origin, destination, mode, departure,
                 mode_params_override: RELAXED_TRANSIT_MODE_PARAMS).result
     end
 
-    def fetch_leg(origin, destination, mode, key, departure_time, mode_params_override: nil)
-      body = request(build_url(origin, destination, mode, key, departure_time, mode_params_override))
+    def fetch_leg(origin, destination, mode, departure_time, mode_params_override: nil)
+      body = request(build_url(origin, destination, mode, departure_time, mode_params_override))
       return Attempt.new(nil, false) unless body
 
       status = body['status']
@@ -126,11 +125,11 @@ class DirectionsService
       (Time.zone.now + 1.day).change(hour: TRANSIT_FALLBACK_DEPARTURE_HOUR, min: 0, sec: 0).to_i
     end
 
-    def build_url(origin, destination, transport, key, departure_time, mode_params_override = nil)
+    def build_url(origin, destination, transport, departure_time, mode_params_override = nil)
       params = {
         origin: "#{origin.latitude},#{origin.longitude}",
         destination: "#{destination.latitude},#{destination.longitude}",
-        key: key
+        key: api_key
       }.merge(mode_params_override || mode_params(transport))
       params[:departure_time] = departure_time if departure_time
 
