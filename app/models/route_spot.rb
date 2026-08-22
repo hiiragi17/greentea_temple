@@ -4,8 +4,12 @@ class RouteSpot < ApplicationRecord
   belongs_to :route, inverse_of: :route_spots
   belongs_to :spottable, polymorphic: true
 
-  # 移動手段（任意）: 次のスポットへの移動手段。未設定可。
-  enum :transport, { walk: 0, train: 1, bus: 2, car: 3 }
+  # 移動手段: 次のスポットへの移動手段。ユーザーが選ぶのではなく、区間距離と
+  # Directions API の結果から自動決定される（DirectionsService.auto_leg）。
+  # 次スポットが無い（最後のスポット）場合や算出失敗時は未設定（nil）のまま。
+  # train/bus/car は過去に手動選択で保存されたレコードとの互換のために残しているが、
+  # 自動決定では選ばれない（walk / transit のみ）。
+  enum :transport, { walk: 0, train: 1, bus: 2, car: 3, transit: 4 }
 
   validates :position, presence: true,
                        numericality: { only_integer: true, greater_than: 0 }

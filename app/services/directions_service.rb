@@ -40,6 +40,11 @@ class DirectionsService
   # transit（乗換案内）で 1 度だけ再試行する。
   RELAXED_TRANSIT_MODE_PARAMS = { mode: 'transit' }.freeze
 
+  # このメートル未満の区間は徒歩を優先する（乗換案内を問い合わせない）。
+  # ごく短い区間は乗換の待ち時間・徒歩区間を考えると公共交通機関が実用的でない上、
+  # Google 側も短距離の transit 問い合わせに ZERO_RESULTS を返しやすいため。
+  AUTO_WALK_THRESHOLD_METERS = 1000
+
   Attempt = Struct.new(:result, :retryable)
   private_constant :Attempt
 
@@ -55,7 +60,48 @@ class DirectionsService
       transit_leg(origin, destination, mode)
     end
 
+    # ユーザーに手段を選ばせず、区間ごとに最適な移動手段を自動決定する版。
+    # 近距離（AUTO_WALK_THRESHOLD_METERS 未満）は徒歩、それ以外は手段を絞らない
+    # 一般的な transit（乗換案内）を優先し、見つからなければ徒歩にフォールバックする。
+    # 返り値: leg の結果に transport: "walk" | "transit" を加えたもの、または nil。
+    def auto_leg(origin:, destination:)
+      return nil if api_key.blank?
+      return nil unless coordinates?(origin) && coordinates?(destination)
+
+      return walk_leg(origin, destination) if short_distance?(origin, destination)
+
+      relaxed_transit_leg(origin, destination)&.merge(transport: 'transit') || walk_leg(origin, destination)
+    end
+
     private
+
+    def walk_leg(origin, destination)
+      fetch_leg(origin, destination, 'walk', nil).result&.merge(transport: 'walk')
+    end
+
+    def short_distance?(origin, destination)
+      from = Geokit::LatLng.new(origin.latitude, origin.longitude)
+      to = Geokit::LatLng.new(destination.latitude, destination.longitude)
+      (from.distance_to(to, units: :kms) * 1000) < AUTO_WALK_THRESHOLD_METERS
+    end
+
+    # 手段を絞らない一般的な transit（乗換案内）で問い合わせる。サービス時間外の
+    # 始発待ちで ZERO_RESULTS になるケースのみ、翌日の妥当な時間帯で 1 度再試行する
+    # （transit_leg のロジックと同様。手段の絞り込みが無いのでこれ以上のフォール
+    # バックは不要）。
+    def relaxed_transit_leg(origin, destination)
+      departure = departure_time
+      attempt = fetch_leg(origin, destination, nil, departure, mode_params_override: RELAXED_TRANSIT_MODE_PARAMS)
+
+      if attempt.retryable
+        retry_departure = retry_departure_time
+        if retry_departure != departure
+          attempt = fetch_leg(origin, destination, nil, retry_departure, mode_params_override: RELAXED_TRANSIT_MODE_PARAMS)
+        end
+      end
+
+      attempt.result
+    end
 
     def transit_leg(origin, destination, mode)
       # サービス時間内でも、路線ごとの始発・終電時刻外なら「今」を出発時刻にした

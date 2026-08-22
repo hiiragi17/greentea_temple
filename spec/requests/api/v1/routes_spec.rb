@@ -11,7 +11,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
 
   # 既定では Directions API を呼ばない（外部依存・実 HTTP を避ける）。
   # 経路距離・所要時間を検証するテストでは個別に stub し直す。
-  before { allow(DirectionsService).to receive(:leg).and_return(nil) }
+  before { allow(DirectionsService).to receive(:auto_leg).and_return(nil) }
 
   # spots: [{ spottable:, transport: }] を順序付きで持つ Route を 1 件作る。
   def create_route_for(owner, spots)
@@ -152,9 +152,9 @@ RSpec.describe 'Api::V1::Routes', type: :request do
     end
 
     it 'computes and stores leg metrics via DirectionsService' do
-      expect(DirectionsService).to receive(:leg)
-        .with(origin: temple, destination: greentea, mode: 'walk')
-        .and_return({ distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded' })
+      expect(DirectionsService).to receive(:auto_leg)
+        .with(origin: temple, destination: greentea)
+        .and_return({ distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded', transport: 'walk' })
 
       post '/api/v1/routes', params: valid_params, headers: auth
 
@@ -164,6 +164,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(first_spot.leg_distance_meters).to eq(1500)
       expect(first_spot.leg_duration_seconds).to eq(1080)
       expect(first_spot.leg_polyline).to eq('abc123encoded')
+      expect(first_spot.transport).to eq('walk')
       # 最後のスポットには次が無いので leg は保存されない。
       expect(route.route_spots.order(:position).last.leg_distance_meters).to be_nil
 
@@ -177,16 +178,16 @@ RSpec.describe 'Api::V1::Routes', type: :request do
     it 'uses computed metrics for successful legs and falls back for failed ones' do
       third = create(:greentea)
       # leg1 は成功、leg2 は失敗（nil）。
-      allow(DirectionsService).to receive(:leg)
-        .and_return({ distance_meters: 1500, duration_seconds: 1080 }, nil)
+      allow(DirectionsService).to receive(:auto_leg)
+        .and_return({ distance_meters: 1500, duration_seconds: 1080, transport: 'transit' }, nil)
 
       post '/api/v1/routes',
            params: {
              route: {
                name: '混在ルート',
                spots: [
-                 { spot_type: 'temple', spot_id: temple.id, transport: 'walk' },
-                 { spot_type: 'greentea', spot_id: greentea.id, transport: 'train' },
+                 { spot_type: 'temple', spot_id: temple.id },
+                 { spot_type: 'greentea', spot_id: greentea.id },
                  { spot_type: 'greentea', spot_id: third.id }
                ]
              }
@@ -265,13 +266,15 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
-    it 'returns 422 for an invalid transport' do
+    it 'ignores a client-supplied transport (移動手段はバックエンドが自動決定する)' do
       params = valid_params.deep_dup
       params[:route][:spots] = [{ spot_type: 'greentea', spot_id: greentea.id, transport: 'teleport' }]
       expect {
         post '/api/v1/routes', params: params, headers: auth
-      }.not_to change(Route, :count)
-      expect(response).to have_http_status(:unprocessable_entity)
+      }.to change(Route, :count).by(1)
+      expect(response).to have_http_status(:created)
+      # spots が 1 件のみ（次のスポットが無い）ので leg は計算されず transport も未設定のまま。
+      expect(Route.last.route_spots.first.transport).to be_nil
     end
   end
 
@@ -282,14 +285,14 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    it 'replaces the route name and spots' do
+    it 'replaces the route name and spots (transport is no longer accepted from the client)' do
       route = create_route_for(user, [{ spottable: greentea }])
 
       patch "/api/v1/routes/#{route.id}",
             params: {
               route: {
                 name: '新ルート',
-                spots: [{ spot_type: 'temple', spot_id: temple.id, transport: 'train' }]
+                spots: [{ spot_type: 'temple', spot_id: temple.id }]
               }
             },
             headers: auth
@@ -298,19 +301,20 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       route.reload
       expect(route.name).to eq('新ルート')
       expect(route.route_spots.map(&:spottable)).to eq([temple])
-      expect(route.route_spots.first.transport).to eq('train')
+      # 次のスポットが無い（spots 1件のみ）ので leg は計算されず transport も未設定のまま。
+      expect(route.route_spots.first.transport).to be_nil
     end
 
     it 'recomputes and stores leg metrics when spots change' do
       route = create_route_for(user, [{ spottable: greentea }])
-      allow(DirectionsService).to receive(:leg)
-        .and_return({ distance_meters: 2000, duration_seconds: 1500 })
+      allow(DirectionsService).to receive(:auto_leg)
+        .and_return({ distance_meters: 2000, duration_seconds: 1500, transport: 'transit' })
 
       patch "/api/v1/routes/#{route.id}",
             params: {
               route: {
                 spots: [
-                  { spot_type: 'temple', spot_id: temple.id, transport: 'train' },
+                  { spot_type: 'temple', spot_id: temple.id },
                   { spot_type: 'greentea', spot_id: greentea.id }
                 ]
               }
@@ -321,13 +325,14 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       first_spot = route.reload.route_spots.order(:position).first
       expect(first_spot.leg_distance_meters).to eq(2000)
       expect(first_spot.leg_duration_seconds).to eq(1500)
+      expect(first_spot.transport).to eq('transit')
       expect(response.parsed_body['data']['total_distance_meters']).to eq(2000)
     end
 
     it 'updates only scalar fields and preserves spots when the spots key is omitted' do
       route = create_route_for(user, [{ spottable: greentea }, { spottable: temple }])
       # spots 未変更なので leg 再計算（外部 API 呼び出し）は走らない。
-      expect(DirectionsService).not_to receive(:leg)
+      expect(DirectionsService).not_to receive(:auto_leg)
 
       patch "/api/v1/routes/#{route.id}",
             params: { route: { description: '説明だけ更新' } },
