@@ -28,6 +28,14 @@ class DirectionsService
   TRANSIT_SERVICE_END_HOUR = 23
   TRANSIT_FALLBACK_DEPARTURE_HOUR = 9
 
+  # 再試行してよいのは「今の時刻がその路線の運行時間外だっただけ」の可能性がある
+  # ZERO_RESULTS のみ。ネットワーク障害や REQUEST_DENIED 等の恒久的なエラーまで
+  # 再試行すると、ルート作成/更新のたびに leg ごとのタイムアウトが倍になりうる。
+  TRANSIT_RETRYABLE_STATUSES = %w[ZERO_RESULTS].freeze
+
+  Attempt = Struct.new(:result, :retryable)
+  private_constant :Attempt
+
   class << self
     # origin / destination は latitude / longitude を持つオブジェクト（Greentea / Temple）。
     # mode は route_spots.transport の文字列（"walk" / "train" など、nil 可）。
@@ -36,28 +44,36 @@ class DirectionsService
       key = api_key
       return nil if key.blank?
       return nil unless coordinates?(origin) && coordinates?(destination)
-      return fetch_leg(origin, destination, mode, key, nil) unless transit?(mode)
+      return fetch_leg(origin, destination, mode, key, nil).result unless transit?(mode)
 
       # サービス時間内でも、路線ごとの始発・終電時刻外なら「今」を出発時刻にした
-      # 問い合わせは ZERO_RESULTS になりうる。その場合は翌日の妥当な時間帯で
+      # 問い合わせは ZERO_RESULTS になりうる。その場合のみ翌日の妥当な時間帯で
       # 再試行する（1路線ごとの時刻表までは把握できないための best-effort）。
       first_departure = departure_time
-      result = fetch_leg(origin, destination, mode, key, first_departure)
-      return result if result
+      attempt = fetch_leg(origin, destination, mode, key, first_departure)
+      return attempt.result unless attempt.retryable
 
       retry_departure = retry_departure_time
       return nil if retry_departure == first_departure
 
-      fetch_leg(origin, destination, mode, key, retry_departure)
+      fetch_leg(origin, destination, mode, key, retry_departure).result
     end
 
     private
 
     def fetch_leg(origin, destination, mode, key, departure_time)
       body = request(build_url(origin, destination, mode, key, departure_time))
-      return nil unless body
+      return Attempt.new(nil, false) unless body
 
-      parse(body, mode)
+      status = body['status']
+      if status != 'OK'
+        Rails.logger.warn(
+          "DirectionsService non-OK status: #{status} mode=#{mode.inspect} #{body['error_message']}".strip
+        )
+        return Attempt.new(nil, TRANSIT_RETRYABLE_STATUSES.include?(status))
+      end
+
+      Attempt.new(extract_leg(body), false)
     end
 
     def api_key
@@ -123,14 +139,7 @@ class DirectionsService
       nil
     end
 
-    def parse(body, mode = nil)
-      if body['status'] != 'OK'
-        Rails.logger.warn(
-          "DirectionsService non-OK status: #{body['status']} mode=#{mode.inspect} #{body['error_message']}".strip
-        )
-        return nil
-      end
-
+    def extract_leg(body)
       route = body.dig('routes', 0)
       leg = route&.dig('legs', 0)
       return nil unless leg

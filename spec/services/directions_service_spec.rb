@@ -170,6 +170,16 @@ RSpec.describe DirectionsService do
         end
       end
 
+      it 'does not retry transit modes when the request itself fails (network failure)' do
+        expect(DirectionsService).to receive(:request).once.and_return(nil)
+        expect(DirectionsService.leg(origin: origin, destination: destination, mode: 'bus')).to be_nil
+      end
+
+      it 'does not retry transit modes for a permanent API status such as REQUEST_DENIED' do
+        expect(DirectionsService).to receive(:request).once.and_return('status' => 'REQUEST_DENIED', 'routes' => [])
+        expect(DirectionsService.leg(origin: origin, destination: destination, mode: 'bus')).to be_nil
+      end
+
       it 'returns nil when the request itself fails' do
         allow(DirectionsService).to receive(:request).and_return(nil)
         expect(DirectionsService.leg(origin: origin, destination: destination, mode: 'walk')).to be_nil
