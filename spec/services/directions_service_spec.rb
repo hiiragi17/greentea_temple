@@ -136,9 +136,11 @@ RSpec.describe DirectionsService do
       end
 
       it 'logs the status and mode for every failed attempt' do
-        allow(DirectionsService).to receive(:request).and_return('status' => 'ZERO_RESULTS', 'routes' => [])
-        expect(Rails.logger).to receive(:warn).with(/ZERO_RESULTS.*mode="bus"/).twice
-        DirectionsService.leg(origin: origin, destination: destination, mode: 'bus')
+        Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
+          allow(DirectionsService).to receive(:request).and_return('status' => 'ZERO_RESULTS', 'routes' => [])
+          expect(Rails.logger).to receive(:warn).with(/ZERO_RESULTS.*mode="bus"/).exactly(3).times
+          DirectionsService.leg(origin: origin, destination: destination, mode: 'bus')
+        end
       end
 
       it 'retries transit modes at the next-day fallback hour when the first attempt is non-OK' do
@@ -163,9 +165,50 @@ RSpec.describe DirectionsService do
         end
       end
 
-      it 'returns nil without a duplicate request when both the first attempt and the retry would use the same time' do
+      it 'falls back to a relaxed (unrestricted) transit query without a time re-retry when both times are the same' do
         Timecop.freeze(Time.zone.local(2026, 1, 5, 23, 30, 0)) do
-          expect(DirectionsService).to receive(:request).once.and_return('status' => 'ZERO_RESULTS', 'routes' => [])
+          call_count = 0
+
+          expect(DirectionsService).to receive(:request).twice do |uri|
+            call_count += 1
+            if call_count == 1
+              expect(uri.query).to include('transit_mode=bus')
+              { 'status' => 'ZERO_RESULTS', 'routes' => [] }
+            else
+              expect(uri.query).not_to include('transit_mode=')
+              ok_body
+            end
+          end
+
+          result = DirectionsService.leg(origin: origin, destination: destination, mode: 'bus')
+          expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded')
+        end
+      end
+
+      it 'falls back to a relaxed (unrestricted) transit query when both the time retry and the mode-restricted retry are ZERO_RESULTS' do
+        Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
+          call_count = 0
+
+          expect(DirectionsService).to receive(:request).exactly(3).times do |uri|
+            call_count += 1
+            if call_count == 3
+              expect(uri.query).not_to include('transit_mode=')
+              ok_body
+            else
+              expect(uri.query).to include('transit_mode=rail')
+              { 'status' => 'ZERO_RESULTS', 'routes' => [] }
+            end
+          end
+
+          result = DirectionsService.leg(origin: origin, destination: destination, mode: 'train')
+          expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded')
+        end
+      end
+
+      it 'returns nil when even the relaxed transit fallback is ZERO_RESULTS' do
+        Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
+          expect(DirectionsService).to receive(:request)
+            .exactly(3).times.and_return('status' => 'ZERO_RESULTS', 'routes' => [])
           expect(DirectionsService.leg(origin: origin, destination: destination, mode: 'bus')).to be_nil
         end
       end
@@ -198,6 +241,78 @@ RSpec.describe DirectionsService do
         no_coords = double('spot', latitude: nil, longitude: nil)
         expect(DirectionsService).not_to receive(:request)
         expect(DirectionsService.leg(origin: no_coords, destination: destination, mode: 'walk')).to be_nil
+      end
+    end
+  end
+
+  describe '.auto_leg' do
+    # origin/destination は約 3.3km 離れている（AUTO_WALK_THRESHOLD_METERS=1000 以上）。
+    let(:near_destination) { double('near_destination', latitude: 34.9675, longitude: 135.7730) }
+
+    context 'when no API key is configured' do
+      before { allow(DirectionsService).to receive(:api_key).and_return(nil) }
+
+      it 'returns nil without making a request' do
+        expect(DirectionsService).not_to receive(:request)
+        expect(DirectionsService.auto_leg(origin: origin, destination: destination)).to be_nil
+      end
+    end
+
+    context 'when an API key is configured' do
+      before { allow(DirectionsService).to receive(:api_key).and_return('test-key') }
+
+      it 'returns nil when coordinates are missing' do
+        no_coords = double('spot', latitude: nil, longitude: nil)
+        expect(DirectionsService).not_to receive(:request)
+        expect(DirectionsService.auto_leg(origin: no_coords, destination: destination)).to be_nil
+      end
+
+      it 'uses walking directly for a short (< 1km) leg without querying transit' do
+        expect(DirectionsService).to receive(:request) do |uri|
+          expect(uri.query).to include('mode=walking')
+          ok_body
+        end
+
+        result = DirectionsService.auto_leg(origin: origin, destination: near_destination)
+        expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded', transport: 'walk')
+      end
+
+      it 'prefers a relaxed (mode-unrestricted) transit query for a longer leg' do
+        expect(DirectionsService).to receive(:request) do |uri|
+          expect(uri.query).to include('mode=transit')
+          expect(uri.query).not_to include('transit_mode=')
+          ok_body
+        end
+
+        result = DirectionsService.auto_leg(origin: origin, destination: destination)
+        expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded', transport: 'transit')
+      end
+
+      it 'falls back to walking when the relaxed transit query is ZERO_RESULTS even after the time retry' do
+        Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
+          call_count = 0
+
+          expect(DirectionsService).to receive(:request).exactly(3).times do |uri|
+            call_count += 1
+            if call_count == 3
+              expect(uri.query).to include('mode=walking')
+              ok_body
+            else
+              expect(uri.query).to include('mode=transit')
+              { 'status' => 'ZERO_RESULTS', 'routes' => [] }
+            end
+          end
+
+          result = DirectionsService.auto_leg(origin: origin, destination: destination)
+          expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded', transport: 'walk')
+        end
+      end
+
+      it 'returns nil when both the relaxed transit query and the walking fallback fail' do
+        Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
+          allow(DirectionsService).to receive(:request).and_return('status' => 'ZERO_RESULTS', 'routes' => [])
+          expect(DirectionsService.auto_leg(origin: origin, destination: destination)).to be_nil
+        end
       end
     end
   end

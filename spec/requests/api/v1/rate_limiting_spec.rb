@@ -15,7 +15,7 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
 
   # 経路作成は Directions API を呼ぶため、外部 HTTP を避けるために stub する
   # (spec/requests/api/v1/routes_spec.rb と同様)。
-  before { allow(DirectionsService).to receive(:leg).and_return(nil) }
+  before { allow(DirectionsService).to receive(:auto_leg).and_return(nil) }
 
   around do |example|
     original_enabled = Rack::Attack.enabled

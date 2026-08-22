@@ -26,8 +26,10 @@ RSpec.describe RouteSpot, type: :model do
   end
 
   describe 'transport enum' do
-    it 'defines walk/train/bus/car' do
-      expect(described_class.transports).to eq('walk' => 0, 'train' => 1, 'bus' => 2, 'car' => 3)
+    it 'defines walk/train/bus/car/transit' do
+      expect(described_class.transports).to eq(
+        'walk' => 0, 'train' => 1, 'bus' => 2, 'car' => 3, 'transit' => 4
+      )
     end
 
     it 'allows a nil transport (任意項目)' do
