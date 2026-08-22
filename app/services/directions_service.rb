@@ -21,6 +21,13 @@ class DirectionsService
   # transport 未設定（nil）や未知の値は徒歩扱い。
   DEFAULT_MODE = { mode: 'walking' }.freeze
 
+  # transit（電車・バス）は departure_time 未指定だと Google 側が「今」を出発時刻に
+  # 使う。深夜など運行時間外に「今」で問い合わせると ZERO_RESULTS になりやすいため、
+  # サービス時間外は翌朝の妥当な時間帯まで繰り上げて問い合わせる。
+  TRANSIT_SERVICE_START_HOUR = 6
+  TRANSIT_SERVICE_END_HOUR = 23
+  TRANSIT_FALLBACK_DEPARTURE_HOUR = 9
+
   class << self
     # origin / destination は latitude / longitude を持つオブジェクト（Greentea / Temple）。
     # mode は route_spots.transport の文字列（"walk" / "train" など、nil 可）。
@@ -33,7 +40,7 @@ class DirectionsService
       body = request(build_url(origin, destination, mode, key))
       return nil unless body
 
-      parse(body)
+      parse(body, mode)
     end
 
     private
@@ -51,12 +58,27 @@ class DirectionsService
       TRANSPORT_MODES.fetch(transport.to_s, DEFAULT_MODE)
     end
 
+    def transit?(transport)
+      mode_params(transport)[:mode] == 'transit'
+    end
+
+    # サービス時間内なら「今」、時間外なら直近の TRANSIT_FALLBACK_DEPARTURE_HOUR 時
+    # （今日または翌日）の Unix タイムスタンプを返す。
+    def departure_time
+      now = Time.zone.now
+      return now.to_i if (TRANSIT_SERVICE_START_HOUR...TRANSIT_SERVICE_END_HOUR).cover?(now.hour)
+
+      base = now.hour < TRANSIT_SERVICE_START_HOUR ? now : now + 1.day
+      base.change(hour: TRANSIT_FALLBACK_DEPARTURE_HOUR, min: 0, sec: 0).to_i
+    end
+
     def build_url(origin, destination, transport, key)
       params = {
         origin: "#{origin.latitude},#{origin.longitude}",
         destination: "#{destination.latitude},#{destination.longitude}",
         key: key
       }.merge(mode_params(transport))
+      params[:departure_time] = departure_time if transit?(transport)
 
       uri = URI(ENDPOINT)
       uri.query = URI.encode_www_form(params)
@@ -80,8 +102,13 @@ class DirectionsService
       nil
     end
 
-    def parse(body)
-      return nil unless body['status'] == 'OK'
+    def parse(body, mode = nil)
+      if body['status'] != 'OK'
+        Rails.logger.warn(
+          "DirectionsService non-OK status: #{body['status']} mode=#{mode.inspect} #{body['error_message']}".strip
+        )
+        return nil
+      end
 
       route = body.dig('routes', 0)
       leg = route&.dig('legs', 0)
