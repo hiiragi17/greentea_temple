@@ -1,0 +1,162 @@
+name: Codex Review Gate
+
+# openai/codex-action で PR の差分をレビューし、P0/P1(重大なバグ)の指摘があれば
+# このジョブを失敗させる。「レビューを通っていないコードはマージさせない」を
+# 機械的に担保するためのゲート。
+#
+# 使うには以下が別途必要(このワークフローファイルだけでは有効化されない):
+#   1. リポジトリの Settings > Secrets and variables > Actions で
+#      OPENAI_API_KEY を登録する
+#   2. Settings > Branches のブランチ保護ルールで、このジョブ(codex-review-gate)
+#      を Required status check に追加する
+#
+# 既存の chatgpt-codex-connector(GitHub App, `@codex review` で起動する方)とは
+# 別の仕組み。App 側はレビューコメントを残すだけでマージを止めないが、
+# こちらは job を失敗させることでマージをブロックできる。両方有効にすると
+# 二重にレビュー(と OpenAI API 課金)が走る点に注意。
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codex-review-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  codex-review:
+    name: Codex Review Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          persist-credentials: false
+
+      - name: Pre-fetch base and head refs for the PR
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          git fetch --no-tags origin \
+            "$PR_BASE_REF" \
+            "+refs/pull/$PR_NUMBER/head"
+
+      - name: Write output schema
+        run: |
+          cat > /tmp/codex-review-schema.json <<'EOF'
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["verdict", "summary", "findings"],
+            "properties": {
+              "verdict": {
+                "type": "string",
+                "enum": ["PASS", "FAIL"]
+              },
+              "summary": {
+                "type": "string"
+              },
+              "findings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["severity", "file", "description"],
+                  "properties": {
+                    "severity": {
+                      "type": "string",
+                      "enum": ["P0", "P1", "P2", "P3"]
+                    },
+                    "file": {
+                      "type": "string"
+                    },
+                    "line": {
+                      "type": "integer"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          EOF
+
+      - name: Run Codex review
+        id: run_codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          permission-profile: ":workspace"
+          output-schema-file: /tmp/codex-review-schema.json
+          output-file: /tmp/codex-review-result.json
+          prompt: |
+            This is PR #${{ github.event.pull_request.number }} for ${{ github.repository }}.
+            Review ONLY the changes introduced by this PR:
+              git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}
+
+            Focus on correctness bugs, not style. Classify every finding with a severity:
+              - P0: critical (crash, data loss, security vulnerability, broken production behavior)
+              - P1: major bug (wrong behavior in a realistic case, missing error handling that breaks a real flow)
+              - P2: minor issue (edge case, small inefficiency)
+              - P3: nit (style, naming, wording)
+
+            Set "verdict" to "FAIL" if there is at least one P0 or P1 finding, otherwise "PASS".
+            List every finding you found (including P2/P3) in "findings", each with the file path,
+            line number if known, and a concise description of the concrete failure scenario.
+            If there are no issues at all, return verdict "PASS" with an empty findings array.
+
+            Pull request title and body:
+            ----
+            ${{ github.event.pull_request.title }}
+            ${{ github.event.pull_request.body }}
+
+      - name: Enforce gate on P0/P1 findings
+        run: |
+          result_file=/tmp/codex-review-result.json
+          if [ ! -s "$result_file" ]; then
+            echo "::error::Codex review produced no output; failing closed."
+            exit 1
+          fi
+
+          echo "----- Codex review result -----"
+          cat "$result_file"
+          echo "--------------------------------"
+
+          verdict=$(jq -r '.verdict // empty' "$result_file")
+          if [ -z "$verdict" ]; then
+            echo "::error::Codex review output did not include a verdict; failing closed."
+            exit 1
+          fi
+
+          blocking=$(jq -r '[.findings[]? | select(.severity=="P0" or .severity=="P1")] | length' "$result_file")
+          echo "Verdict: $verdict / P0+P1 findings: $blocking"
+
+          if [ "$verdict" != "PASS" ] || [ "$blocking" -gt 0 ]; then
+            echo "::error::Codex found $blocking P0/P1 issue(s). See job summary for details."
+            jq -r '.findings[] | select(.severity=="P0" or .severity=="P1") | "- [\(.severity)] \(.file):\(.line // "?") \(.description)"' "$result_file"
+            exit 1
+          fi
+
+      - name: Post findings to job summary
+        if: always()
+        run: |
+          result_file=/tmp/codex-review-result.json
+          if [ -s "$result_file" ]; then
+            {
+              echo "## Codex Review Gate"
+              echo
+              echo "**Verdict:** $(jq -r '.verdict // "UNKNOWN"' "$result_file")"
+              echo
+              echo "$(jq -r '.summary // ""' "$result_file")"
+              echo
+              echo "| Severity | File | Line | Description |"
+              echo "| --- | --- | --- | --- |"
+              jq -r '.findings[]? | "| \(.severity) | \(.file) | \(.line // "-") | \(.description) |"' "$result_file"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
