@@ -33,6 +33,13 @@ class DirectionsService
   # 再試行すると、ルート作成/更新のたびに leg ごとのタイムアウトが倍になりうる。
   TRANSIT_RETRYABLE_STATUSES = %w[ZERO_RESULTS].freeze
 
+  # train/bus は transit_mode で rail/bus に絞って問い合わせているが、隣接スポット同士の
+  # ような短距離区間だと「その手段限定の直通ルート」が無く ZERO_RESULTS になることがある
+  # （例: 最寄り駅まで遠く、実際には別の乗り物を挟まないと乗換案内が成立しない）。
+  # 出発時刻を変えても解決しないため、最終フォールバックとして手段を絞らない一般的な
+  # transit（乗換案内）で 1 度だけ再試行する。
+  RELAXED_TRANSIT_MODE_PARAMS = { mode: 'transit' }.freeze
+
   Attempt = Struct.new(:result, :retryable)
   private_constant :Attempt
 
@@ -46,23 +53,33 @@ class DirectionsService
       return nil unless coordinates?(origin) && coordinates?(destination)
       return fetch_leg(origin, destination, mode, key, nil).result unless transit?(mode)
 
-      # サービス時間内でも、路線ごとの始発・終電時刻外なら「今」を出発時刻にした
-      # 問い合わせは ZERO_RESULTS になりうる。その場合のみ翌日の妥当な時間帯で
-      # 再試行する（1路線ごとの時刻表までは把握できないための best-effort）。
-      first_departure = departure_time
-      attempt = fetch_leg(origin, destination, mode, key, first_departure)
-      return attempt.result unless attempt.retryable
-
-      retry_departure = retry_departure_time
-      return nil if retry_departure == first_departure
-
-      fetch_leg(origin, destination, mode, key, retry_departure).result
+      transit_leg(origin, destination, mode, key)
     end
 
     private
 
-    def fetch_leg(origin, destination, mode, key, departure_time)
-      body = request(build_url(origin, destination, mode, key, departure_time))
+    def transit_leg(origin, destination, mode, key)
+      # サービス時間内でも、路線ごとの始発・終電時刻外なら「今」を出発時刻にした
+      # 問い合わせは ZERO_RESULTS になりうる。その場合のみ翌日の妥当な時間帯で
+      # 再試行する（1路線ごとの時刻表までは把握できないための best-effort）。
+      departure = departure_time
+      attempt = fetch_leg(origin, destination, mode, key, departure)
+
+      if attempt.retryable
+        retry_departure = retry_departure_time
+        if retry_departure != departure
+          departure = retry_departure
+          attempt = fetch_leg(origin, destination, mode, key, departure)
+        end
+      end
+      return attempt.result unless attempt.retryable
+
+      fetch_leg(origin, destination, mode, key, departure,
+                mode_params_override: RELAXED_TRANSIT_MODE_PARAMS).result
+    end
+
+    def fetch_leg(origin, destination, mode, key, departure_time, mode_params_override: nil)
+      body = request(build_url(origin, destination, mode, key, departure_time, mode_params_override))
       return Attempt.new(nil, false) unless body
 
       status = body['status']
@@ -109,12 +126,12 @@ class DirectionsService
       (Time.zone.now + 1.day).change(hour: TRANSIT_FALLBACK_DEPARTURE_HOUR, min: 0, sec: 0).to_i
     end
 
-    def build_url(origin, destination, transport, key, departure_time)
+    def build_url(origin, destination, transport, key, departure_time, mode_params_override = nil)
       params = {
         origin: "#{origin.latitude},#{origin.longitude}",
         destination: "#{destination.latitude},#{destination.longitude}",
         key: key
-      }.merge(mode_params(transport))
+      }.merge(mode_params_override || mode_params(transport))
       params[:departure_time] = departure_time if departure_time
 
       uri = URI(ENDPOINT)
