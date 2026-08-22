@@ -21,6 +21,21 @@ class DirectionsService
   # transport 未設定（nil）や未知の値は徒歩扱い。
   DEFAULT_MODE = { mode: 'walking' }.freeze
 
+  # transit（電車・バス）は departure_time 未指定だと Google 側が「今」を出発時刻に
+  # 使う。深夜など運行時間外に「今」で問い合わせると ZERO_RESULTS になりやすいため、
+  # サービス時間外は翌朝の妥当な時間帯まで繰り上げて問い合わせる。
+  TRANSIT_SERVICE_START_HOUR = 6
+  TRANSIT_SERVICE_END_HOUR = 23
+  TRANSIT_FALLBACK_DEPARTURE_HOUR = 9
+
+  # 再試行してよいのは「今の時刻がその路線の運行時間外だっただけ」の可能性がある
+  # ZERO_RESULTS のみ。ネットワーク障害や REQUEST_DENIED 等の恒久的なエラーまで
+  # 再試行すると、ルート作成/更新のたびに leg ごとのタイムアウトが倍になりうる。
+  TRANSIT_RETRYABLE_STATUSES = %w[ZERO_RESULTS].freeze
+
+  Attempt = Struct.new(:result, :retryable)
+  private_constant :Attempt
+
   class << self
     # origin / destination は latitude / longitude を持つオブジェクト（Greentea / Temple）。
     # mode は route_spots.transport の文字列（"walk" / "train" など、nil 可）。
@@ -29,14 +44,37 @@ class DirectionsService
       key = api_key
       return nil if key.blank?
       return nil unless coordinates?(origin) && coordinates?(destination)
+      return fetch_leg(origin, destination, mode, key, nil).result unless transit?(mode)
 
-      body = request(build_url(origin, destination, mode, key))
-      return nil unless body
+      # サービス時間内でも、路線ごとの始発・終電時刻外なら「今」を出発時刻にした
+      # 問い合わせは ZERO_RESULTS になりうる。その場合のみ翌日の妥当な時間帯で
+      # 再試行する（1路線ごとの時刻表までは把握できないための best-effort）。
+      first_departure = departure_time
+      attempt = fetch_leg(origin, destination, mode, key, first_departure)
+      return attempt.result unless attempt.retryable
 
-      parse(body)
+      retry_departure = retry_departure_time
+      return nil if retry_departure == first_departure
+
+      fetch_leg(origin, destination, mode, key, retry_departure).result
     end
 
     private
+
+    def fetch_leg(origin, destination, mode, key, departure_time)
+      body = request(build_url(origin, destination, mode, key, departure_time))
+      return Attempt.new(nil, false) unless body
+
+      status = body['status']
+      if status != 'OK'
+        Rails.logger.warn(
+          "DirectionsService non-OK status: #{status} mode=#{mode.inspect} #{body['error_message']}".strip
+        )
+        return Attempt.new(nil, TRANSIT_RETRYABLE_STATUSES.include?(status))
+      end
+
+      Attempt.new(extract_leg(body), false)
+    end
 
     def api_key
       ENV['GOOGLE_DIRECTIONS_API_KEY'].presence || ENV['GOOGLE_MAPS_API_KEY'].presence
@@ -51,12 +89,33 @@ class DirectionsService
       TRANSPORT_MODES.fetch(transport.to_s, DEFAULT_MODE)
     end
 
-    def build_url(origin, destination, transport, key)
+    def transit?(transport)
+      mode_params(transport)[:mode] == 'transit'
+    end
+
+    # サービス時間内なら「今」、時間外なら直近の TRANSIT_FALLBACK_DEPARTURE_HOUR 時
+    # （今日または翌日）の Unix タイムスタンプを返す。
+    def departure_time
+      now = Time.zone.now
+      return now.to_i if (TRANSIT_SERVICE_START_HOUR...TRANSIT_SERVICE_END_HOUR).cover?(now.hour)
+
+      base = now.hour < TRANSIT_SERVICE_START_HOUR ? now : now + 1.day
+      base.change(hour: TRANSIT_FALLBACK_DEPARTURE_HOUR, min: 0, sec: 0).to_i
+    end
+
+    # 1 回目の問い合わせが失敗した場合の再試行用の出発時刻。翌日の
+    # TRANSIT_FALLBACK_DEPARTURE_HOUR 時（ほぼ全路線が運行しているはずの時間帯）を返す。
+    def retry_departure_time
+      (Time.zone.now + 1.day).change(hour: TRANSIT_FALLBACK_DEPARTURE_HOUR, min: 0, sec: 0).to_i
+    end
+
+    def build_url(origin, destination, transport, key, departure_time)
       params = {
         origin: "#{origin.latitude},#{origin.longitude}",
         destination: "#{destination.latitude},#{destination.longitude}",
         key: key
       }.merge(mode_params(transport))
+      params[:departure_time] = departure_time if departure_time
 
       uri = URI(ENDPOINT)
       uri.query = URI.encode_www_form(params)
@@ -80,9 +139,7 @@ class DirectionsService
       nil
     end
 
-    def parse(body)
-      return nil unless body['status'] == 'OK'
-
+    def extract_leg(body)
       route = body.dig('routes', 0)
       leg = route&.dig('legs', 0)
       return nil unless leg
