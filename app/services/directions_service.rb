@@ -36,14 +36,29 @@ class DirectionsService
       key = api_key
       return nil if key.blank?
       return nil unless coordinates?(origin) && coordinates?(destination)
+      return fetch_leg(origin, destination, mode, key, nil) unless transit?(mode)
 
-      body = request(build_url(origin, destination, mode, key))
+      # サービス時間内でも、路線ごとの始発・終電時刻外なら「今」を出発時刻にした
+      # 問い合わせは ZERO_RESULTS になりうる。その場合は翌日の妥当な時間帯で
+      # 再試行する（1路線ごとの時刻表までは把握できないための best-effort）。
+      first_departure = departure_time
+      result = fetch_leg(origin, destination, mode, key, first_departure)
+      return result if result
+
+      retry_departure = retry_departure_time
+      return nil if retry_departure == first_departure
+
+      fetch_leg(origin, destination, mode, key, retry_departure)
+    end
+
+    private
+
+    def fetch_leg(origin, destination, mode, key, departure_time)
+      body = request(build_url(origin, destination, mode, key, departure_time))
       return nil unless body
 
       parse(body, mode)
     end
-
-    private
 
     def api_key
       ENV['GOOGLE_DIRECTIONS_API_KEY'].presence || ENV['GOOGLE_MAPS_API_KEY'].presence
@@ -72,13 +87,19 @@ class DirectionsService
       base.change(hour: TRANSIT_FALLBACK_DEPARTURE_HOUR, min: 0, sec: 0).to_i
     end
 
-    def build_url(origin, destination, transport, key)
+    # 1 回目の問い合わせが失敗した場合の再試行用の出発時刻。翌日の
+    # TRANSIT_FALLBACK_DEPARTURE_HOUR 時（ほぼ全路線が運行しているはずの時間帯）を返す。
+    def retry_departure_time
+      (Time.zone.now + 1.day).change(hour: TRANSIT_FALLBACK_DEPARTURE_HOUR, min: 0, sec: 0).to_i
+    end
+
+    def build_url(origin, destination, transport, key, departure_time)
       params = {
         origin: "#{origin.latitude},#{origin.longitude}",
         destination: "#{destination.latitude},#{destination.longitude}",
         key: key
       }.merge(mode_params(transport))
-      params[:departure_time] = departure_time if transit?(transport)
+      params[:departure_time] = departure_time if departure_time
 
       uri = URI(ENDPOINT)
       uri.query = URI.encode_www_form(params)

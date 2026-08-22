@@ -130,10 +130,44 @@ RSpec.describe DirectionsService do
         expect(DirectionsService.leg(origin: origin, destination: destination, mode: 'walk')).to be_nil
       end
 
-      it 'logs the status and mode when the API status is not OK' do
+      it 'does not retry non-transit modes on a non-OK status' do
+        expect(DirectionsService).to receive(:request).once.and_return('status' => 'ZERO_RESULTS', 'routes' => [])
+        expect(DirectionsService.leg(origin: origin, destination: destination, mode: 'walk')).to be_nil
+      end
+
+      it 'logs the status and mode for every failed attempt' do
         allow(DirectionsService).to receive(:request).and_return('status' => 'ZERO_RESULTS', 'routes' => [])
-        expect(Rails.logger).to receive(:warn).with(/ZERO_RESULTS.*mode="bus"/)
+        expect(Rails.logger).to receive(:warn).with(/ZERO_RESULTS.*mode="bus"/).twice
         DirectionsService.leg(origin: origin, destination: destination, mode: 'bus')
+      end
+
+      it 'retries transit modes at the next-day fallback hour when the first attempt is non-OK' do
+        Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
+          first_departure = Time.zone.local(2026, 1, 5, 10, 0, 0).to_i
+          retry_departure = Time.zone.local(2026, 1, 6, 9, 0, 0).to_i
+          call_count = 0
+
+          expect(DirectionsService).to receive(:request).twice do |uri|
+            call_count += 1
+            if call_count == 1
+              expect(uri.query).to include("departure_time=#{first_departure}")
+              { 'status' => 'ZERO_RESULTS', 'routes' => [] }
+            else
+              expect(uri.query).to include("departure_time=#{retry_departure}")
+              ok_body
+            end
+          end
+
+          result = DirectionsService.leg(origin: origin, destination: destination, mode: 'bus')
+          expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded')
+        end
+      end
+
+      it 'returns nil without a duplicate request when both the first attempt and the retry would use the same time' do
+        Timecop.freeze(Time.zone.local(2026, 1, 5, 23, 30, 0)) do
+          expect(DirectionsService).to receive(:request).once.and_return('status' => 'ZERO_RESULTS', 'routes' => [])
+          expect(DirectionsService.leg(origin: origin, destination: destination, mode: 'bus')).to be_nil
+        end
       end
 
       it 'returns nil when the request itself fails' do
