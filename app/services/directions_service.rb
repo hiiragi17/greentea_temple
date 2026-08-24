@@ -130,7 +130,9 @@ class DirectionsService
       status = body['status']
       if status != 'OK'
         Rails.logger.warn(
-          "DirectionsService non-OK status: #{status} mode=#{mode.inspect} #{body['error_message']}".strip
+          "DirectionsService non-OK status: #{status} mode=#{mode.inspect} " \
+          "origin=#{origin.latitude},#{origin.longitude} destination=#{destination.latitude},#{destination.longitude} " \
+          "#{body['error_message']}".strip
         )
         return Attempt.new(nil, TRANSIT_RETRYABLE_STATUSES.include?(status))
       end
