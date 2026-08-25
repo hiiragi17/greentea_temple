@@ -1,2 +1,0 @@
-module GreenteaHelper
-end
