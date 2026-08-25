@@ -20,6 +20,18 @@
 
       gtag('config', 'G-T9K0D5NVDL');
     </script>
+    <!-- PWA: Service Worker を登録する（app/views/pwa/service-worker.js を配信）。
+         #136 段階4 で JS バンドル（app/javascript/application.js）を撤去したため、
+         ここにインラインで移設している -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/service-worker.js").catch(function (error) {
+            console.error("Service Worker registration failed:", error);
+          });
+        });
+      }
+    </script>
   </head>
   <body>
     <% if logged_in? %>
