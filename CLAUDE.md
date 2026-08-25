@@ -15,7 +15,6 @@
 - Geokit + Geocoder（緯度経度・距離計算）
 - CarrierWave + MiniMagick（画像アップロード）
 - Administrate（管理画面）
-- Tailwind CSS + daisyUI（jsbundling-rails / cssbundling-rails）
 - RSpec + FactoryBot + Capybara
 - デプロイ: GCP Cloud Run + Neon PostgreSQL（#118 で移行予定）
   - `deploy-cloud-run.yml` は **CI（`ci.yml`）が main で成功したとき**（`workflow_run`）に発火する。手動実行（`workflow_dispatch`）も可能。**`db:migrate` は新リビジョン投入前に自動実行**される（`Run DB migrations` step）。migration は列追加など後方互換な変更にすること
@@ -30,9 +29,8 @@
 
 ```bash
 bundle install
-yarn install
 bin/rails db:setup                # DB 作成 + migrate + seed
-bin/dev                           # Procfile.dev で rails + JS/CSS watch を同時起動
+bin/dev                           # Procfile.dev 経由で rails server を起動（#136 段階4 で JS/CSS ビルドは撤去済み）
 bin/rails server -p 3001          # API 開発時はフロント (Next.js: 3000) と分けるため 3001
 bundle exec rspec                 # 全テスト
 bundle exec rspec spec/requests   # API request spec のみ
@@ -103,9 +101,8 @@ app/
     greenteacomment.rb, templecomment.rb
     user.rb, authentication.rb
   dashboards/           # Administrate dashboards
-  views/                # 既存 Web 画面（HTML / Turbo）
-  javascript/           # Stimulus controllers
-  assets/stylesheets/   # Tailwind + daisyUI
+  views/                # 既存 Web 画面（HTML。JS/CSS ビルドは #136 段階4 で撤去済み）
+  assets/images/        # sprockets 配信の画像（logo 等）
 
 config/
   routes.rb             # 既存 HTML ルート + api/v1 名前空間
@@ -195,7 +192,7 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 ### Controller / 認証境界
 
 - 既存の `ApplicationController` は当面 **触らない**（Web 側に影響が出る）。認証境界（Sorcery セッション / `require_login`）の整理は #136 段階5 で実施する
-- 旧 Web フロントの撤去（#136）が進行中。**段階1〜3 着地済み**: 抹茶店／神社の閲覧・いいね・口コミ・現在地検索の HTML ルートは `LegacyRoutesController#gone` 経由で **410 Gone** を返し（段階1・残存ビューが参照する名前付きヘルパーは維持）、対応するビュー（段階2）・コントローラ本体（段階3）は削除済み。フロント資産（段階4）・認証境界整理（段階5）以降は未着手
+- 旧 Web フロントの撤去（#136）が進行中。**段階1〜4 着地済み**: 抹茶店／神社の閲覧・いいね・口コミ・現在地検索の HTML ルートは `LegacyRoutesController#gone` 経由で **410 Gone** を返し（段階1・残存ビューが参照する名前付きヘルパーは維持）、対応するビュー（段階2）・コントローラ本体（段階3）は削除済み。段階4でフロント資産（`app/javascript`・`app/assets/stylesheets`・jsbundling-rails/cssbundling-rails/turbo-rails/stimulus-rails gem、Dockerfile の Node/Yarn ビルド）も撤去済み。**残存する Web 画面（login/users/static_pages/admin）は無スタイルの素の HTML で描画される**（Tailwind/daisyUI/Turbo/Stimulus は撤去済みのため）。`data: { turbo_method: :delete }` に依存していたログアウト・退会リンクは `button_to`（JS 不要のネイティブ form 送信）に置き換え済み。認証境界整理（段階5）・不要 gem 整理（段階6）以降は未着手
 - API は `Api::V1::BaseController < ActionController::API` を別系統で持つ
 - API のエラーは JSON で返す: 401 / 403 / 404 / 400 / 422 / 500
 - `current_user` の解決は Web 側 = セッション / API 側 = JWT で完全に分離

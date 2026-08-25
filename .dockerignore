@@ -7,13 +7,6 @@
 .bundle
 /vendor/bundle
 
-# Node / asset build artifacts（ビルドステージで再生成する）
-node_modules
-yarn-error.log
-yarn-debug.log*
-.yarn-integrity
-/app/assets/builds
-
 # Runtime artifacts
 /log/*
 /tmp/*
