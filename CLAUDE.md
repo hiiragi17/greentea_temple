@@ -90,13 +90,12 @@ app/
   controllers/
     admin/              # Administrate 管理画面
     api/v1/             # 【新規】Next.js フロント向け API（#113 で着地）
-    greenteas_controller.rb, temples_controller.rb
-    greentea_likes_controller.rb, temple_likes_controller.rb
-    greenteacomments_controller.rb, templecomments_controller.rb
-    current_location_controller.rb    # 現在地検索
     oauths_controller.rb              # Sorcery OAuth callback
     user_sessions_controller.rb, users_controller.rb
     static_pages_controller.rb
+    legacy_routes_controller.rb       # 旧 Web ルートの 410 Gone 応答（#136 段階1）
+    # greenteas / temples / greentea_likes / temple_likes / greenteacomments /
+    # templecomments / current_location の各コントローラは #136 段階3 で削除済み
   models/
     greentea.rb, temple.rb, area.rb, genre.rb
     greentea_genre.rb, temple_area.rb
@@ -196,7 +195,7 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 ### Controller / 認証境界
 
 - 既存の `ApplicationController` は当面 **触らない**（Web 側に影響が出る）。認証境界（Sorcery セッション / `require_login`）の整理は #136 段階5 で実施する
-- 旧 Web フロントの撤去（#136）が進行中。**段階1（ルーティング無効化）着地済み**: 抹茶店／神社の閲覧・いいね・口コミ・現在地検索の HTML ルートは `LegacyRoutesController#gone` 経由で **410 Gone** を返す（残存ビューが参照する名前付きヘルパーは維持）。コントローラ／ビュー本体の削除は後続段階で行う
+- 旧 Web フロントの撤去（#136）が進行中。**段階1〜3 着地済み**: 抹茶店／神社の閲覧・いいね・口コミ・現在地検索の HTML ルートは `LegacyRoutesController#gone` 経由で **410 Gone** を返し（段階1・残存ビューが参照する名前付きヘルパーは維持）、対応するビュー（段階2）・コントローラ本体（段階3）は削除済み。フロント資産（段階4）・認証境界整理（段階5）以降は未着手
 - API は `Api::V1::BaseController < ActionController::API` を別系統で持つ
 - API のエラーは JSON で返す: 401 / 403 / 404 / 400 / 422 / 500
 - `current_user` の解決は Web 側 = セッション / API 側 = JWT で完全に分離
