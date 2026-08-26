@@ -357,15 +357,29 @@ gcloud run domain-mappings create \
 
      - ⚠️ **スケジュール間隔は Neon のオートサスペンド delay（Neonダッシュボードの
        Monitoring → Compute settings → `Autosuspend delay` に表示。デフォルト 5 分）より
-       **長く**設定すること**。間隔を delay 以下にすると、アイドル時間が delay に達する前に
-       次の warmup が来てしまい、Neon のコンピュートが**一度もサスペンドできず 24 時間 365 日
-       Active のままになる**（実際に 5 分間隔で運用した結果、Neon Free プランの月間
-       100 compute hours のうち 80% 超を warmup だけで消費する事態が発生した）。
+       **長く**設定すること**。間隔を delay 以下にすると、warmup 由来のアクセスだけで
+       アイドル時間が delay に達する前に次の warmup が来てしまい、Neon のコンピュートが
+       **サスペンドする機会を失い 24 時間 365 日 Active のままになる**（実際に 5 分間隔で
+       運用した結果、Neon Free プランの月間 100 compute hours のうち 80% 超を warmup だけで
+       消費する事態が発生した）。
      - 上記の理由から既定値は **15 分間隔**（Autosuspend delay 5 分の 3 倍）とする。
-       これにより「アイドル 5 分でサスペンド → 次の warmup で復帰」のサイクルが回り、
-       常時 Active 時と比べて compute time を大きく削減できる（トレードオフとして、
-       サスペンド後の呼び出しはコールドスタートが発生する）。
+       これにより「アイドル 5 分でサスペンド → 次の warmup で復帰」のサイクルが**回りやすくなり**、
+       常時 Active 時と比べて compute time の削減が期待できる（トレードオフとして、
+       サスペンド後の呼び出しはコールドスタートが発生する）。ただし実際にサスペンドするかは
+       アプリ本体への実アクセス頻度にも依存する（warmup 間隔中に実トラフィックが来ればその分
+       Active 時間は延びる）ため、間隔を伸ばせば必ずサスペンドが起きると保証するものではない。
+       効果は Neon Monitoring の `ENDPOINT INACTIVE`（グレー帯）の有無で確認すること。
      - Neon 側の `Autosuspend delay` 自体を変更した場合は、この間隔も合わせて見直すこと。
+     - **既に古い間隔（例: 5分）でジョブを作成済みの場合**は `jobs create` ではなく
+       `jobs update` で間隔だけ更新する（`create` は同名ジョブが既に存在するとエラーになる）:
+
+       ```bash
+       gcloud scheduler jobs update http warmup-greentea-temple \
+         --location="$REGION" \
+         --schedule="*/15 * * * *"
+       ```
+
+       またはCloud Console → Cloud Scheduler → 対象ジョブ → 編集 から「頻度」を変更してもよい。
      - `--headers` にトークンを直書きするとシェル履歴に残るため、CI/CD や
        Secret Manager 経由での設定を検討する（ローカルで一度叩くだけなら
        `read -s` で変数化してから渡す）。
