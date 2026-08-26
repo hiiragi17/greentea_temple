@@ -379,6 +379,14 @@ gcloud run domain-mappings create \
          --schedule="*/15 * * * *"
        ```
 
+       更新後は以下で `schedule` が反映されていることを確認する:
+
+       ```bash
+       gcloud scheduler jobs describe warmup-greentea-temple \
+         --location="$REGION" \
+         --format="value(schedule)"
+       ```
+
        またはCloud Console → Cloud Scheduler → 対象ジョブ → 編集 から「頻度」を変更してもよい。
      - `--headers` にトークンを直書きするとシェル履歴に残るため、CI/CD や
        Secret Manager 経由での設定を検討する（ローカルで一度叩くだけなら
