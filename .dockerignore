@@ -7,12 +7,14 @@
 .bundle
 /vendor/bundle
 
-# Node / asset build artifacts（ビルドステージで再生成する）
+# JS ビルドパイプラインは #136 段階4 で撤去済みだが、node_modules は
+# .gitignore で無視されているため既存のローカルチェックアウトに残っている
+# ことがある。Dockerfile 側の `rm -rf node_modules` も撤去済みなので、
+# ここで除外しないと `COPY . .` でイメージに混入してしまう
 node_modules
 yarn-error.log
 yarn-debug.log*
 .yarn-integrity
-/app/assets/builds
 
 # Runtime artifacts
 /log/*

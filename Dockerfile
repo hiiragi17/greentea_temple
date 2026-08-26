@@ -1,12 +1,9 @@
 # syntax=docker/dockerfile:1.7
 
 ARG RUBY_VERSION=3.4.9
-ARG NODE_MAJOR=18
 
 # ---------- build stage ----------
 FROM ruby:${RUBY_VERSION}-slim AS build
-
-ARG NODE_MAJOR
 
 ENV RAILS_ENV=production \
     BUNDLE_DEPLOYMENT=1 \
@@ -28,20 +25,10 @@ RUN apt-get update -qq && \
       pkg-config && \
     rm -rf /var/lib/apt/lists/*
 
-# Node.js + Yarn（jsbundling-rails / cssbundling-rails 用）
-RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - && \
-    apt-get install -y --no-install-recommends nodejs && \
-    npm install -g yarn && \
-    rm -rf /var/lib/apt/lists/*
-
 # Gem を先に解決（Gemfile が変わらない限りキャッシュが効く）
 COPY Gemfile Gemfile.lock ./
 RUN bundle install --jobs 4 --retry 3 && \
     rm -rf /usr/local/bundle/cache
-
-# JS deps
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
 
 # アプリ全体
 COPY . .
@@ -49,9 +36,10 @@ COPY . .
 # Bootsnap precompile（起動時間短縮）
 RUN bundle exec bootsnap precompile --gemfile app/ lib/ config/
 
-# Asset precompile。SECRET_KEY_BASE はビルド時のダミーで十分
+# Asset precompile（画像等の sprockets アセットのみ。JS/CSS ビルドは #136 段階4 で撤去済み）。
+# SECRET_KEY_BASE はビルド時のダミーで十分
 RUN SECRET_KEY_BASE=dummy bundle exec rails assets:precompile && \
-    rm -rf node_modules tmp/cache vendor/cache
+    rm -rf tmp/cache vendor/cache
 
 # ---------- runtime stage ----------
 FROM ruby:${RUBY_VERSION}-slim AS runtime
