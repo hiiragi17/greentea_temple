@@ -345,7 +345,7 @@ gcloud run domain-mappings create \
      ```bash
      gcloud scheduler jobs create http warmup-greentea-temple \
        --location="$REGION" \
-       --schedule="*/5 * * * *" \
+       --schedule="*/15 * * * *" \
        --uri="https://<cloud-run-url>/api/v1/warmup" \
        --http-method=GET \
        --headers="X-Warmup-Token=<WARMUP_TOKEN の値>" \
@@ -355,11 +355,17 @@ gcloud run domain-mappings create \
      - `--attempt-deadline` は Cloud Scheduler の HTTP ターゲットで **15秒未満を指定するとジョブ作成が拒否される**（許容範囲は 15秒〜30分）。
        Cloud Run + Neon のコールドスタート（実測 3〜8 秒 + Neon 復帰）を待てるよう余裕を見て 30 秒にしている。
 
-     - スケジュール間隔は Neon のオートサスペンドまでの時間より短く設定する
-       （Neon 無料プランの目安は概ね数分〜十数分でサスペンド。正確な閾値は
-       Neon 側の設定・プランに依存するため公式ドキュメントで確認する）。
-     - 叩きすぎると Cloud Run の無料枠（月200万リクエスト）や Neon の compute 時間を
-       消費するため、5分間隔程度に留める。
+     - ⚠️ **スケジュール間隔は Neon のオートサスペンド delay（Neonダッシュボードの
+       Monitoring → Compute settings → `Autosuspend delay` に表示。デフォルト 5 分）より
+       **長く**設定すること**。間隔を delay 以下にすると、アイドル時間が delay に達する前に
+       次の warmup が来てしまい、Neon のコンピュートが**一度もサスペンドできず 24 時間 365 日
+       Active のままになる**（実際に 5 分間隔で運用した結果、Neon Free プランの月間
+       100 compute hours のうち 80% 超を warmup だけで消費する事態が発生した）。
+     - 上記の理由から既定値は **15 分間隔**（Autosuspend delay 5 分の 3 倍）とする。
+       これにより「アイドル 5 分でサスペンド → 次の warmup で復帰」のサイクルが回り、
+       常時 Active 時と比べて compute time を大きく削減できる（トレードオフとして、
+       サスペンド後の呼び出しはコールドスタートが発生する）。
+     - Neon 側の `Autosuspend delay` 自体を変更した場合は、この間隔も合わせて見直すこと。
      - `--headers` にトークンを直書きするとシェル履歴に残るため、CI/CD や
        Secret Manager 経由での設定を検討する（ローカルで一度叩くだけなら
        `read -s` で変数化してから渡す）。
