@@ -120,6 +120,10 @@
 - **¥0 を守るなら**: `min-instance=0` のまま、**Cloud Scheduler で数分おきにヘルスチェックを叩いてウォーム維持**（ヘルスチェックは無料枠内に収まる）。受け入れ条件「5 秒以内」の達成しやすさを上げる（あくまで緩和策で、SLO を保証するものではない）。
   - ⚠️ ただし現状の `/api/v1/health`（`app/controllers/api/v1/health_controller.rb`）は `{ status: 'ok' }` を返すだけで **DB に接続しない**。これを叩いても **温まるのは Cloud Run / Rails だけで、Neon は温まらない**（Neon は別途オートサスペンドするため）。`/api/v1/health` は **「Cloud Run のコールドスタート対策のみ・DB 非接続」** と位置づけ、公開のまま使ってよい。
   - Neon も含めて温めたいなら、**軽い DB アクセスを伴うウォームアップ用エンドポイント**（例: `SELECT 1` 相当のクエリを1回投げる）を用意してそれを叩く。ただしこの経路は **公開のままだと意図しない連打で DB 復帰・課金・負荷を誘発**するため、以下で **Cloud Scheduler など内部呼び出しのみに限定**する:
+    - ⚠️ **このヘルスチェック用の「数分おき」という頻度は、DB アクセスを伴うウォームアップには適用しない。**
+      Cloud Scheduler の間隔を Neon の Autosuspend delay 以下にすると、エンドポイントが一度もサスペンドできず
+      常時 Active になり compute time を消費し尽くす（実際に発生した事例と対処は `deploy-runbook.md` の
+      「コールドスタート対策」節を参照。DB ウォームアップの間隔は **Autosuspend delay より長く**設定すること）。
     - **認証**: Cloud Scheduler → Cloud Run は **OIDC トークン**（サービスアカウントの ID トークン）で呼ぶのが基本。アプリ側で受け取った `Authorization: Bearer <token>` の検証、もしくは簡易には **共有シークレットヘッダ**（例: `X-Warmup-Token` を `ENV` の値と比較し、一致しなければ `401`）でガードする。
     - **ネットワーク/Ingress**: 可能なら Cloud Run の **Ingress を internal/allowlist** に寄せる、または warmup 用パスだけ前段（LB / IAM invoker）で絞る。
     - 例（共有シークレット方式の最小チェック）:
