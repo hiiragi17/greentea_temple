@@ -361,6 +361,26 @@ gcloud run domain-mappings create \
    > `artifact-registry-cleanup-policy.json` を編集して同じコマンドを再実行すればよい
    > （`set-cleanup-policies` は既存ポリシーを丸ごと置き換える）。
 
+   **ローカルに `gcloud` が無い/使えない場合の代替手段:**
+
+   - **Cloud Shell**（推奨）: GCP コンソール右上の Cloud Shell アイコン（`>_`）を開くと、
+     ログイン済み・`gcloud` インストール済みのブラウザ内ターミナルが使える。
+     ローカルインストール不要で上記と同じコマンドをそのまま実行できる
+     （ポリシー JSON はその場で `cat <<'EOF' > cleanup-policy.json` などで作成するか、
+     このリポジトリの `docs/infra/artifact-registry-cleanup-policy.json` の中身を貼り付ける）。
+
+   - **GCP コンソールの GUI から設定**: コマンドを一切使わない場合はこちら。
+     1. GCP コンソール → **Artifact Registry**
+        （https://console.cloud.google.com/artifacts ）
+     2. リポジトリ一覧から `greentea-temple`（`$REPO`）を開く
+     3. 上部タブ **「クリーンアップ ポリシー（Cleanup policies）」** を選択
+     4. **「ポリシーを追加」** で以下を 2 つ設定する:
+        - ルール1（保持）: タイプ = **保持する（Keep）** / 条件 = 最新のバージョン数 **10**
+        - ルール2（削除）: タイプ = **削除する（Delete）** / 条件 = 経過日数 **30日**
+     5. 保存すると次回のガベージコレクション実行時から反映される（即時削除ではない）。
+     - UI の項目名・配置は GCP コンソールの更新で変わることがあるため、見当たらない場合は
+       `gcloud artifacts repositories set-cleanup-policies` のコマンド実行に切り替える。
+
 4. **コールドスタート対策**:
    - `--cpu-boost` フラグを deploy 時に付与済み（`deploy-cloud-run.yml`）。起動時のみ CPU を
      ブーストし Cloud Run 側の起動時間を短縮する。**課金は完全に無料ではない**点に注意：
