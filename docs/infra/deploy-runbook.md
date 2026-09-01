@@ -405,8 +405,29 @@ gcloud run domain-mappings create \
        し、**`cd greentea_temple` でクローンしたディレクトリに移動してから**上記コマンドを
        そのまま実行する（`clone` しただけではカレントディレクトリは変わらないため、
        `cd` を省くと `docs/infra/artifact-registry-cleanup-policy.json` が解決できず失敗する）
-     - clone しない場合は `cat <<'EOF' > cleanup-policy.json` でカレントディレクトリに作成し、
-       `--policy=cleanup-policy.json`（相対パスをファイル名のみに変更）で実行する
+     - clone しない場合は以下のように `cleanup-policy.json` をカレントディレクトリに作成し、
+       `--policy=cleanup-policy.json`（相対パスをファイル名のみに変更）で実行する:
+
+       ```bash
+       cat <<'EOF' > cleanup-policy.json
+       [
+         {
+           "name": "keep-minimum-versions",
+           "action": { "type": "Keep" },
+           "mostRecentVersions": {
+             "keepCount": 10
+           }
+         },
+         {
+           "name": "delete-old-versions",
+           "action": { "type": "Delete" },
+           "condition": {
+             "olderThan": "2592000s"
+           }
+         }
+       ]
+       EOF
+       ```
 
    - **GCP コンソールの GUI から設定**: コマンドを一切使わない場合はこちら。
      1. GCP コンソール → **Artifact Registry**
@@ -419,8 +440,10 @@ gcloud run domain-mappings create \
         削除候補が記録されるだけで実際には削除されない（`gcloud` 側の `--no-dry-run` と同じ設定。
         [公式ドキュメント](https://cloud.google.com/artifact-registry/docs/repositories/cleanup-policy)）
      5. 保存すると次回のガベージコレクション実行時から反映される（即時削除ではない）。
-        保存後は上記の `gcloud artifacts repositories describe` コマンドで
-        `cleanupPolicyDryRun: false` になっているか確認する
+        保存後、**GUI 上で確認する場合**は再度「編集（Edit Repository）」を開き、実行モードが
+        「Delete artifacts」のまま保持されているか見れば良い（コマンド不要）。
+        `gcloud` が使える環境であれば、上記の `gcloud artifacts repositories describe`
+        コマンドでも `cleanupPolicyDryRun: false` を確認できる（あくまで任意の追加確認）
      - UI の項目名・配置は GCP コンソールの更新で変わることがあるため、見当たらない場合は
        `gcloud artifacts repositories set-cleanup-policies` のコマンド実行に切り替える。
 
