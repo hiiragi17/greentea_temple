@@ -389,7 +389,10 @@ gcloud run domain-mappings create \
      ポリシー JSON は次のいずれかで用意し、**`--policy` に渡すパスは実際に作成したファイル名と
      一致させる**（このリポジトリを clone せずに `cleanup-policy.json` として作る場合、
      `--policy=docs/infra/artifact-registry-cleanup-policy.json` のままだと存在しないパスで失敗する）:
-     - このリポジトリを Cloud Shell に `git clone` してから、上記コマンドをそのまま実行する
+     - このリポジトリを Cloud Shell に `git clone https://github.com/hiiragi17/greentea_temple.git`
+       し、**`cd greentea_temple` でクローンしたディレクトリに移動してから**上記コマンドを
+       そのまま実行する（`clone` しただけではカレントディレクトリは変わらないため、
+       `cd` を省くと `docs/infra/artifact-registry-cleanup-policy.json` が解決できず失敗する）
      - clone しない場合は `cat <<'EOF' > cleanup-policy.json` でカレントディレクトリに作成し、
        `--policy=cleanup-policy.json`（相対パスをファイル名のみに変更）で実行する
 
