@@ -334,10 +334,24 @@ gcloud run domain-mappings create \
    削除する仕組みが無いため放置するとストレージ課金が単調増加する（実績: 2026年8月に
    ¥12、lifecycle policy 未設定のまま 9月も同ペースで進むと ¥46 予測）。
 
-   ロールバックは `workflow_dispatch`（`image_tag` 指定）で **Artifact Registry に残っている
-   過去のイメージをそのまま再デプロイする**方式（再ビルドしない）ため、古いイメージを
-   消しすぎるとロールバック手段を失う。「直近 N 世代は無条件で保持」と
-   「N 世代の保護対象を除き、一定期間より古いものは削除」を組み合わせて運用する。
+   ⚠️ **`workflow_dispatch` の `image_tag` はロールバック手段ではない**: `deploy-cloud-run.yml`
+   は `image_tag` を指定してもタグ**名**が変わるだけで、`docker build` / `docker push`
+   （98-115行目）は毎回 `DEPLOY_SHA`（= その時点でトリガーした ref の HEAD）から実行される。
+   つまり「過去にpushされた古いイメージをそのまま再デプロイする」動作にはならず、
+   むしろ最新コードを古いタグ名で上書き push してしまう（tag が immutable 設定なら push 自体が失敗する）。
+
+   真にロールバックしたい場合は、GitHub Actions を経由せず **Artifact Registry に残っている
+   既存イメージを直接指定して Cloud Run にデプロイする**:
+
+   ```bash
+   gcloud run deploy "$SERVICE" \
+     --image="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${SERVICE}:<過去の commit SHA 先頭12桁>" \
+     --region="$REGION"
+   ```
+
+   このコマンドはビルドし直さず、指定タグの既存イメージをそのまま使う。これが機能するには
+   **そのタグが Artifact Registry に残っている必要がある**ため、cleanup policy で
+   「直近 N 世代は無条件で保持」を設定し、ロールバック手段を確保する。
 
    ポリシー定義: [`artifact-registry-cleanup-policy.json`](./artifact-registry-cleanup-policy.json)
    （直近 10 世代を保持 / それ以外は 30 日 (`2592000s`) 経過で削除）。
@@ -345,15 +359,21 @@ gcloud run domain-mappings create \
    ```bash
    gcloud artifacts repositories set-cleanup-policies "$REPO" \
      --location="$REGION" \
-     --policy=docs/infra/artifact-registry-cleanup-policy.json
+     --policy=docs/infra/artifact-registry-cleanup-policy.json \
+     --no-dry-run
    ```
 
-   適用後の確認:
+   > `--no-dry-run` を付けないと dry-run モードのまま（削除候補の記録のみ・実削除されない）で
+   > 作成される。公式手順どおり **`--no-dry-run` を必ず付ける**こと
+   > （[公式ドキュメント](https://cloud.google.com/artifact-registry/docs/repositories/cleanup-policy)）。
+
+   適用後の確認（`cleanupPolicyDryRun` が `false` であることも確認する。`true` のままだと
+   ポリシーは設定されていても実際には何も削除されない）:
 
    ```bash
    gcloud artifacts repositories describe "$REPO" \
      --location="$REGION" \
-     --format="yaml(cleanupPolicies)"
+     --format="yaml(cleanupPolicies,cleanupPolicyDryRun)"
    ```
 
    > cleanup policy は既存イメージにも遡って適用される（次回のガベージコレクション実行時に
@@ -377,6 +397,8 @@ gcloud run domain-mappings create \
      4. **「ポリシーを追加」** で以下を 2 つ設定する:
         - ルール1（保持）: タイプ = **保持する（Keep）** / 条件 = 最新のバージョン数 **10**
         - ルール2（削除）: タイプ = **削除する（Delete）** / 条件 = 経過日数 **30日**
+     4.5. **「ドライラン（Dry run）」トグルを OFF にする**（画面上部）。ON のままだと
+        削除候補が記録されるだけで実際には削除されない（`gcloud` 側の `--no-dry-run` と同じ設定）
      5. 保存すると次回のガベージコレクション実行時から反映される（即時削除ではない）。
      - UI の項目名・配置は GCP コンソールの更新で変わることがあるため、見当たらない場合は
        `gcloud artifacts repositories set-cleanup-policies` のコマンド実行に切り替える。
