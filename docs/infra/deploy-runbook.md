@@ -329,6 +329,38 @@ gcloud run domain-mappings create \
 2. ~~**Actions の SHA ピン**~~: 対応済み。`auth` / `setup-gcloud` / `deploy-cloudrun`
    は `v3` タグの commit SHA に固定済み（`# v3` コメントで版を併記）。
 3. **Artifact Registry の lifecycle policy**: 古い tag を自動削除し 0.5GB 無料枠を維持。
+
+   `deploy-cloud-run.yml` は push のたびに commit SHA タグの新しいイメージを push し続け、
+   削除する仕組みが無いため放置するとストレージ課金が単調増加する（実績: 2026年8月に
+   ¥12、lifecycle policy 未設定のまま 9月も同ペースで進むと ¥46 予測）。
+
+   ロールバックは `workflow_dispatch`（`image_tag` 指定）で **Artifact Registry に残っている
+   過去のイメージをそのまま再デプロイする**方式（再ビルドしない）ため、古いイメージを
+   消しすぎるとロールバック手段を失う。「直近 N 世代は無条件で保持」と
+   「N 世代の保護対象を除き、一定期間より古いものは削除」を組み合わせて運用する。
+
+   ポリシー定義: [`artifact-registry-cleanup-policy.json`](./artifact-registry-cleanup-policy.json)
+   （直近 10 世代を保持 / それ以外は 30 日 (`2592000s`) 経過で削除）。
+
+   ```bash
+   gcloud artifacts repositories set-cleanup-policies "$REPO" \
+     --location="$REGION" \
+     --policy=docs/infra/artifact-registry-cleanup-policy.json
+   ```
+
+   適用後の確認:
+
+   ```bash
+   gcloud artifacts repositories describe "$REPO" \
+     --location="$REGION" \
+     --format="yaml(cleanupPolicies)"
+   ```
+
+   > cleanup policy は既存イメージにも遡って適用される（次回のガベージコレクション実行時に
+   > 条件へ合致したものから削除される。即時実行ではない）。世代数・日数を変更したい場合は
+   > `artifact-registry-cleanup-policy.json` を編集して同じコマンドを再実行すればよい
+   > （`set-cleanup-policies` は既存ポリシーを丸ごと置き換える）。
+
 4. **コールドスタート対策**:
    - `--cpu-boost` フラグを deploy 時に付与済み（`deploy-cloud-run.yml`）。起動時のみ CPU を
      ブーストし Cloud Run 側の起動時間を短縮する。**課金は完全に無料ではない**点に注意：
