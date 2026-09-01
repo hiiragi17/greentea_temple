@@ -343,14 +343,26 @@ gcloud run domain-mappings create \
    真にロールバックしたい場合は、GitHub Actions を経由せず **Artifact Registry に残っている
    既存イメージを直接指定して Cloud Run にデプロイする**:
 
+   ⚠️ **tag ではなく digest（`@sha256:...`）で指定する**: commit SHA タグは
+   **mutable**（上の注意点の通り、`workflow_dispatch` に同じタグ名を `image_tag` として
+   誤って指定すると上書きされうる）。しかも **その時点で `gcloud artifacts docker images
+   describe <image>:<tag>` を引いても、上書き後の digest が返ってきてしまう**（tag名から
+   逆引きする限り同じ落とし穴を踏む）。安全なのは、**上書きされる前に記録された digest**を
+   使うこと。最も確実なのは GitHub Actions の実行履歴を見ること:
+
    ```bash
+   # 1. 対象コミットをデプロイした GitHub Actions の実行（Actions → Deploy to Cloud Run）
+   #    を開き、「Push image」step のログから push 時点の digest（sha256:...）を控える
+   #    （tag名で現在の状態を引き直すのではなく、その時点のログに記録された値を使う）
+
+   # 2. 控えた digest を指定してデプロイする（tag ではなく digest で固定する）
    gcloud run deploy "$SERVICE" \
-     --image="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${SERVICE}:<過去の commit SHA 先頭12桁>" \
+     --image="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${SERVICE}@<Actions ログで確認した sha256:...>" \
      --region="$REGION"
    ```
 
-   このコマンドはビルドし直さず、指定タグの既存イメージをそのまま使う。これが機能するには
-   **そのタグが Artifact Registry に残っている必要がある**ため、cleanup policy で
+   このコマンドはビルドし直さず、指定した digest の既存イメージをそのまま使う。これが機能するには
+   **そのイメージが Artifact Registry に残っている必要がある**ため、cleanup policy で
    「直近 N 世代は無条件で保持」を設定し、ロールバック手段を確保する。
 
    ポリシー定義: [`artifact-registry-cleanup-policy.json`](./artifact-registry-cleanup-policy.json)
