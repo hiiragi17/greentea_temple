@@ -385,21 +385,27 @@ gcloud run domain-mappings create \
 
    - **Cloud Shell**（推奨）: GCP コンソール右上の Cloud Shell アイコン（`>_`）を開くと、
      ログイン済み・`gcloud` インストール済みのブラウザ内ターミナルが使える。
-     ローカルインストール不要で上記と同じコマンドをそのまま実行できる
-     （ポリシー JSON はその場で `cat <<'EOF' > cleanup-policy.json` などで作成するか、
-     このリポジトリの `docs/infra/artifact-registry-cleanup-policy.json` の中身を貼り付ける）。
+     ローカルインストール不要で上記と同じコマンドをそのまま実行できる。
+     ポリシー JSON は次のいずれかで用意し、**`--policy` に渡すパスは実際に作成したファイル名と
+     一致させる**（このリポジトリを clone せずに `cleanup-policy.json` として作る場合、
+     `--policy=docs/infra/artifact-registry-cleanup-policy.json` のままだと存在しないパスで失敗する）:
+     - このリポジトリを Cloud Shell に `git clone` してから、上記コマンドをそのまま実行する
+     - clone しない場合は `cat <<'EOF' > cleanup-policy.json` でカレントディレクトリに作成し、
+       `--policy=cleanup-policy.json`（相対パスをファイル名のみに変更）で実行する
 
    - **GCP コンソールの GUI から設定**: コマンドを一切使わない場合はこちら。
      1. GCP コンソール → **Artifact Registry**
         （https://console.cloud.google.com/artifacts ）
-     2. リポジトリ一覧から `greentea-temple`（`$REPO`）を開く
-     3. 上部タブ **「クリーンアップ ポリシー（Cleanup policies）」** を選択
-     4. **「ポリシーを追加」** で以下を 2 つ設定する:
+     2. リポジトリ一覧から `greentea-temple`（`$REPO`）を開く → **「編集（Edit Repository）」**
+     3. **「クリーンアップ ポリシー（Cleanup policies）」** セクションで以下を 2 つ設定する:
         - ルール1（保持）: タイプ = **保持する（Keep）** / 条件 = 最新のバージョン数 **10**
         - ルール2（削除）: タイプ = **削除する（Delete）** / 条件 = 経過日数 **30日**
-     4.5. **「ドライラン（Dry run）」トグルを OFF にする**（画面上部）。ON のままだと
-        削除候補が記録されるだけで実際には削除されない（`gcloud` 側の `--no-dry-run` と同じ設定）
+     4. **実行モードを「Dry run」ではなく「Delete artifacts」に設定する**。「Dry run」のままだと
+        削除候補が記録されるだけで実際には削除されない（`gcloud` 側の `--no-dry-run` と同じ設定。
+        [公式ドキュメント](https://cloud.google.com/artifact-registry/docs/repositories/cleanup-policy)）
      5. 保存すると次回のガベージコレクション実行時から反映される（即時削除ではない）。
+        保存後は上記の `gcloud artifacts repositories describe` コマンドで
+        `cleanupPolicyDryRun: false` になっているか確認する
      - UI の項目名・配置は GCP コンソールの更新で変わることがあるため、見当たらない場合は
        `gcloud artifacts repositories set-cleanup-policies` のコマンド実行に切り替える。
 
