@@ -329,6 +329,124 @@ gcloud run domain-mappings create \
 2. ~~**Actions の SHA ピン**~~: 対応済み。`auth` / `setup-gcloud` / `deploy-cloudrun`
    は `v3` タグの commit SHA に固定済み（`# v3` コメントで版を併記）。
 3. **Artifact Registry の lifecycle policy**: 古い tag を自動削除し 0.5GB 無料枠を維持。
+
+   `deploy-cloud-run.yml` は push のたびに commit SHA タグの新しいイメージを push し続け、
+   削除する仕組みが無いため放置するとストレージ課金が単調増加する（実績: 2026年8月に
+   ¥12、lifecycle policy 未設定のまま 9月も同ペースで進むと ¥46 予測）。
+
+   ⚠️ **`workflow_dispatch` の `image_tag` はロールバック手段ではない**: `deploy-cloud-run.yml`
+   は `image_tag` を指定してもタグ**名**が変わるだけで、`docker build` / `docker push`
+   （98-115行目）は毎回 `DEPLOY_SHA`（= その時点でトリガーした ref の HEAD）から実行される。
+   つまり「過去にpushされた古いイメージをそのまま再デプロイする」動作にはならず、
+   むしろ最新コードを古いタグ名で上書き push してしまう（tag が immutable 設定なら push 自体が失敗する）。
+
+   真にロールバックしたい場合は、GitHub Actions を経由せず **Artifact Registry に残っている
+   既存イメージを直接指定して Cloud Run にデプロイする**:
+
+   ⚠️ **tag ではなく digest（`@sha256:...`）で指定する**: commit SHA タグは
+   **mutable**（上の注意点の通り、`workflow_dispatch` に同じタグ名を `image_tag` として
+   誤って指定すると上書きされうる）。しかも **その時点で `gcloud artifacts docker images
+   describe <image>:<tag>` を引いても、上書き後の digest が返ってきてしまう**（tag名から
+   逆引きする限り同じ落とし穴を踏む）。安全なのは、**上書きされる前に記録された digest**を
+   使うこと。最も確実なのは GitHub Actions の実行履歴を見ること:
+
+   ```bash
+   # 1. 対象コミットをデプロイした GitHub Actions の実行（Actions → Deploy to Cloud Run）
+   #    を開き、「Push image」step のログから push 時点の digest（sha256:...）を控える
+   #    （tag名で現在の状態を引き直すのではなく、その時点のログに記録された値を使う）
+
+   # 2. 控えた digest を指定してデプロイする（tag ではなく digest で固定する）
+   gcloud run deploy "$SERVICE" \
+     --image="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${SERVICE}@<Actions ログで確認した sha256:...>" \
+     --region="$REGION"
+   ```
+
+   このコマンドはビルドし直さず、指定した digest の既存イメージをそのまま使う。これが機能するには
+   **そのイメージが Artifact Registry に残っている必要がある**ため、cleanup policy で
+   「直近 N 世代は無条件で保持」を設定し、ロールバック手段を確保する。
+
+   ポリシー定義: [`artifact-registry-cleanup-policy.json`](./artifact-registry-cleanup-policy.json)
+   （直近 10 世代を保持 / それ以外は 30 日 (`2592000s`) 経過で削除）。
+
+   ```bash
+   gcloud artifacts repositories set-cleanup-policies "$REPO" \
+     --location="$REGION" \
+     --policy=docs/infra/artifact-registry-cleanup-policy.json \
+     --no-dry-run
+   ```
+
+   > `--no-dry-run` を付けないと dry-run モードのまま（削除候補の記録のみ・実削除されない）で
+   > 作成される。公式手順どおり **`--no-dry-run` を必ず付ける**こと
+   > （[公式ドキュメント](https://cloud.google.com/artifact-registry/docs/repositories/cleanup-policy)）。
+
+   適用後の確認（`cleanupPolicyDryRun` が `false` であることも確認する。`true` のままだと
+   ポリシーは設定されていても実際には何も削除されない）:
+
+   ```bash
+   gcloud artifacts repositories describe "$REPO" \
+     --location="$REGION" \
+     --format="yaml(cleanupPolicies,cleanupPolicyDryRun)"
+   ```
+
+   > cleanup policy は既存イメージにも遡って適用される（次回のガベージコレクション実行時に
+   > 条件へ合致したものから削除される。即時実行ではない）。世代数・日数を変更したい場合は
+   > `artifact-registry-cleanup-policy.json` を編集して同じコマンドを再実行すればよい
+   > （`set-cleanup-policies` は既存ポリシーを丸ごと置き換える）。
+
+   **ローカルに `gcloud` が無い/使えない場合の代替手段:**
+
+   - **Cloud Shell**（推奨）: GCP コンソール右上の Cloud Shell アイコン（`>_`）を開くと、
+     ログイン済み・`gcloud` インストール済みのブラウザ内ターミナルが使える。
+     ローカルインストール不要で上記と同じコマンドをそのまま実行できる。
+     ポリシー JSON は次のいずれかで用意し、**`--policy` に渡すパスは実際に作成したファイル名と
+     一致させる**（このリポジトリを clone せずに `cleanup-policy.json` として作る場合、
+     `--policy=docs/infra/artifact-registry-cleanup-policy.json` のままだと存在しないパスで失敗する）:
+     - このリポジトリを Cloud Shell に `git clone https://github.com/hiiragi17/greentea_temple.git`
+       し、**`cd greentea_temple` でクローンしたディレクトリに移動してから**上記コマンドを
+       そのまま実行する（`clone` しただけではカレントディレクトリは変わらないため、
+       `cd` を省くと `docs/infra/artifact-registry-cleanup-policy.json` が解決できず失敗する）
+     - clone しない場合は以下のように `cleanup-policy.json` をカレントディレクトリに作成し、
+       `--policy=cleanup-policy.json`（相対パスをファイル名のみに変更）で実行する:
+
+       ```bash
+       cat <<'EOF' > cleanup-policy.json
+       [
+         {
+           "name": "keep-minimum-versions",
+           "action": { "type": "Keep" },
+           "mostRecentVersions": {
+             "keepCount": 10
+           }
+         },
+         {
+           "name": "delete-old-versions",
+           "action": { "type": "Delete" },
+           "condition": {
+             "olderThan": "2592000s"
+           }
+         }
+       ]
+       EOF
+       ```
+
+   - **GCP コンソールの GUI から設定**: コマンドを一切使わない場合はこちら。
+     1. GCP コンソール → **Artifact Registry**
+        （https://console.cloud.google.com/artifacts ）
+     2. リポジトリ一覧から `greentea-temple`（`$REPO`）を開く → **「編集（Edit Repository）」**
+     3. **「クリーンアップ ポリシー（Cleanup policies）」** セクションで以下を 2 つ設定する:
+        - ルール1（保持）: タイプ = **保持する（Keep）** / 条件 = 最新のバージョン数 **10**
+        - ルール2（削除）: タイプ = **削除する（Delete）** / 条件 = 経過日数 **30日**
+     4. **実行モードを「Dry run」ではなく「Delete artifacts」に設定する**。「Dry run」のままだと
+        削除候補が記録されるだけで実際には削除されない（`gcloud` 側の `--no-dry-run` と同じ設定。
+        [公式ドキュメント](https://cloud.google.com/artifact-registry/docs/repositories/cleanup-policy)）
+     5. 保存すると次回のガベージコレクション実行時から反映される（即時削除ではない）。
+        保存後、**GUI 上で確認する場合**は再度「編集（Edit Repository）」を開き、実行モードが
+        「Delete artifacts」のまま保持されているか見れば良い（コマンド不要）。
+        `gcloud` が使える環境であれば、上記の `gcloud artifacts repositories describe`
+        コマンドでも `cleanupPolicyDryRun: false` を確認できる（あくまで任意の追加確認）
+     - UI の項目名・配置は GCP コンソールの更新で変わることがあるため、見当たらない場合は
+       `gcloud artifacts repositories set-cleanup-policies` のコマンド実行に切り替える。
+
 4. **コールドスタート対策**:
    - `--cpu-boost` フラグを deploy 時に付与済み（`deploy-cloud-run.yml`）。起動時のみ CPU を
      ブーストし Cloud Run 側の起動時間を短縮する。**課金は完全に無料ではない**点に注意：
