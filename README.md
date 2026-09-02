@@ -1,13 +1,14 @@
 ![badge](https://img.shields.io/badge/thank%20you-for%20visiting-brightgreen)
 <br>
-[![Rails](https://img.shields.io/badge/Rails-v7.0.3-%23a72332)](https://rubygems.org/gems/rails/versions/7.0.3)
+[![Ruby](https://img.shields.io/badge/Ruby-v3.4.9-%23CC342D)](https://www.ruby-lang.org/)
+[![Rails](https://img.shields.io/badge/Rails-v8.1-%23a72332)](https://rubygems.org/gems/rails/versions/8.1.0)
 
 # 抹茶と神社。
 
 <img src="https://user-images.githubusercontent.com/94298144/189052247-e5390c19-8701-49c7-83ec-3e9793c8d363.png" width="400" height="400">
 
 ## サービスURL
-現在リニューアル中
+https://www.matcha-to-jinja.com/
 
 # ■サービス概要
 　京都にある抹茶スイーツのお店の近くにある神社仏閣を調べたり、  
@@ -35,6 +36,10 @@
 　
 
 # ■機能に関して  
+
+> ⚠️ 以下のスクリーンショットは旧 Rails 製 Web フロント（現在は廃止済み）のものです。
+> 現在の実際の画面は Next.js フロントエンド（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)）が担っており、
+> 本リポジトリはその API バックエンドとして機能を提供しています。最新の画面は上記サービス URL からご確認ください。
 
 ## 1. 抹茶スイーツと神社仏閣が検索できる
 抹茶スイーツはキーワードとスイーツのカテゴリで、<br>
@@ -78,20 +83,33 @@
 ![口コミ機能](https://user-images.githubusercontent.com/94298144/207800375-a61c02a7-a528-4c14-93c9-001b241d09b5.gif)
 
 # ■使用技術  
-バッグエンド   
-　・Ruby 3.1.2  
-　・Ruby on Rails 7.0.3  
+バックエンド（本リポジトリ）
+　・Ruby 3.4.9  
+　・Ruby on Rails 8.1.x（`ActionController::API` による `api/v1` 名前空間で JSON API を提供）
+　・PostgreSQL  
+　・Sorcery（LINE / Google OAuth）  
+　・Ransack（検索）/ Kaminari（ページネーション）  
+　・Geokit + Geocoder（緯度経度・距離計算）  
+　・CarrierWave + MiniMagick（画像アップロード）  
+　・jsonapi-serializer（API レスポンス）  
+　・Administrate（管理画面）  
+　・JWT 認証（フロントエンド向け）  
 
 フロントエンド    
-　・JavaScript  
-　・Tailswind CSS-daisyUI    
+　・Next.js（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)。NextAuth.js による OAuth 認証）  
+　※旧 Rails 製 Web フロント（JavaScript / Tailwind CSS・daisyUI）は撤去済み
 
 インフラ    
-　・Heroku
+　・GCP Cloud Run（デプロイ）  
+　・Neon PostgreSQL（本番 DB）  
+
+テスト  
+　・RSpec + FactoryBot + Capybara  
 
 使用API  
-　・Google Geocoding API(緯度経度の取得に使用)  
-　・Google MapsJavaScript API(マップ作成に使用)  
+　・Google Geocoding API（緯度経度の取得に使用）  
+　・Google Maps JavaScript API（マップ作成に使用）  
+　・Google Directions API（モデルルートの経路・所要時間計算）  
 
 # ■ER図
 [![Image from Gyazo](https://i.gyazo.com/296fbadf44c1309af6a5decb160e745b.png)](https://gyazo.com/296fbadf44c1309af6a5decb160e745b)
