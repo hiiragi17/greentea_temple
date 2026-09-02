@@ -3,7 +3,7 @@
 京都の抹茶スイーツ店と神社仏閣を横断検索できる Web アプリ。
 気になった店・神社の近隣スポットを地図上で同時に確認でき、ユーザー登録するといいね / 口コミ / モデルルート作成が利用できる。
 
-サービス URL: https://www.matcha-to-jinja.com/
+サービス URL: https://matcha-to-jinja.vercel.app/
 
 ## 技術スタック
 
