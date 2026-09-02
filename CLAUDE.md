@@ -50,7 +50,7 @@ bundle exec rubocop
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（#90 で Twitter から移行）。未設定時は credentials の `google.client_id` / `google.client_secret` にフォールバック |
 | （LINE は ENV 不可） | LINE OAuth は `credentials.yml.enc` の `line.channel_id` / `line.channel_secret` のみ参照（`config/initializers/sorcery.rb`）。環境変数では有効化されない |
 | `DATABASE_URL` | 本番 PostgreSQL（Neon。pooled + `sslmode=require`） |
-| `FRONTEND_URL` | CORS allowlist。開発: `http://localhost:3000`（デフォルト）/ 本番: `https://matcha-to-jinja.com`（#113〜） |
+| `FRONTEND_URL` | CORS allowlist。開発: `http://localhost:3000`（デフォルト）/ 本番: `https://matcha-to-jinja.vercel.app`（#113〜） |
 | `JWT_SECRET_KEY` | API 用 JWT 署名（#115〜）。credentials の `jwt_secret` が優先 |
 | `RAILS_MASTER_KEY` | `credentials.yml.enc` 復号 |
 | `APP_HOSTS`（任意） | 本番の Host Authorization 追加許可リスト（カンマ区切り）。本番は常時有効で `*.run.app` を自動許可。カスタムドメインは本変数で追加する（未設定でも `*.run.app` のみ許可＝fail-open しない）。`/api/v1/health` は除外（#118） |
