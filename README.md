@@ -72,7 +72,7 @@ https://matcha-to-jinja.vercel.app/
 
 ## 4. ユーザーログインするといいね機能が使える<br>
 ユーザー登録することで「いいね機能」が利用可能になります。<br>
-登録＆ログインは、Twitter・LINEの外部認証から選択できます。<br>
+登録＆ログインは、Google・LINEの外部認証から選択できます。<br>
 
 ![ユーザー登録](https://user-images.githubusercontent.com/94298144/205470343-0c622843-c6a6-4de8-bb06-9d40207c6a58.gif)
 
