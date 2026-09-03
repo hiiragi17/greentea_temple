@@ -1,5 +1,5 @@
 default_frontend_url =
-  Rails.env.production? ? 'https://matcha-to-jinja.com' : 'http://localhost:3000'
+  Rails.env.production? ? 'https://matcha-to-jinja.vercel.app' : 'http://localhost:3000'
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do

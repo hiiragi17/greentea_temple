@@ -80,7 +80,7 @@
 
 - **LINE ログインは ENV では有効化されない** → `credentials.yml.enc` に `line.channel_id` /
   `line.channel_secret` が必要（本書「4」の⚠️を参照）。
-- `FRONTEND_URL` を本番値（`https://matcha-to-jinja.com`）にしないと CORS で弾かれる。
+- `FRONTEND_URL` を本番値（`https://matcha-to-jinja.vercel.app`）にしないと CORS で弾かれる。
 - `DATABASE_URL` は Neon の **pooler 経由 + `sslmode=require`**。
 - `/api/v1/health` は **DB 非接続**なので 200 でも DB 疎通の証明にならない。
   デプロイ後は `/api/v1/greenteas` など**実データを返すエンドポイント**も叩いて DB 接続まで確認する。
@@ -281,7 +281,7 @@ echo "$SA"
 | キー | 値 |
 |---|---|
 | `AR_REPOSITORY` | Artifact Registry リポジトリ名（`$REPO`） |
-| `FRONTEND_URL` | CORS allowlist（本番: `https://matcha-to-jinja.com`） |
+| `FRONTEND_URL` | CORS allowlist（本番: `https://matcha-to-jinja.vercel.app`） |
 | `APP_HOSTS` | （任意）追加許可ホスト（カンマ区切り）。`*.run.app` は本番で自動許可 |
 
 ---
