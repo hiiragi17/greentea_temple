@@ -498,6 +498,7 @@ DEPENDENCIES
   geocoder
   geokit-rails
   gon
+  image_processing (~> 1.2)
   jsonapi-serializer (~> 2.2)
   jwt (~> 3.2)
   kaminari
