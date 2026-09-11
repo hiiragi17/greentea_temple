@@ -102,7 +102,10 @@ gem "sassc-rails"
 gem 'meta-tags'
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-# gem "image_processing", "~> 1.2"
+# image_processing 2.0+ は mini_magick/ruby-vips が soft dependency 化されたため、
+# carrierwave 経由の間接依存に任せず明示的にバージョンを固定する（未固定だと
+# ActiveStorage 起動時に vips gem の LoadError が発生する。#279 対応）
+gem "image_processing", "~> 1.2"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
