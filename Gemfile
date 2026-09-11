@@ -17,6 +17,11 @@ gem "puma", "~> 8.0"
 
 gem "rack", "~> 3.2"
 
+# json 3.0+ は create_additions を含む未知オプションで ArgumentError を送出するようになり、
+# 本番の bin/rails db:migrate 起動時に落ちる回帰が発生した（json は Gemfile 未固定の間接
+# 依存だったため、bundle lock 実行のたびに意図せず 3.x へ引き上がり得る）。2系に明示固定する。
+gem "json", "< 3"
+
 # Use Redis adapter to run Action Cable in production
 # gem "redis", "~> 4.0"
 
