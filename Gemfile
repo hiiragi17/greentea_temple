@@ -55,7 +55,7 @@ gem 'rack-attack'
 gem 'jsonapi-serializer', '~> 2.2'
 
 # JWT for API authentication (#115)
-gem 'jwt', '~> 3.2'
+gem 'jwt', '~> 3.3'
 
 # Localization
 gem 'rails-i18n'
