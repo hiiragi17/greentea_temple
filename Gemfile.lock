@@ -197,7 +197,7 @@ GEM
       prism (>= 1.3.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
-    json (3.0.2)
+    json (2.21.2)
     jsonapi-serializer (2.2.0)
       activesupport (>= 4.2)
     jwt (3.3.0)
@@ -499,7 +499,7 @@ DEPENDENCIES
   geokit-rails
   gon
   image_processing (~> 1.2)
-  json (< 4)
+  json (< 3)
   jsonapi-serializer (~> 2.2)
   jwt (~> 3.3)
   kaminari
