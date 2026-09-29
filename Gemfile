@@ -64,7 +64,7 @@ gem 'rails-i18n'
 gem 'kaminari'
 
 # Search
-gem 'ransack', '~> 4.4'
+gem 'ransack', '~> 5.0'
 
 # Image upload
 gem 'carrierwave', '~> 3.1'
