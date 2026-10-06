@@ -88,9 +88,6 @@ gem 'csv'
 
 gem 'rexml', '~> 3.2', '>= 3.2.5'
 
-# javascript
-gem 'gon'
-
 # Redirection
 gem 'open_uri_redirections'
 
