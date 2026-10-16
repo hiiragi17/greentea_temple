@@ -24,6 +24,26 @@ RSpec.describe 'Api::V1::CurrentUser', type: :request do
       end
     end
 
+    context 'with a token whose ver does not match the user token_version' do
+      it 'returns 401' do
+        token = JwtService.encode(user_id: user.id, ver: user.token_version + 1)
+
+        get '/api/v1/current_user', headers: auth_header(token)
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context 'with a legacy token that has no ver claim' do
+      it 'is accepted while the user token_version is 0' do
+        token = JwtService.encode(user_id: user.id)
+
+        get '/api/v1/current_user', headers: auth_header(token)
+
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
     context 'without a token' do
       it 'returns 401' do
         get '/api/v1/current_user'

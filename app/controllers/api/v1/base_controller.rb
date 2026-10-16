@@ -42,7 +42,12 @@ module Api
         return nil if token.blank?
 
         payload = JwtService.decode(token)
-        User.find_by(id: payload['user_id'])
+        user = User.find_by(id: payload['user_id'])
+        return nil unless user
+        # ver を持たない導入前のトークンは 0 世代として扱う（ログアウト済みなら不一致で弾かれる）。
+        return nil unless payload.fetch('ver', 0) == user.token_version
+
+        user
       rescue JwtService::Error => e
         Rails.logger.info("JWT auth failed: #{e.class} #{e.message}")
         nil

@@ -17,10 +17,22 @@ RSpec.describe JwtService do
       expect(payload['role']).to eq('admin')
     end
 
-    it 'sets the expiry to roughly 14 days from now by default' do
+    it 'sets the expiry to 7 days from now by default' do
       Timecop.freeze do
         payload = described_class.decode(described_class.encode(user_id: 1))
-        expect(payload['exp']).to eq(14.days.from_now.to_i)
+        expect(payload['exp']).to eq(7.days.from_now.to_i)
+      end
+    end
+
+    it 'embeds iat, iss and aud' do
+      Timecop.freeze do
+        payload = described_class.decode(described_class.encode(user_id: 1))
+
+        expect(payload).to include(
+          'iat' => Time.current.to_i,
+          'iss' => JwtService::ISSUER,
+          'aud' => JwtService::AUDIENCE
+        )
       end
     end
 
@@ -45,6 +57,30 @@ RSpec.describe JwtService do
 
       expect { described_class.decode(forged) }
         .to raise_error(JwtService::InvalidTokenError)
+    end
+
+    it 'raises InvalidTokenError when the issuer does not match' do
+      token = ::JWT.encode({ user_id: 1, exp: 1.day.from_now.to_i, iss: 'other' }, described_class.send(:secret_key), 'HS256')
+
+      expect { described_class.decode(token) }.to raise_error(JwtService::InvalidTokenError, /issuer/)
+    end
+
+    it 'raises InvalidTokenError when the audience does not match' do
+      token = ::JWT.encode({ user_id: 1, exp: 1.day.from_now.to_i, aud: 'other' }, described_class.send(:secret_key), 'HS256')
+
+      expect { described_class.decode(token) }.to raise_error(JwtService::InvalidTokenError, /audience/)
+    end
+
+    it 'accepts a legacy token that has no iss / aud' do
+      token = ::JWT.encode({ user_id: 1, exp: 1.day.from_now.to_i }, described_class.send(:secret_key), 'HS256')
+
+      expect(described_class.decode(token)['user_id']).to eq(1)
+    end
+
+    it 'raises InvalidTokenError for a token without exp' do
+      token = ::JWT.encode({ user_id: 1 }, described_class.send(:secret_key), 'HS256')
+
+      expect { described_class.decode(token) }.to raise_error(JwtService::InvalidTokenError)
     end
 
     it 'raises ExpiredTokenError for an expired token' do

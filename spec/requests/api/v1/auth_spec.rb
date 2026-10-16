@@ -45,13 +45,13 @@ RSpec.describe 'Api::V1::Auth', type: :request do
         expect(decoded['user_id']).to eq(existing_user.id)
       end
 
-      it 'embeds user_id and provider in the JWT and sets exp ~14 days ahead' do
+      it 'embeds user_id and provider in the JWT and sets exp ~7 days ahead' do
         post '/api/v1/auth/line', params: { access_token: 'valid_line_token' }
 
         decoded = JwtService.decode(response.parsed_body['token'])
         expect(decoded['user_id']).to eq(User.last.id)
         expect(decoded['provider']).to eq('line')
-        expect(decoded['exp']).to be_within(60).of(14.days.from_now.to_i)
+        expect(decoded['exp']).to be_within(60).of(7.days.from_now.to_i)
       end
 
       it 'recovers from RecordNotUnique race by re-finding the Authentication' do
@@ -125,9 +125,63 @@ RSpec.describe 'Api::V1::Auth', type: :request do
   end
 
   describe 'DELETE /api/v1/auth/logout' do
-    it 'returns 204 (stateless logout)' do
+    let(:user) { User.create!(name: '抹茶ファン') }
+
+    def auth_header(token)
+      { 'Authorization' => "Bearer #{token}" }
+    end
+
+    it 'returns 204 without a token' do
       delete '/api/v1/auth/logout'
       expect(response).to have_http_status(:no_content)
+    end
+
+    it 'returns 204 for an invalid token and changes no token_version' do
+      expect {
+        delete '/api/v1/auth/logout', headers: auth_header('garbage')
+      }.not_to(change { user.reload.token_version })
+
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it 'revokes the presented token' do
+      token = JwtService.encode(user_id: user.id, ver: user.token_version)
+
+      delete '/api/v1/auth/logout', headers: auth_header(token)
+      expect(response).to have_http_status(:no_content)
+      expect(user.reload.token_version).to eq(1)
+
+      get '/api/v1/current_user', headers: auth_header(token)
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'also revokes tokens issued earlier on other devices' do
+      other_device_token = JwtService.encode(user_id: user.id, ver: user.token_version)
+      this_device_token = JwtService.encode(user_id: user.id, ver: user.token_version)
+
+      delete '/api/v1/auth/logout', headers: auth_header(this_device_token)
+      get '/api/v1/current_user', headers: auth_header(other_device_token)
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'revokes a legacy token that has no ver claim' do
+      legacy_token = JwtService.encode(user_id: user.id)
+
+      delete '/api/v1/auth/logout', headers: auth_header(legacy_token)
+      get '/api/v1/current_user', headers: auth_header(legacy_token)
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'lets the user log in again after logging out' do
+      old_token = JwtService.encode(user_id: user.id, ver: user.token_version)
+      delete '/api/v1/auth/logout', headers: auth_header(old_token)
+
+      new_token = JwtService.encode(user_id: user.id, ver: user.reload.token_version)
+      get '/api/v1/current_user', headers: auth_header(new_token)
+
+      expect(response).to have_http_status(:ok)
     end
   end
 end
