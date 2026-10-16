@@ -125,7 +125,12 @@ spec/                   # RSpec
 
 外部認証プロバイダ: LINE / Google（#90 で Twitter を廃止し Google を追加）
 
-JWT ライブラリ: `jwt` gem（HS256 / 有効期限 14 日。詳細は #115）。
+JWT ライブラリ: `jwt` gem（HS256 / 有効期限 7 日。詳細は #115）。
+フロント (matcha-to-jinja) の NextAuth `session.maxAge` と**必ず同じ値に揃える**（ずれると Cookie 上はログイン済みなのに API だけ 401 になる）。
+
+- **失効**: `users.token_version` を JWT の `ver` クレームと照合する。`DELETE /api/v1/auth/logout` で +1 し、そのユーザーに発行済みの JWT を全端末分まとめて失効させる（`ver` を持たない旧トークンは 0 世代扱い）
+- **クレーム**: `exp` / `iat` / `iss` / `aud` / `user_id` / `provider` / `ver`。`iss` / `aud` は導入前のトークン救済のため「存在すれば検証」（導入から14日後に必須化してよい）
+- **Web セッション**（Administrate 管理画面）: Sorcery `session_timeout` で最終操作から30分で失効
 署名鍵は `Rails.application.credentials.jwt_secret` または `ENV['JWT_SECRET_KEY']`。
 
 ## 進行中の大型タスク: Rails API 化

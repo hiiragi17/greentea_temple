@@ -4,7 +4,7 @@
 # Available submodules are: :user_activation, :http_basic_auth, :remember_me,
 # :reset_password, :session_timeout, :brute_force_protection, :activity_logging,
 # :magic_login, :external
-Rails.application.config.sorcery.submodules = [:external]
+Rails.application.config.sorcery.submodules = %i[external session_timeout]
 
 # Here you can configure each submodule's features.
 Rails.application.config.sorcery.configure do |config|
@@ -38,15 +38,15 @@ Rails.application.config.sorcery.configure do |config|
   # config.token_randomness =
 
   # -- session timeout --
+  # Web 側（Administrate 管理画面など Cookie セッション）の無操作タイムアウト。
+  # API (ActionController::API) は Sorcery のセッションを使わないので影響しない。
   # How long in seconds to keep the session alive.
   # Default: `3600`
-  #
-  # config.session_timeout =
+  config.session_timeout = 30.minutes
 
   # Use the last action as the beginning of session timeout.
   # Default: `false`
-  #
-  # config.session_timeout_from_last_action =
+  config.session_timeout_from_last_action = true
 
   # Invalidate active sessions. Requires an `invalidate_sessions_before` timestamp column
   # Default: `false`
