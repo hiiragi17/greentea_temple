@@ -132,6 +132,7 @@ JWT ライブラリ: `jwt` gem（HS256 / 有効期限 7 日。詳細は #115）�
 - **失効**: `users.token_version` を JWT の `ver` クレームと照合する。`DELETE /api/v1/auth/logout` で +1 し、そのユーザーに発行済みの JWT を全端末分まとめて失効させる（`ver` を持たない旧トークンは 0 世代扱い）
 - **クレーム**: `exp` / `iat` / `iss` / `aud` / `user_id` / `provider` / `ver`。`iss` / `aud` は導入前のトークン救済のため「存在すれば検証」（導入から14日後に必須化してよい）
 - **Web セッション**（Administrate 管理画面）: Sorcery `session_timeout` で最終操作から30分で失効
+- **CORS**（`config/initializers/cors.rb`）: 認証は Bearer ヘッダーのみで Cookie を使わないため、`credentials` は許可しない（フロントの `fetch` も `credentials: "include"` を付けない）
 
 ## 進行中の大型タスク: Rails API 化
 
