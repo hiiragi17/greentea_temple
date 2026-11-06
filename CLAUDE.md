@@ -130,7 +130,7 @@ JWT ライブラリ: `jwt` gem（HS256 / 有効期限 7 日。詳細は #115）�
 フロント (matcha-to-jinja) の NextAuth `session.maxAge` と**必ず同じ値に揃える**（ずれると Cookie 上はログイン済みなのに API だけ 401 になる）。
 
 - **失効**: `users.token_version` を JWT の `ver` クレームと照合する。`DELETE /api/v1/auth/logout` で +1 し、そのユーザーに発行済みの JWT を全端末分まとめて失効させる（`ver` を持たない旧トークンは 0 世代扱い）
-- **クレーム**: `exp` / `iat` / `iss` / `aud` / `user_id` / `provider` / `ver`。`iss` / `aud` は導入前のトークン救済のため「存在すれば検証」（導入から14日後に必須化してよい）
+- **クレーム**: `exp` / `iat` / `iss` / `aud` / `user_id` / `provider` / `ver`。`exp` / `iss` / `aud` は必須で、`iss` / `aud` が無い・不一致のトークンは 401（#307 で必須化。導入前の旧トークンの救済期間は終了）
 - **Web セッション**（Administrate 管理画面）: Sorcery `session_timeout` で最終操作から30分で失効
 - **CORS**（`config/initializers/cors.rb`）: 認証は Bearer ヘッダーのみで Cookie を使わないため、`credentials` は許可しない（フロントの `fetch` も `credentials: "include"` を付けない）
 
