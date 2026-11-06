@@ -60,21 +60,35 @@ RSpec.describe JwtService do
     end
 
     it 'raises InvalidTokenError when the issuer does not match' do
-      token = ::JWT.encode({ user_id: 1, exp: 1.day.from_now.to_i, iss: 'other' }, described_class.send(:secret_key), 'HS256')
+      token = ::JWT.encode({ user_id: 1, exp: 1.day.from_now.to_i, iss: 'other', aud: JwtService::AUDIENCE }, described_class.send(:secret_key), 'HS256')
 
       expect { described_class.decode(token) }.to raise_error(JwtService::InvalidTokenError, /issuer/)
     end
 
     it 'raises InvalidTokenError when the audience does not match' do
-      token = ::JWT.encode({ user_id: 1, exp: 1.day.from_now.to_i, aud: 'other' }, described_class.send(:secret_key), 'HS256')
+      token = ::JWT.encode({ user_id: 1, exp: 1.day.from_now.to_i, iss: JwtService::ISSUER, aud: 'other' }, described_class.send(:secret_key), 'HS256')
 
       expect { described_class.decode(token) }.to raise_error(JwtService::InvalidTokenError, /audience/)
     end
 
-    it 'accepts a legacy token that has no iss / aud' do
+    it 'rejects a legacy token that has no iss / aud' do
       token = ::JWT.encode({ user_id: 1, exp: 1.day.from_now.to_i }, described_class.send(:secret_key), 'HS256')
 
-      expect(described_class.decode(token)['user_id']).to eq(1)
+      expect { described_class.decode(token) }.to raise_error(JwtService::InvalidTokenError)
+    end
+
+    it 'rejects a token that has aud but no iss' do
+      token = ::JWT.encode({ user_id: 1, exp: 1.day.from_now.to_i, aud: JwtService::AUDIENCE },
+                           described_class.send(:secret_key), 'HS256')
+
+      expect { described_class.decode(token) }.to raise_error(JwtService::InvalidTokenError, /iss/)
+    end
+
+    it 'rejects a token that has iss but no aud' do
+      token = ::JWT.encode({ user_id: 1, exp: 1.day.from_now.to_i, iss: JwtService::ISSUER },
+                           described_class.send(:secret_key), 'HS256')
+
+      expect { described_class.decode(token) }.to raise_error(JwtService::InvalidTokenError, /aud/)
     end
 
     it 'raises InvalidTokenError for a token without exp' do

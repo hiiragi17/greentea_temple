@@ -23,8 +23,13 @@ class JwtService
     end
 
     def decode(token)
-      payload, _header = ::JWT.decode(token, secret_key, true, algorithm: ALGORITHM, required_claims: ['exp'])
-      verify_issuer_and_audience!(payload)
+      payload, _header = ::JWT.decode(
+        token, secret_key, true,
+        algorithm: ALGORITHM,
+        required_claims: %w[exp iss aud],
+        iss: ISSUER, verify_iss: true,
+        aud: AUDIENCE, verify_aud: true
+      )
       payload
     rescue ::JWT::ExpiredSignature => e
       raise ExpiredTokenError, e.message
@@ -33,13 +38,6 @@ class JwtService
     end
 
     private
-
-    # iss / aud は導入前（2026-10 以前）に発行されたトークンに無いため、存在する場合だけ検証する。
-    # 導入前のトークンは最長14日で期限切れになるので、それ以降は必須化してよい。
-    def verify_issuer_and_audience!(payload)
-      raise InvalidTokenError, 'Invalid issuer' if payload.key?('iss') && payload['iss'] != ISSUER
-      raise InvalidTokenError, 'Invalid audience' if payload.key?('aud') && payload['aud'] != AUDIENCE
-    end
 
     def secret_key
       credentials_key = Rails.application.credentials[:jwt_secret].presence
