@@ -277,4 +277,19 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
       expect(response).to have_http_status(:ok)
     end
   end
+
+  # GHSA-2gff-2mmg-m73p: Rails 8.1.0〜8.1.4 + Rack 3 では request.remote_ip がクライアント由来の
+  # Forwarded ヘッダー(RFC 7239)を X-Forwarded-For より優先して読むため、プロキシが Forwarded を
+  # そのまま通すと攻撃者が任意のIPを名乗ってスロットルを回避できた。8.1.4.1 以降は
+  # 両ヘッダーのクライアントIPが食い違うと IpSpoofAttackError で拒否する。
+  # スロットルのキー(env['action_dispatch.remote_ip'])が偽装IPで決まらないことを固定する。
+  it 'rejects a spoofed Forwarded header instead of letting it choose the throttle key' do
+    proxy_env = { 'REMOTE_ADDR' => '169.254.1.1' }
+
+    expect do
+      post '/api/v1/auth/line',
+           params: { access_token: 'valid_line_token' },
+           headers: { 'X-Forwarded-For' => '203.0.113.1', 'Forwarded' => 'for=198.51.100.99' }.merge(proxy_env)
+    end.to raise_error(ActionDispatch::RemoteIp::IpSpoofAttackError)
+  end
 end
