@@ -59,9 +59,10 @@ WORKDIR /app
 # 公式 ruby イメージは再ビルドまでの間に出た Debian のセキュリティ修正を含まないため、
 # upgrade でビルド時点の修正を取り込む（Trivy の週次スキャンで検出された zlib など）。
 # deploy-cloud-run.yml は --cache-from でビルドするため、この層がキャッシュされると
-# upgrade が再実行されない。ビルド日を渡して、日が変われば必ずこの層から作り直す
-ARG SECURITY_UPDATES_DATE=unset
-RUN echo "security updates as of ${SECURITY_UPDATES_DATE}" && \
+# upgrade が再実行されない。ビルドごとに異なる値（Actions の run ID と attempt）を渡し、
+# 同じ日に何度ビルドしても必ずこの層から作り直す
+ARG APT_CACHE_BUST=unset
+RUN echo "apt cache bust: ${APT_CACHE_BUST}" && \
     apt-get update -qq && \
     apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends \
