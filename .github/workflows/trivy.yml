@@ -1,15 +1,20 @@
 name: Trivy image scan
 
-# 本番イメージ（Dockerfile の runtime ステージ）を週 1 回スキャンし、
-# ベース OS パッケージや gem に修正版のある HIGH / CRITICAL の脆弱性が出ていないか確認する。
-# PR の CI とは分けているので、ここが失敗しても開発はブロックされない
-# （定期実行の失敗通知は、cron を最後に変更したユーザーに GitHub の通知設定に従って届く。
-# 確実に気づくため、Actions の失敗通知が有効になっていることを確認しておく）。
+# 修正版のある HIGH / CRITICAL の脆弱性を Trivy で検出する。
+#
+# - scan-deployed（週次 / 手動）: Cloud Run が今動かしているイメージを Artifact Registry から
+#   取得してスキャンする。Dockerfile は apt-get upgrade でビルド時点の修正を取り込むため、
+#   新しくビルドしたイメージを調べても本番が古くなっていることは分からない。検出されたら
+#   再デプロイ（deploy-cloud-run.yml の手動実行など）で最新の修正を取り込む
+# - scan-build（PR）: Dockerfile を変える PR で、そのビルド結果をスキャンする
+#
+# PR の CI とは分けているので、ここが失敗しても開発はブロックされない。
+# 定期実行の失敗通知は、cron を最後に変更したユーザーに GitHub の通知設定に従って届く
+# （確実に気づくため、Actions の失敗通知が有効になっていることを確認しておく）。
 on:
   schedule:
     - cron: "23 0 * * 1" # 毎週月曜 09:23 JST
   workflow_dispatch:
-  # ベースイメージを変える PR ではその場で確認する
   pull_request:
     paths:
       - Dockerfile
@@ -22,9 +27,63 @@ concurrency:
   group: trivy-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  GCP_REGION: asia-northeast1
+  SERVICE_NAME: greentea-temple
+
 jobs:
-  scan:
-    name: Scan production image
+  scan-deployed:
+    name: Scan deployed image
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Workload Identity Federation（deploy-cloud-run.yml と同じ SA を使う）
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      # :latest タグではなく、サービスが実際に参照しているイメージを取得する
+      # （手動デプロイで古いタグに戻した場合なども、動いているものを調べるため）
+      - name: Resolve deployed image
+        id: image
+        run: |
+          image="$(gcloud run services describe "${SERVICE_NAME}" \
+            --region "${GCP_REGION}" \
+            --format='value(spec.template.spec.containers[0].image)')"
+          if [ -z "${image}" ]; then
+            echo "::error::Cloud Run サービスのイメージを取得できませんでした" >&2
+            exit 1
+          fi
+          echo "ref=${image}" >> "$GITHUB_OUTPUT"
+
+      - name: Pull deployed image
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
+        run: docker pull "${IMAGE_REF}"
+
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.image.outputs.ref }}
+          format: table
+          # 修正版が出ているものだけを対象にする（未修正の CVE で毎週失敗し続けないように）
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+  scan-build:
+    name: Scan Dockerfile build
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,7 +98,6 @@ jobs:
         with:
           image-ref: greentea-temple:scan
           format: table
-          # 修正版が出ているものだけを対象にする（未修正の CVE で毎週失敗し続けないように）
           ignore-unfixed: true
           severity: HIGH,CRITICAL
           exit-code: "1"
