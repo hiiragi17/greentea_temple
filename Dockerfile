@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-ARG RUBY_VERSION=3.4.9
+ARG RUBY_VERSION=3.4.12
 
 # ---------- build stage ----------
 FROM ruby:${RUBY_VERSION}-slim AS build

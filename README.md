@@ -1,6 +1,6 @@
 ![badge](https://img.shields.io/badge/thank%20you-for%20visiting-brightgreen)
 <br>
-[![Ruby](https://img.shields.io/badge/Ruby-v3.4.9-%23CC342D)](https://www.ruby-lang.org/)
+[![Ruby](https://img.shields.io/badge/Ruby-v3.4.12-%23CC342D)](https://www.ruby-lang.org/)
 [![Rails](https://img.shields.io/badge/Rails-v8.1-%23a72332)](https://rubygems.org/gems/rails/versions/8.1.0)
 
 # 抹茶と神社。
@@ -84,7 +84,7 @@ https://matcha-to-jinja.vercel.app/
 
 # ■使用技術  
 バックエンド（本リポジトリ）
-　・Ruby 3.4.9  
+　・Ruby 3.4.12  
 　・Ruby on Rails 8.1.x（`ActionController::API` による `api/v1` 名前空間で JSON API を提供）
 　・PostgreSQL  
 　・Sorcery（LINE / Google OAuth）  
