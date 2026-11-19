@@ -104,6 +104,7 @@ jobs:
             --tag "${IMAGE_BASE}:${IMAGE_TAG}" \
             --tag "${IMAGE_BASE}:latest" \
             --cache-from "${IMAGE_BASE}:latest" \
+            --build-arg SECURITY_UPDATES_DATE="$(date -u +%Y-%m-%d)" \
             .
 
       - name: Push image
