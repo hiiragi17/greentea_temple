@@ -7,7 +7,7 @@
 
 ## 技術スタック
 
-- Ruby 3.4.9（#119 で 3.1.2 → 3.3.11、その後 3.4.9 へ）
+- Ruby 3.4.12（#119 で 3.1.2 → 3.3.11、その後 3.4.9 → 3.4.12 へ）
 - Ruby on Rails 8.1.x（7.0 → 7.1 を経て 8.1 へアップグレード済み。`config.load_defaults 8.1`）
 - PostgreSQL
 - Sorcery（LINE / Google OAuth）
