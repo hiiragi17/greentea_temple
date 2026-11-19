@@ -2,9 +2,10 @@ name: Trivy image scan
 
 # 修正版のある HIGH / CRITICAL の脆弱性を Trivy で検出する。
 #
-# - scan-deployed（週次 / 手動）: Cloud Run が今動かしているイメージを Artifact Registry から
-#   取得してスキャンする。Dockerfile は apt-get upgrade でビルド時点の修正を取り込むため、
-#   新しくビルドしたイメージを調べても本番が古くなっていることは分からない。検出されたら
+# - resolve-deployed / scan-deployed（週次 / 手動）: Cloud Run で今トラフィックを受けている
+#   リビジョンのイメージ（ダイジェスト）を Artifact Registry から取得してスキャンする。
+#   Dockerfile は apt-get upgrade でビルド時点の修正を取り込むため、新しくビルドした
+#   イメージを調べても本番が古くなっていることは分からない。検出されたら
 #   再デプロイ（deploy-cloud-run.yml の手動実行など）で最新の修正を取り込む
 # - scan-build（PR）: Dockerfile を変える PR で、そのビルド結果をスキャンする
 #
@@ -33,13 +34,63 @@ env:
   SERVICE_NAME: greentea-temple
 
 jobs:
-  scan-deployed:
-    name: Scan deployed image
+  # Cloud Run で今トラフィックを受けているリビジョンを洗い出し、各リビジョンが
+  # デプロイ時に解決したイメージのダイジェスト（status.imageDigest）を集める。
+  # サービスのテンプレート（spec.template）のタグは、トラフィックを旧リビジョンに戻した場合や
+  # 同じタグを上書きした場合に、実際に動いているイメージと一致しないため使わない
+  resolve-deployed:
+    name: Resolve deployed images
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write # Workload Identity Federation（deploy-cloud-run.yml と同じ SA を使う）
+    outputs:
+      images: ${{ steps.resolve.outputs.images }}
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
+
+      - name: Resolve revisions receiving traffic
+        id: resolve
+        run: |
+          revisions="$(gcloud run services describe "${SERVICE_NAME}" \
+            --region "${GCP_REGION}" --format=json \
+            | jq -r '[.status.traffic[] | select((.percent // 0) > 0) | .revisionName] | unique | .[]')"
+          if [ -z "${revisions}" ]; then
+            echo "::error::トラフィックを受けているリビジョンが見つかりませんでした" >&2
+            exit 1
+          fi
+          images="[]"
+          for rev in ${revisions}; do
+            digest="$(gcloud run revisions describe "${rev}" \
+              --region "${GCP_REGION}" --format='value(status.imageDigest)')"
+            if [ -z "${digest}" ]; then
+              echo "::error::リビジョン ${rev} のイメージダイジェストを取得できませんでした" >&2
+              exit 1
+            fi
+            echo "${rev}: ${digest}"
+            images="$(jq -c --arg d "${digest}" '. + [$d]' <<< "${images}")"
+          done
+          echo "images=$(jq -c 'unique' <<< "${images}")" >> "$GITHUB_OUTPUT"
+
+  scan-deployed:
+    name: Scan deployed image
+    needs: resolve-deployed
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJSON(needs.resolve-deployed.outputs.images) }}
     steps:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
@@ -53,29 +104,15 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
 
-      # :latest タグではなく、サービスが実際に参照しているイメージを取得する
-      # （手動デプロイで古いタグに戻した場合なども、動いているものを調べるため）
-      - name: Resolve deployed image
-        id: image
-        run: |
-          image="$(gcloud run services describe "${SERVICE_NAME}" \
-            --region "${GCP_REGION}" \
-            --format='value(spec.template.spec.containers[0].image)')"
-          if [ -z "${image}" ]; then
-            echo "::error::Cloud Run サービスのイメージを取得できませんでした" >&2
-            exit 1
-          fi
-          echo "ref=${image}" >> "$GITHUB_OUTPUT"
-
       - name: Pull deployed image
         env:
-          IMAGE_REF: ${{ steps.image.outputs.ref }}
+          IMAGE_REF: ${{ matrix.image }}
         run: docker pull "${IMAGE_REF}"
 
       - name: Run Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: ${{ steps.image.outputs.ref }}
+          image-ref: ${{ matrix.image }}
           format: table
           # 修正版が出ているものだけを対象にする（未修正の CVE で毎週失敗し続けないように）
           ignore-unfixed: true
