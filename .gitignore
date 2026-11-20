@@ -58,3 +58,6 @@ config/environments/*.local.yml
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+
+# google-github-actions/auth が CI で書き出す認証情報ファイル
+gha-creds-*.json
