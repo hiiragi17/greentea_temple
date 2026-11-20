@@ -55,8 +55,16 @@ ENV RAILS_ENV=production \
 
 WORKDIR /app
 
-# Runtime に必要なライブラリのみ（コンパイラは入れない）
-RUN apt-get update -qq && \
+# Runtime に必要なライブラリのみ（コンパイラは入れない）。
+# 公式 ruby イメージは再ビルドまでの間に出た Debian のセキュリティ修正を含まないため、
+# upgrade でビルド時点の修正を取り込む（Trivy の週次スキャンで検出された zlib など）。
+# deploy-cloud-run.yml は --cache-from でビルドするため、この層がキャッシュされると
+# upgrade が再実行されない。ビルドごとに異なる値（Actions の run ID と attempt）を渡し、
+# 同じ日に何度ビルドしても必ずこの層から作り直す
+ARG APT_CACHE_BUST=unset
+RUN echo "apt cache bust: ${APT_CACHE_BUST}" && \
+    apt-get update -qq && \
+    apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends \
       ca-certificates \
       curl \
