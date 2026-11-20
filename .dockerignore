@@ -36,6 +36,10 @@ yarn-debug.log*
 /docs
 
 # Secrets
+# google-github-actions/auth が CI のワークスペースに書き出す認証情報ファイル。
+# deploy-cloud-run.yml は認証後に `docker build .` するため、除外しないと
+# `COPY . .` で本番イメージに混入する（Trivy のスキャン結果で検出）
+gha-creds-*.json
 /config/master.key
 /.env
 /.env.*
