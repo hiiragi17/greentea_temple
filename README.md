@@ -21,7 +21,7 @@ https://matcha-to-jinja.vercel.app/
 　折角京都に観光に来るなら、<br>  
 　京都で有名な抹茶スイーツを食べ、神社仏閣を同時に巡りたいと考えるユーザーは多いと考えられる。<br>  
 　しかし抹茶スイーツをまとめたサイトや、神社仏閣をまとめたサイトはあっても、<br>  
-　それら二つを同時に見られるサイトはあまりない。<bt>  
+　それら二つを同時に見られるサイトはあまりない。<br>  
 　その為それら二つを同時に探すことができ、<br>  
 　尚且つ行きたい箇所の距離や行き方を調べたりすることができるようにしたい。<br>  
 </details>
@@ -32,6 +32,7 @@ https://matcha-to-jinja.vercel.app/
 　・行く予定のある地域の神社仏閣を調べることができる<br>  
 　・行きたい抹茶スイーツ店近くの神社仏閣、行きたい神社仏閣近くの抹茶スイーツ店を知ることができる<br>  
 　・現在地から行ける抹茶スイーツ店、神社仏閣を調べることができる<br>     
+　・行きたい抹茶スイーツ店・神社仏閣を並べて、自分だけのモデルコースを作ることができる<br>  
 </details>
 　
 
@@ -100,17 +101,25 @@ https://matcha-to-jinja.vercel.app/
 　・jsonapi-serializer（API レスポンス）  
 　・Administrate（管理画面）  
 　・JWT 認証（フロントエンド向け）  
+　・rack-cors（CORS）/ rack-attack（レート制限）  
 
-フロントエンド    
-　・Next.js（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)。NextAuth.js による OAuth 認証）  
-　※旧 Rails 製 Web フロント（JavaScript / Tailwind CSS・daisyUI）は撤去済み
+フロントエンド（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)）    
+　・Next.js（App Router）+ React + TypeScript  
+　・Tailwind CSS v4 + daisyUI 5  
+　・NextAuth.js（Google / LINE の OAuth 認証）  
+　・SWR（データ取得）/ react-hook-form + zod（フォーム）  
+　・@vis.gl/react-google-maps（地図）  
+　※ Rails 側の旧 Web フロント（HTML 画面・JS/CSS ビルド）は撤去済み
 
 インフラ    
-　・GCP Cloud Run（デプロイ）  
+　・GCP Cloud Run（バックエンド API）  
 　・Neon PostgreSQL（本番 DB）  
+　・Vercel（フロントエンド）  
+　・GitHub Actions（CI: RSpec / RuboCop / Trivy、main マージで Cloud Run へ自動デプロイ）  
 
 テスト  
-　・RSpec + FactoryBot + Capybara  
+　・バックエンド: RSpec（request spec 中心）+ FactoryBot  
+　・フロントエンド: Vitest + Testing Library + MSW / Playwright（E2E）  
 
 使用API  
 　・Google Geocoding API（緯度経度の取得に使用）  
