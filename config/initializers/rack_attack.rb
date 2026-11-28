@@ -31,7 +31,7 @@ Rack::Attack.throttle('comments/create/ip', limit: 10, period: 1.minute) do |req
   CLIENT_IP.call(req) if req.post? && req.path.match?(%r{\A/api/v1/(?:greenteacomments|templecomments)(?:\.\w+)?\z})
 end
 
-# モデルルート作成: Directions API 呼び出しを伴い外部APIコストがかかるため、より厳しく1分間に5件まで
+# モデルルート作成: 書き込み系のため、より厳しく1分間に5件まで
 Rack::Attack.throttle('routes/create/ip', limit: 5, period: 1.minute) do |req|
   CLIENT_IP.call(req) if req.post? && req.path.match?(%r{\A/api/v1/routes(?:\.\w+)?\z})
 end

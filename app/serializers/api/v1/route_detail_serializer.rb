@@ -35,7 +35,7 @@ module Api
 
       # ルート内の 1 スポットを表す要素を組み立てる。
       # - distance_to_next_meters: 次スポットまでの直線距離（メートル・整数）。最後は nil。
-      # - route_distance_to_next_meters: 次スポットまでの経路距離（Directions API）。未算出は nil。
+      # - route_distance_to_next_meters: 次スポットまでの経路距離。過去データのみ（算出は廃止済みのため新規は nil）。
       # - duration_to_next_seconds: 次スポットまでの所要時間（秒）。未算出は nil。
       # - route_polyline_to_next: 次スポットまでの道なり経路（Google Encoded Polyline
       #   Algorithm Format の文字列）。地図に「直線」ではなく実際の道なりを描画するために使う。

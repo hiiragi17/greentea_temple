@@ -31,7 +31,6 @@ module Api
           route.save!
         end
 
-        compute_and_store_legs(route)
         render_route_detail(route, status: :created)
       rescue ActiveRecord::RecordInvalid => e
         render_unprocessable(e.record.errors.full_messages)
@@ -41,7 +40,6 @@ module Api
 
       def update
         route = current_user.routes.find(params[:id])
-        spots_changed = false
 
         ActiveRecord::Base.transaction do
           route.assign_attributes(scalar_params)
@@ -50,12 +48,10 @@ module Api
           if route_params.key?(:spots)
             route.route_spots.destroy_all
             build_spots(route, spots_params)
-            spots_changed = true
           end
           route.save!
         end
 
-        compute_and_store_legs(route) if spots_changed
         render_route_detail(route.reload)
       rescue ActiveRecord::RecordInvalid => e
         render_unprocessable(e.record.errors.full_messages)
@@ -85,8 +81,7 @@ module Api
       end
 
       # API の spots 配列（順序 = ルート順）から polymorphic な RouteSpot を組み立てる。
-      # 移動手段はユーザーに選ばせず区間ごとに自動決定するため、ここでは受け取らない
-      # （compute_and_store_legs が leg 計算の結果として設定する）。
+      # 移動手段・経路は扱わない（行き方はフロントから Google マップに任せる）。
       def build_spots(route, spots)
         spots.each_with_index do |spot, index|
           record_class = RouteSpot.spottable_class_for(spot[:spot_type])
@@ -96,30 +91,6 @@ module Api
           raise InvalidSpotError, "#{spot[:spot_type]} ##{spot[:spot_id]} not found" unless record
 
           route.route_spots.build(spottable: record, position: index + 1)
-        end
-      end
-
-      # 隣接スポット間の移動手段・経路距離・所要時間を Directions API で自動決定して
-      # 保存する。外部 API 呼び出しのため DB トランザクション外で実行し、失敗した leg は
-      # 未設定のまま（serializer 側で直線距離フォールバック。所要時間・手段はフォール
-      # バック無しで nil のまま＝「不明」）。
-      #
-      # build_spots でスポットは spottable 付きでメモリ上にロード済みなので、
-      # reload せずに position 順へ並べ替えて使う（spottable の N+1 を避ける）。
-      def compute_and_store_legs(route)
-        spots = route.route_spots.to_a.sort_by(&:position)
-        spots.each_cons(2) do |from, to|
-          leg = DirectionsService.auto_leg(origin: from.spottable, destination: to.spottable)
-          next unless leg
-
-          # best-effort（コミット後・トランザクション外）なので bang は使わない。
-          # 失敗しても 500 にせず、その leg は nil のまま（直線距離フォールバック）。
-          from.update(
-            leg_distance_meters: leg[:distance_meters],
-            leg_duration_seconds: leg[:duration_seconds],
-            leg_polyline: leg[:polyline],
-            transport: leg[:transport]
-          )
         end
       end
 
