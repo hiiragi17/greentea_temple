@@ -36,23 +36,6 @@ Rails.application.routes.draw do
     match '*unmatched', to: 'v1/base#route_not_found', via: :all
   end
 
-  namespace :admin do
-      resources :users
-      resources :temple_likes
-      resources :temple_areas
-      resources :temples
-      resources :greentea_likes
-      resources :greentea_genres
-      resources :greenteas
-      resources :genres
-      resources :authentications
-      resources :areas
-      resources :greenteacomments
-      resources :templecomments
-
-      root to: "users#index"
-    end
-
   root 'static_pages#top'
   get 'terms_of_service', to: 'static_pages#terms_of_service'
   get 'privacy_policy', to: 'static_pages#privacy_policy'
@@ -61,16 +44,6 @@ Rails.application.routes.draw do
   # （manifest はレイアウトから pwa_manifest_path(format: :json) で参照）
   get 'manifest', to: 'rails/pwa#manifest', as: :pwa_manifest
   get 'service-worker', to: 'rails/pwa#service_worker', as: :pwa_service_worker
-
-  resources :users
-
-  get 'login', to: 'user_sessions#new'
-  post 'login', to: 'user_sessions#create'
-  delete 'logout', to: 'user_sessions#destroy'
-
-  post 'oauth/callback', to: 'oauths#callback'
-  get 'oauth/callback', to: 'oauths#callback'
-  get 'oauth/:provider', to: 'oauths#oauth', as: :auth_at_provider
 
   # --- #136 段階1: 旧 Web フロントのルーティング無効化（410 Gone） ---
   # 抹茶店／神社の閲覧・いいね・口コミ・現在地検索は API(/api/v1) と Next.js

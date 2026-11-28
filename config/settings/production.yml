@@ -1,3 +1,0 @@
-sorcery:
-  google_callback_url: 'https://www.matcha-to-jinja.com/oauth/callback?provider=google'
-  line_callback_url: 'https://www.matcha-to-jinja.com/oauth/callback?provider=line'
