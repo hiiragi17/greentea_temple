@@ -12,3 +12,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # json 3.0+ は create_additions を含む未知オプションで ArgumentError を送出するようになり、
+      # 本番の bin/rails db:migrate 起動時に落ちる回帰が発生した。Gemfile で "< 3" に固定している
+      # （#281）が、Dependabot の json 3 系 PR はこの固定ごと "< 4" に書き換えるため、マージして
+      # 回帰を再発させた（#282 → #287、#289 → #290）。json 3 へ上げられるまで major 更新は無視する。
+      - dependency-name: "json"
+        update-types: ["version-update:semver-major"]
