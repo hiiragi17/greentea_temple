@@ -25,8 +25,8 @@ RSpec.describe RouteSpot, type: :model do
     end
   end
 
-  describe 'ignored columns' do
-    it 'does not expose the removed transport / leg_* columns' do
+  describe 'removed columns' do
+    it 'does not have the removed transport / leg_* columns' do
       expect(described_class.column_names).not_to include(
         'transport', 'leg_distance_meters', 'leg_duration_seconds', 'leg_polyline'
       )
