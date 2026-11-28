@@ -16,15 +16,9 @@ module Api
         end
       end
 
-      # ルート全体の経路距離合計（メートル・整数）。
-      # 各 leg は経路距離（leg_distance_meters）優先、無ければ直線距離でフォールバック。
+      # ルート全体の直線距離合計（メートル・整数）。
       attribute :total_distance_meters do |obj|
         RouteDetailSerializer.total_distance_meters(RouteDetailSerializer.ordered_spots(obj))
-      end
-
-      # ルート全体の所要時間合計（秒・整数）。算出済みの leg が 1 つも無ければ nil。
-      attribute :total_duration_seconds do |obj|
-        RouteDetailSerializer.total_duration_seconds(RouteDetailSerializer.ordered_spots(obj))
       end
 
       # route_spots を position 順で取得する。association scope（order(:position)）でも
@@ -34,19 +28,13 @@ module Api
       end
 
       # ルート内の 1 スポットを表す要素を組み立てる。
+      # 移動手段・経路距離・所要時間は扱わない（行き方はフロントから Google マップに任せる）。
       # - distance_to_next_meters: 次スポットまでの直線距離（メートル・整数）。最後は nil。
-      # - route_distance_to_next_meters: 次スポットまでの経路距離（Directions API）。未算出は nil。
-      # - duration_to_next_seconds: 次スポットまでの所要時間（秒）。未算出は nil。
-      # - route_polyline_to_next: 次スポットまでの道なり経路（Google Encoded Polyline
-      #   Algorithm Format の文字列）。地図に「直線」ではなく実際の道なりを描画するために使う。
-      #   直線距離のようなフォールバックは無い（未算出/未取得なら nil。フロント側は
-      #   nil の場合 distance_to_next_meters の2点間を直線描画するなど任意にフォールバックする）。
       def self.spot_payload(route_spot, next_spot)
         spot = route_spot.spottable
         {
           position: route_spot.position,
           spot_type: route_spot.spot_type,
-          transport: route_spot.transport,
           id: spot.id,
           name: spot.name,
           address: spot.address,
@@ -54,29 +42,14 @@ module Api
           latitude: spot.latitude,
           longitude: spot.longitude,
           img: spot.img,
-          distance_to_next_meters: distance_between(spot, next_spot&.spottable),
-          route_distance_to_next_meters: next_spot ? route_spot.leg_distance_meters : nil,
-          duration_to_next_seconds: next_spot ? route_spot.leg_duration_seconds : nil,
-          route_polyline_to_next: next_spot ? route_spot.leg_polyline : nil
+          distance_to_next_meters: distance_between(spot, next_spot&.spottable)
         }
       end
 
       def self.total_distance_meters(ordered)
         return 0 if ordered.size < 2
 
-        ordered.each_cons(2).sum do |from, to|
-          from.leg_distance_meters || distance_between(from.spottable, to.spottable) || 0
-        end
-      end
-
-      # 所要時間には直線距離のようなフォールバックが無いため、算出済みの leg のみを
-      # 合算する（一部 leg のみ算出済みなら部分合計）。1 つも無ければ nil。
-      # ＝ total_distance_meters（常に整数）とは非対称だが意図的な契約。
-      def self.total_duration_seconds(ordered)
-        durations = ordered.each_cons(2).map { |from, _to| from.leg_duration_seconds }.compact
-        return nil if durations.empty?
-
-        durations.sum
+        ordered.each_cons(2).sum { |from, to| distance_between(from.spottable, to.spottable) || 0 }
       end
 
       def self.distance_between(spot, next_spot)

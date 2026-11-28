@@ -25,19 +25,11 @@ RSpec.describe RouteSpot, type: :model do
     end
   end
 
-  describe 'transport enum' do
-    it 'defines walk/train/bus/car/transit' do
-      expect(described_class.transports).to eq(
-        'walk' => 0, 'train' => 1, 'bus' => 2, 'car' => 3, 'transit' => 4
+  describe 'ignored columns' do
+    it 'does not expose the removed transport / leg_* columns' do
+      expect(described_class.column_names).not_to include(
+        'transport', 'leg_distance_meters', 'leg_duration_seconds', 'leg_polyline'
       )
-    end
-
-    it 'allows a nil transport (任意項目)' do
-      expect(build(:route_spot, transport: nil)).to be_valid
-    end
-
-    it 'raises for an unknown transport value' do
-      expect { build(:route_spot, transport: 'plane') }.to raise_error(ArgumentError)
     end
   end
 

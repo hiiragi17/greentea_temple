@@ -4,12 +4,11 @@ class RouteSpot < ApplicationRecord
   belongs_to :route, inverse_of: :route_spots
   belongs_to :spottable, polymorphic: true
 
-  # 移動手段: 次のスポットへの移動手段。ユーザーが選ぶのではなく、区間距離と
-  # Directions API の結果から自動決定される（DirectionsService.auto_leg）。
-  # 次スポットが無い（最後のスポット）場合や算出失敗時は未設定（nil）のまま。
-  # train/bus/car は過去に手動選択で保存されたレコードとの互換のために残しているが、
-  # 自動決定では選ばれない（walk / transit のみ）。
-  enum :transport, { walk: 0, train: 1, bus: 2, car: 3, transit: 4 }
+  # 移動手段・経路距離・所要時間・経路ポリラインの列は使わなくなった（Directions API は
+  # 日本の乗換案内を返さず不正確だったため、行き方はフロントから Google マップに任せる）。
+  # 列の削除マイグレーションをデプロイする前に、動いているコードがこれらの列を参照しない
+  # ようにするため無視する。列の削除後に ignored_columns も外す。
+  self.ignored_columns += %w[transport leg_distance_meters leg_duration_seconds leg_polyline]
 
   validates :position, presence: true,
                        numericality: { only_integer: true, greater_than: 0 }

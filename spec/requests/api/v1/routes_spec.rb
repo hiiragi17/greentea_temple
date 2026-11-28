@@ -9,11 +9,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
   let(:greentea) { create(:greentea) }
   let(:temple) { create(:temple) }
 
-  # 既定では Directions API を呼ばない（外部依存・実 HTTP を避ける）。
-  # 経路距離・所要時間を検証するテストでは個別に stub し直す。
-  before { allow(DirectionsService).to receive(:auto_leg).and_return(nil) }
-
-  # spots: [{ spottable:, transport: }] を順序付きで持つ Route を 1 件作る。
+  # spots: [{ spottable: }] を順序付きで持つ Route を 1 件作る。
   def create_route_for(owner, spots)
     Route.create!(
       user: owner,
@@ -61,7 +57,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
     end
 
     it 'returns the route with ordered spots and distance_to_next_meters' do
-      spots = [{ spottable: temple, transport: :walk }, { spottable: greentea }]
+      spots = [{ spottable: temple }, { spottable: greentea }]
       route = create_route_for(user, spots)
 
       get "/api/v1/routes/#{route.id}", headers: auth
@@ -70,7 +66,6 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       spots = response.parsed_body['data']['spots']
       expect(spots.map { |s| s['position'] }).to eq([1, 2])
       expect(spots.map { |s| s['spot_type'] }).to eq(%w[temple greentea])
-      expect(spots.first['transport']).to eq('walk')
       expect(spots.first['name']).to eq(temple.name)
       expect(spots.first['distance_to_next_meters']).to be_a(Integer)
       expect(spots.last['distance_to_next_meters']).to be_nil
@@ -82,39 +77,19 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
-    it 'exposes stored route distance/duration/polyline per leg and route totals' do
-      route = create_route_for(user, [{ spottable: temple, transport: :walk }, { spottable: greentea }])
-      route.route_spots.order(:position).first.update!(
-        leg_distance_meters: 1500, leg_duration_seconds: 1080, leg_polyline: 'abc123encoded'
-      )
-
-      get "/api/v1/routes/#{route.id}", headers: auth
-
-      expect(response).to have_http_status(:ok)
-      data = response.parsed_body['data']
-      spots = data['spots']
-      expect(spots.first['route_distance_to_next_meters']).to eq(1500)
-      expect(spots.first['duration_to_next_seconds']).to eq(1080)
-      expect(spots.first['route_polyline_to_next']).to eq('abc123encoded')
-      expect(spots.last['route_distance_to_next_meters']).to be_nil
-      expect(spots.last['duration_to_next_seconds']).to be_nil
-      expect(spots.last['route_polyline_to_next']).to be_nil
-      expect(data['total_distance_meters']).to eq(1500)
-      expect(data['total_duration_seconds']).to eq(1080)
-    end
-
-    it 'falls back to straight-line distance when no route leg is stored' do
-      route = create_route_for(user, [{ spottable: temple, transport: :walk }, { spottable: greentea }])
+    it 'returns only straight-line distances (no transport / route distance / duration fields)' do
+      route = create_route_for(user, [{ spottable: temple }, { spottable: greentea }])
 
       get "/api/v1/routes/#{route.id}", headers: auth
 
       data = response.parsed_body['data']
       spots = data['spots']
-      expect(spots.first['route_distance_to_next_meters']).to be_nil
       expect(spots.first['distance_to_next_meters']).to be_a(Integer)
-      # 経路距離が無い leg は直線距離で合算され、所要時間は nil。
+      expect(spots.first.keys).not_to include(
+        'transport', 'route_distance_to_next_meters', 'duration_to_next_seconds', 'route_polyline_to_next'
+      )
       expect(data['total_distance_meters']).to eq(spots.first['distance_to_next_meters'])
-      expect(data['total_duration_seconds']).to be_nil
+      expect(data).not_to have_key('total_duration_seconds')
     end
   end
 
@@ -125,7 +100,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
           name: '祇園抹茶巡り',
           description: '神社とお茶屋さんを巡る',
           spots: [
-            { spot_type: 'temple', spot_id: temple.id, transport: 'walk' },
+            { spot_type: 'temple', spot_id: temple.id },
             { spot_type: 'greentea', spot_id: greentea.id }
           ]
         }
@@ -151,62 +126,14 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(Route.last.user).to eq(user)
     end
 
-    it 'computes and stores leg metrics via DirectionsService' do
-      expect(DirectionsService).to receive(:auto_leg)
-        .with(origin: temple, destination: greentea)
-        .and_return({ distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded', transport: 'walk' })
-
+    it 'returns the created route with straight-line distances only' do
       post '/api/v1/routes', params: valid_params, headers: auth
 
       expect(response).to have_http_status(:created)
-      route = Route.last
-      first_spot = route.route_spots.order(:position).first
-      expect(first_spot.leg_distance_meters).to eq(1500)
-      expect(first_spot.leg_duration_seconds).to eq(1080)
-      expect(first_spot.leg_polyline).to eq('abc123encoded')
-      expect(first_spot.transport).to eq('walk')
-      # 最後のスポットには次が無いので leg は保存されない。
-      expect(route.route_spots.order(:position).last.leg_distance_meters).to be_nil
-
       data = response.parsed_body['data']
-      expect(data['spots'].first['route_distance_to_next_meters']).to eq(1500)
-      expect(data['spots'].first['route_polyline_to_next']).to eq('abc123encoded')
-      expect(data['total_distance_meters']).to eq(1500)
-      expect(data['total_duration_seconds']).to eq(1080)
-    end
-
-    it 'uses computed metrics for successful legs and falls back for failed ones' do
-      third = create(:greentea)
-      # leg1 は成功、leg2 は失敗（nil）。
-      allow(DirectionsService).to receive(:auto_leg)
-        .and_return({ distance_meters: 1500, duration_seconds: 1080, transport: 'transit' }, nil)
-
-      post '/api/v1/routes',
-           params: {
-             route: {
-               name: '混在ルート',
-               spots: [
-                 { spot_type: 'temple', spot_id: temple.id },
-                 { spot_type: 'greentea', spot_id: greentea.id },
-                 { spot_type: 'greentea', spot_id: third.id }
-               ]
-             }
-           },
-           headers: auth
-
-      expect(response).to have_http_status(:created)
-      data = response.parsed_body['data']
-      spots = data['spots']
-
-      # leg1: 経路距離・所要時間が入る
-      expect(spots[0]['route_distance_to_next_meters']).to eq(1500)
-      expect(spots[0]['duration_to_next_seconds']).to eq(1080)
-      # leg2: 失敗 → 経路値は nil、直線距離フォールバック
-      expect(spots[1]['route_distance_to_next_meters']).to be_nil
-      expect(spots[1]['distance_to_next_meters']).to be_a(Integer)
-      # 合計: 距離は leg1 経路 + leg2 直線、所要時間は算出済みの leg1 のみ
-      expect(data['total_distance_meters']).to eq(1500 + spots[1]['distance_to_next_meters'])
-      expect(data['total_duration_seconds']).to eq(1080)
+      expect(data['spots'].first['distance_to_next_meters']).to be_a(Integer)
+      expect(data['spots'].first).not_to have_key('transport')
+      expect(data).not_to have_key('total_duration_seconds')
     end
 
     it 'allows duplicate spots in the same route' do
@@ -266,15 +193,14 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
-    it 'ignores a client-supplied transport (移動手段はバックエンドが自動決定する)' do
+    it 'ignores a client-supplied transport (移動手段は扱わない)' do
       params = valid_params.deep_dup
       params[:route][:spots] = [{ spot_type: 'greentea', spot_id: greentea.id, transport: 'teleport' }]
       expect {
         post '/api/v1/routes', params: params, headers: auth
       }.to change(Route, :count).by(1)
       expect(response).to have_http_status(:created)
-      # spots が 1 件のみ（次のスポットが無い）ので leg は計算されず transport も未設定のまま。
-      expect(Route.last.route_spots.first.transport).to be_nil
+      expect(response.parsed_body['data']['spots'].first).not_to have_key('transport')
     end
   end
 
@@ -285,7 +211,7 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    it 'replaces the route name and spots (transport is no longer accepted from the client)' do
+    it 'replaces the route name and spots' do
       route = create_route_for(user, [{ spottable: greentea }])
 
       patch "/api/v1/routes/#{route.id}",
@@ -301,14 +227,10 @@ RSpec.describe 'Api::V1::Routes', type: :request do
       route.reload
       expect(route.name).to eq('新ルート')
       expect(route.route_spots.map(&:spottable)).to eq([temple])
-      # 次のスポットが無い（spots 1件のみ）ので leg は計算されず transport も未設定のまま。
-      expect(route.route_spots.first.transport).to be_nil
     end
 
-    it 'recomputes and stores leg metrics when spots change' do
+    it 'replaces spots in the given order when spots change' do
       route = create_route_for(user, [{ spottable: greentea }])
-      allow(DirectionsService).to receive(:auto_leg)
-        .and_return({ distance_meters: 2000, duration_seconds: 1500, transport: 'transit' })
 
       patch "/api/v1/routes/#{route.id}",
             params: {
@@ -323,17 +245,11 @@ RSpec.describe 'Api::V1::Routes', type: :request do
 
       expect(response).to have_http_status(:ok)
       first_spot = route.reload.route_spots.order(:position).first
-      expect(first_spot.leg_distance_meters).to eq(2000)
-      expect(first_spot.leg_duration_seconds).to eq(1500)
-      expect(first_spot.transport).to eq('transit')
-      expect(response.parsed_body['data']['total_distance_meters']).to eq(2000)
+      expect(first_spot.spottable).to eq(temple)
     end
 
     it 'updates only scalar fields and preserves spots when the spots key is omitted' do
       route = create_route_for(user, [{ spottable: greentea }, { spottable: temple }])
-      # spots 未変更なので leg 再計算（外部 API 呼び出し）は走らない。
-      expect(DirectionsService).not_to receive(:auto_leg)
-
       patch "/api/v1/routes/#{route.id}",
             params: { route: { description: '説明だけ更新' } },
             headers: auth

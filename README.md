@@ -109,7 +109,6 @@ https://matcha-to-jinja.vercel.app/
 使用API  
 　・Google Geocoding API（緯度経度の取得に使用）  
 　・Google Maps JavaScript API（マップ作成に使用）  
-　・Google Directions API（モデルルートの経路・所要時間計算）  
 
 # ■ER図
 [![Image from Gyazo](https://i.gyazo.com/296fbadf44c1309af6a5decb160e745b.png)](https://gyazo.com/296fbadf44c1309af6a5decb160e745b)

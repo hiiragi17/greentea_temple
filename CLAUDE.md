@@ -23,7 +23,6 @@
 外部 API:
 - Google Geocoding API（住所→緯度経度）
 - Google Maps JavaScript API（地図描画）
-- Google Directions API（モデルルートの経路・所要時間計算。#153）
 
 ## セットアップ / よく使うコマンド
 
@@ -46,7 +45,6 @@ bundle exec rubocop
 |---|---|
 | `GMAP_API` | 住所 → 緯度経度（Geocoder。`config/initializers/geocoder.rb`）。seed 実行時に必須 |
 | `GOOGLE_MAP_API` | 地図描画（Maps JavaScript API。`app/views/**/*.erb` から HTML に埋め込み） |
-| `GOOGLE_DIRECTIONS_API_KEY` | モデルルートの経路・所要時間計算（Directions API・#153）。未設定なら `GOOGLE_MAPS_API_KEY` にフォールバック（`app/services/directions_service.rb`。地図描画用の `GOOGLE_MAP_API` とは**別名**なので注意） |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（#90 で Twitter から移行）。未設定時は credentials の `google.client_id` / `google.client_secret` にフォールバック |
 | （LINE は ENV 不可） | LINE OAuth は `credentials.yml.enc` の `line.channel_id` / `line.channel_secret` のみ参照（`config/initializers/sorcery.rb`）。環境変数では有効化されない |
 | `DATABASE_URL` | 本番 PostgreSQL（Neon。pooled + `sslmode=require`） |
