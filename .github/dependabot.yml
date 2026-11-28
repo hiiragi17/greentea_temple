@@ -23,3 +23,11 @@ updates:
       - dependency-name: "json"
         update-types: ["version-update:semver-major"]
         versions: [">= 3"]
+      # image_processing 2.0+ は mini_magick / ruby-vips が soft dependency になり、Gemfile に
+      # ruby-vips が無いと ActiveStorage の vips トランスフォーマーが LoadError になる（#279 で RSpec が
+      # 全滅し、#280 で "~> 1.2" に固定）。Dependabot の 2 系 PR はこの固定ごと書き換える（#355）。
+      # 本アプリは CarrierWave + mini_magick のみで image_processing を直接使っておらず、上げる利点が
+      # 無いため、json と同様に versions でも 2 系を除外してセキュリティ更新 PR も抑止する。
+      - dependency-name: "image_processing"
+        update-types: ["version-update:semver-major"]
+        versions: [">= 2"]
