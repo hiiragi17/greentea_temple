@@ -37,9 +37,9 @@ https://matcha-to-jinja.vercel.app/
 
 # ■機能に関して  
 
-> ⚠️ 以下のスクリーンショットは旧 Rails 製 Web フロント（現在は廃止済み）のものです。
-> 現在の実際の画面は Next.js フロントエンド（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)）が担っており、
-> 本リポジトリはその API バックエンドとして機能を提供しています。最新の画面は上記サービス URL からご確認ください。
+> 現在の画面は Next.js フロントエンド（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)）が担っており、
+> 本リポジトリはその API バックエンドとして機能を提供しています。
+> ⚠️ 2 の地図・3・5 の GIF は旧 Rails 製 Web フロント（現在は廃止済み）のものです。最新の画面は上記サービス URL からご確認ください。
 
 ## 1. 抹茶スイーツと神社仏閣が検索できる
 抹茶スイーツはキーワードとスイーツのカテゴリで、<br>
@@ -49,14 +49,14 @@ https://matcha-to-jinja.vercel.app/
 
 | 抹茶スイーツの検索 | 神社仏閣の検索 |
 |:---:|:---:|
-|　![抹茶スイーツ検索](https://user-images.githubusercontent.com/94298144/205436531-9905b312-1e17-434b-8d9a-423294f814d6.gif)　|　![神社仏閣検索](https://user-images.githubusercontent.com/94298144/205436544-5401e888-3629-4817-a576-a963c7f4d41a.gif)　|
+| <img src="docs/images/search-greentea.webp" alt="抹茶スイーツ検索" width="220"> | <img src="docs/images/search-temple.webp" alt="神社仏閣検索" width="220"> |
 
 ## 2. 詳細ページでは、それぞれの情報とその近くにある施設を見ることができる<br>
 抹茶スイーツ店・神社仏閣の詳細ページではそれぞれの情報と、<br>
 半径1.5km以内にある抹茶スイーツ店・神社仏閣を見ることができます。<br>
-またTwitterやLineで抹茶スイーツ店・神社仏閣を共有することもできます。<br>
+またX（旧Twitter）やLINEで抹茶スイーツ店・神社仏閣を共有することもできます。<br>
 
-![詳細ページ](https://user-images.githubusercontent.com/94298144/205470198-0a8b7e71-cbad-4597-b8bb-a7f7680d6e8a.gif)
+<img src="docs/images/detail-greentea.webp" alt="詳細ページ" width="220">
 
 詳細ページの地図には、その場所とその周りにあるスポットが表示されており、<br>
 スポットのリンクから、それぞれの詳細ページに飛べるようになっています。<br>
@@ -74,7 +74,9 @@ https://matcha-to-jinja.vercel.app/
 ユーザー登録することで「いいね機能」が利用可能になります。<br>
 登録＆ログインは、Google・LINEの外部認証から選択できます。<br>
 
-![ユーザー登録](https://user-images.githubusercontent.com/94298144/205470343-0c622843-c6a6-4de8-bb06-9d40207c6a58.gif)
+| ログイン前 | ログイン後 |
+|:---:|:---:|
+| <img src="docs/images/home-logged-out.webp" alt="ログイン前のトップ" width="220"> | <img src="docs/images/home-logged-in.webp" alt="ログイン後のトップ" width="220"> |
 
 ## 5. ユーザーログインすると口コミ機能が使える<br>
 ユーザー登録することで「口コミ機能」が利用可能になります。<br>
@@ -87,7 +89,9 @@ https://matcha-to-jinja.vercel.app/
 行きたい抹茶スイーツ店・神社仏閣を選んで並べるだけで、自分だけの巡り方を作れます。<br>
 コースの詳細ページでは、スポットどうしの行き方を Google マップで確認できます（電車・バス・徒歩などの移動手段は Google マップ上で選べます）。<br>
 
-<img src="docs/route-demo.gif" alt="モデルコース作成" width="300">
+| マイページ | スポットを追加 | 神社仏閣も追加 | 保存 |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/images/mypage.webp" alt="マイページのモデルコース入口" width="220"> | <img src="docs/images/route-new-greentea.webp" alt="モデルコース作成で抹茶スイーツを追加" width="220"> | <img src="docs/images/route-new-temple.webp" alt="モデルコース作成で神社仏閣を追加" width="220"> | <img src="docs/images/route-new-save.webp" alt="モデルコースを保存" width="220"> |
 
 # ■使用技術  
 バックエンド（本リポジトリ）
