@@ -77,7 +77,7 @@ bundle exec rubocop
 > Rails の命名規則 (`greentea_comments` / `temple_comments`) と異なるが、既存データのため変更しない。
 > 修正系のマイグレーションを生成しないこと。
 
-ER 図: https://i.gyazo.com/296fbadf44c1309af6a5decb160e745b.png
+ER 図: `docs/er-diagram.png`（`route_spots` の `spottable` は Greentea / Temple へのポリモーフィック関連で、DB の外部キー制約は無い）
 
 ## ディレクトリ構成
 

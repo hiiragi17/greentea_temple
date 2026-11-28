@@ -111,7 +111,7 @@ https://matcha-to-jinja.vercel.app/
 　・Google Maps JavaScript API（マップ作成に使用）  
 
 # ■ER図
-[![Image from Gyazo](https://i.gyazo.com/296fbadf44c1309af6a5decb160e745b.png)](https://gyazo.com/296fbadf44c1309af6a5decb160e745b)
+![ER図](docs/er-diagram.png)
 
 # ■その他
 
