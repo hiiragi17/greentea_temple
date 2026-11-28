@@ -37,9 +37,6 @@ gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
-# Model
-gem 'enum_help'
-
 # CORS for API (#113)
 gem 'rack-cors'
 
@@ -89,9 +86,6 @@ gem 'open_uri_redirections'
 # APIを環境変数化
 gem 'dotenv-rails'
 
-# Use Sass to process CSS
-gem "sassc-rails"
-
 # SEO
 gem 'meta-tags'
 
@@ -128,15 +122,8 @@ group :development do
 end
 
 group :test do
-  # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
-  # 3.40+ は selenium-webdriver 4.11+ の Logger 仕様変更に対応している（#134）
-  gem "capybara", ">= 3.40"
   gem 'faker'
   gem 'fuubar'
   gem 'shoulda-matchers'
   gem 'timecop'
-  # selenium-webdriver 4.11+ bundles Selenium Manager, which resolves the
-  # matching chromedriver automatically. The webdrivers gem (Chrome 115+ 非対応)
-  # is no longer needed and has been removed (#134).
-  gem "selenium-webdriver", ">= 4.11"
 end

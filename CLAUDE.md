@@ -14,7 +14,7 @@
 - Ransack（検索）/ Kaminari（ページネーション）
 - Geokit + Geocoder（緯度経度・距離計算）
 - CarrierWave + MiniMagick（画像アップロード）
-- RSpec + FactoryBot + Capybara
+- RSpec + FactoryBot
 - デプロイ: GCP Cloud Run + Neon PostgreSQL（#118 で移行予定）
   - `deploy-cloud-run.yml` は **CI（`ci.yml`）が main で成功したとき**（`workflow_run`）に発火する。手動実行（`workflow_dispatch`）も可能。**`db:migrate` は新リビジョン投入前に自動実行**される（`Run DB migrations` step）。migration は列追加など後方互換な変更にすること
   - ⚠️ **Heroku には今後デプロイしない**（過去運用）

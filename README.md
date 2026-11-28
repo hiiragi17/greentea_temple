@@ -93,7 +93,7 @@ https://matcha-to-jinja.vercel.app/
 バックエンド（本リポジトリ）
 
 　・Ruby 3.4.13  
-　・Ruby on Rails 8.1.x（`ActionController::API` による `api/v1` 名前空間で JSON API を提供）
+　・Ruby on Rails 8.1.x（`ActionController::API` による `api/v1` 名前空間で JSON API を提供）  
 　・PostgreSQL  
 　・Ransack（検索）/ Kaminari（ページネーション）  
 　・Geokit + Geocoder（緯度経度・距離計算）  
