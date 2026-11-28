@@ -78,8 +78,8 @@
 
 ### C. その他の既知の齟齬
 
-- **LINE ログインは ENV では有効化されない** → `credentials.yml.enc` に `line.channel_id` /
-  `line.channel_secret` が必要（本書「4」の⚠️を参照）。
+- **LINE / Google ログインの認証情報は Rails には不要** → OAuth はフロント（NextAuth.js）が行い、
+  Rails はアクセストークンを各社 API で検証するだけ（本書「4」の ℹ️ を参照）。
 - `FRONTEND_URL` を本番値（`https://matcha-to-jinja.vercel.app`）にしないと CORS で弾かれる。
 - `DATABASE_URL` は Neon の **pooler 経由 + `sslmode=require`**。
 - `/api/v1/health` は **DB 非接続**なので 200 でも DB 疎通の証明にならない。
