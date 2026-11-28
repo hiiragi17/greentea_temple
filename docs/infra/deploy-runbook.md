@@ -499,14 +499,15 @@ gcloud run domain-mappings create \
 ## 6.5. 運用: 本番で admin ロールを付与する
 
 `User#role`（`general` / `admin`）はセルフサービスの昇格 API を持たない設計（`app/controllers/api/v1/base_controller.rb`
-の `require_admin!` が唯一のガード）。**API 経由の自動昇格は存在せず**、最初の1人目は console（方法A/B）で手動付与し、
-2人目以降は既に admin になっているユーザーが Administrate（方法C）から昇格させる、という2段階の運用になる。
+の `require_admin!` が唯一のガード）。**API 経由の自動昇格は存在せず**、フロントの管理画面（matcha-to-jinja の `/admin`）にも
+ユーザーの権限を変える機能は無い。そのため admin の付与は、1人目・2人目以降とも console（方法A/B）で手動で行う
+（以前の Administrate 画面 `/admin/users` からの昇格は、Administrate 撤去に伴い使えない）。
 
 Cloud Run には SSH/exec できないが、DB は Neon（外部公開エンドポイント + `sslmode=require`）なので
 **ローカルから `DATABASE_URL` を本番 Neon に向けて `rails console` を起動**すれば足りる
 （3-4 節の seed 投入と同じパターン）。
 
-### 方法A: ローカルから本番 Neon に向けて console（最初の1人目の bootstrap 用）
+### 方法A: ローカルから本番 Neon に向けて console
 
 `DATABASE_URL` / `RAILS_MASTER_KEY` をコマンドラインに直接書くとシェル履歴に残るため、
 `read -s` で非表示入力し、使用後は環境変数を破棄する。
@@ -537,7 +538,7 @@ user.update!(role: :admin)
 ```
 
 - **`update!` の前に必ず候補の件数と id/name/provider/uid を確認**する（`update_all` や範囲指定はしない）
-- 用途は「最初の1人目」の bootstrap に限定する。2人目以降は方法Cで昇格させる
+- 1人ずつ id を確認して付与する（2人目以降も同じ手順）
 
 ### 方法B: Cloud Run Job（DB接続文字列をローカルに持ち出したくない場合）
 
@@ -590,12 +591,6 @@ gcloud run jobs execute grant-admin --region="$REGION"
 # 3. 使い終わったら削除する（残すと誤実行のリスクがある）
 gcloud run jobs delete grant-admin --region="$REGION"
 ```
-
-### 方法C: Administrate 画面（2人目以降・平常運用）
-
-既に admin が1人いれば、以降は `/admin/users`（`Admin::ApplicationController` が
-`current_user.admin?` でガード、`UserDashboard` の `FORM_ATTRIBUTES` に `role` あり）から
-その admin が対象ユーザーの `role` を `admin` に変更できる。本番での通常運用はこちらを使う。
 
 ---
 
