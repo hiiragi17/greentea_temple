@@ -4,12 +4,6 @@ class RouteSpot < ApplicationRecord
   belongs_to :route, inverse_of: :route_spots
   belongs_to :spottable, polymorphic: true
 
-  # 移動手段・経路距離・所要時間・経路ポリラインの列は使わなくなった（Directions API は
-  # 日本の乗換案内を返さず不正確だったため、行き方はフロントから Google マップに任せる）。
-  # 列の削除マイグレーションをデプロイする前に、動いているコードがこれらの列を参照しない
-  # ようにするため無視する。列の削除後に ignored_columns も外す。
-  self.ignored_columns += %w[transport leg_distance_meters leg_duration_seconds leg_polyline]
-
   validates :position, presence: true,
                        numericality: { only_integer: true, greater_than: 0 }
   validates :spottable_type, inclusion: { in: SPOT_TYPES.values }
