@@ -13,7 +13,6 @@ RSpec.describe 'Rate limiting (Rack::Attack)', type: :request do
   let(:greentea) { create(:greentea) }
   let(:temple) { create(:temple) }
 
-
   around do |example|
     original_enabled = Rack::Attack.enabled
     original_store = Rack::Attack.cache.store
