@@ -21,7 +21,7 @@ https://matcha-to-jinja.vercel.app/
 　折角京都に観光に来るなら、<br>  
 　京都で有名な抹茶スイーツを食べ、神社仏閣を同時に巡りたいと考えるユーザーは多いと考えられる。<br>  
 　しかし抹茶スイーツをまとめたサイトや、神社仏閣をまとめたサイトはあっても、<br>  
-　それら二つを同時に見られるサイトはあまりない。<bt>  
+　それら二つを同時に見られるサイトはあまりない。<br>  
 　その為それら二つを同時に探すことができ、<br>  
 　尚且つ行きたい箇所の距離や行き方を調べたりすることができるようにしたい。<br>  
 </details>
@@ -32,6 +32,7 @@ https://matcha-to-jinja.vercel.app/
 　・行く予定のある地域の神社仏閣を調べることができる<br>  
 　・行きたい抹茶スイーツ店近くの神社仏閣、行きたい神社仏閣近くの抹茶スイーツ店を知ることができる<br>  
 　・現在地から行ける抹茶スイーツ店、神社仏閣を調べることができる<br>     
+　・行きたい抹茶スイーツ店・神社仏閣を並べて、自分だけのモデルコースを作ることができる<br>  
 </details>
 　
 
@@ -39,7 +40,6 @@ https://matcha-to-jinja.vercel.app/
 
 > 現在の画面は Next.js フロントエンド（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)）が担っており、
 > 本リポジトリはその API バックエンドとして機能を提供しています。
-> ⚠️ 2 の地図・3・5 の GIF は旧 Rails 製 Web フロント（現在は廃止済み）のものです。最新の画面は上記サービス URL からご確認ください。
 
 ## 1. 抹茶スイーツと神社仏閣が検索できる
 抹茶スイーツはキーワードとスイーツのカテゴリで、<br>
@@ -49,40 +49,36 @@ https://matcha-to-jinja.vercel.app/
 
 | 抹茶スイーツの検索 | 神社仏閣の検索 |
 |:---:|:---:|
-| <img src="docs/images/search-greentea.webp" alt="抹茶スイーツ検索" width="220"> | <img src="docs/images/search-temple.webp" alt="神社仏閣検索" width="220"> |
+| <img src="docs/images/search-greentea.gif" alt="抹茶スイーツ検索" width="220"> | <img src="docs/images/search-temple.gif" alt="神社仏閣検索" width="220"> |
 
 ## 2. 詳細ページでは、それぞれの情報とその近くにある施設を見ることができる<br>
 抹茶スイーツ店・神社仏閣の詳細ページではそれぞれの情報と、<br>
 半径1.5km以内にある抹茶スイーツ店・神社仏閣を見ることができます。<br>
 またX（旧Twitter）やLINEで抹茶スイーツ店・神社仏閣を共有することもできます。<br>
 
-<img src="docs/images/detail-greentea.webp" alt="詳細ページ" width="220">
-
 詳細ページの地図には、その場所とその周りにあるスポットが表示されており、<br>
 スポットのリンクから、それぞれの詳細ページに飛べるようになっています。<br>
 
-![詳細ページに地図を追加](https://user-images.githubusercontent.com/94298144/207800518-d68d408c-a341-4c7d-a2ac-85e10953df3a.gif)
+<img src="docs/images/detail.gif" alt="詳細ページ" width="220">
 
 ## 3.現在地検索で近くにある抹茶スイーツ店と神社仏閣を調べることができる<br>
 京都にいれば、現在地周りの抹茶スイーツ店と神社仏閣を見ることができます。<br>
-茶のアイコンが抹茶スイーツ店、神のアイコンが神社仏閣になっており、<br>
+茶碗のアイコンが抹茶スイーツ店、鳥居のアイコンが神社仏閣になっており、<br>
 吹き出しをクリックすると、詳細ページにアクセスすることができます。<br>
 
-![現在地検索２ (1)](https://user-images.githubusercontent.com/94298144/205470310-041a24b0-37cd-441e-bb3d-bca9ce8cd6c2.gif)
+<img src="docs/images/nearby.gif" alt="現在地検索" width="220">
 
 ## 4. ユーザーログインするといいね機能が使える<br>
 ユーザー登録することで「いいね機能」が利用可能になります。<br>
 登録＆ログインは、Google・LINEの外部認証から選択できます。<br>
 
-| ログイン前 | ログイン後 |
-|:---:|:---:|
-| <img src="docs/images/home-logged-out.webp" alt="ログイン前のトップ" width="220"> | <img src="docs/images/home-logged-in.webp" alt="ログイン後のトップ" width="220"> |
+<img src="docs/images/login-review.gif" alt="ログイン・お気に入り・口コミ" width="220">
 
 ## 5. ユーザーログインすると口コミ機能が使える<br>
 ユーザー登録することで「口コミ機能」が利用可能になります。<br>
 それぞれの抹茶スイーツ・神社仏閣の詳細ページから口コミ一覧ページに飛べるようになっています。<br>
 ※口コミ一覧を見るだけの場合は、ログインは必要ありません。<br>
-![口コミ機能](https://user-images.githubusercontent.com/94298144/207800375-a61c02a7-a528-4c14-93c9-001b241d09b5.gif)
+<img src="docs/images/login-review.gif" alt="口コミ機能" width="220">
 
 ## 6. ユーザーログインするとモデルコースを作成できる<br>
 ユーザー登録することで「モデルコース機能」が利用可能になります。<br>
@@ -91,7 +87,7 @@ https://matcha-to-jinja.vercel.app/
 
 | マイページ | スポットを追加 | 神社仏閣も追加 | 保存 |
 |:---:|:---:|:---:|:---:|
-| <img src="docs/images/mypage.webp" alt="マイページのモデルコース入口" width="220"> | <img src="docs/images/route-new-greentea.webp" alt="モデルコース作成で抹茶スイーツを追加" width="220"> | <img src="docs/images/route-new-temple.webp" alt="モデルコース作成で神社仏閣を追加" width="220"> | <img src="docs/images/route-new-save.webp" alt="モデルコースを保存" width="220"> |
+| <img src="docs/images/route-mypage.gif" alt="マイページのモデルコース入口" width="220"> | <img src="docs/images/route-new-greentea.gif" alt="モデルコース作成で抹茶スイーツを追加" width="220"> | <img src="docs/images/route-new-temple.gif" alt="モデルコース作成で神社仏閣を追加" width="220"> | <img src="docs/images/route-new-save.gif" alt="モデルコースを保存" width="220"> |
 
 # ■使用技術  
 バックエンド（本リポジトリ）
@@ -105,17 +101,25 @@ https://matcha-to-jinja.vercel.app/
 　・jsonapi-serializer（API レスポンス）  
 　・Administrate（管理画面）  
 　・JWT 認証（フロントエンド向け）  
+　・rack-cors（CORS）/ rack-attack（レート制限）  
 
-フロントエンド    
-　・Next.js（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)。NextAuth.js による OAuth 認証）  
-　※旧 Rails 製 Web フロント（JavaScript / Tailwind CSS・daisyUI）は撤去済み
+フロントエンド（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)）    
+　・Next.js（App Router）+ React + TypeScript  
+　・Tailwind CSS v4 + daisyUI 5  
+　・NextAuth.js（Google / LINE の OAuth 認証）  
+　・SWR（データ取得）/ react-hook-form + zod（フォーム）  
+　・@vis.gl/react-google-maps（地図）  
+　※ Rails 側の旧 Web フロント（HTML 画面・JS/CSS ビルド）は撤去済み
 
 インフラ    
-　・GCP Cloud Run（デプロイ）  
+　・GCP Cloud Run（バックエンド API）  
 　・Neon PostgreSQL（本番 DB）  
+　・Vercel（フロントエンド）  
+　・GitHub Actions（CI: RSpec / RuboCop / Trivy、main マージで Cloud Run へ自動デプロイ）  
 
 テスト  
-　・RSpec + FactoryBot + Capybara  
+　・バックエンド: RSpec（request spec 中心）+ FactoryBot  
+　・フロントエンド: Vitest + Testing Library + MSW / Playwright（E2E）  
 
 使用API  
 　・Google Geocoding API（緯度経度の取得に使用）  
