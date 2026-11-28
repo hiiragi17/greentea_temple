@@ -288,7 +288,45 @@ RSpec.describe DirectionsService do
         expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded', transport: 'transit')
       end
 
-      it 'falls back to walking when the relaxed transit query is ZERO_RESULTS even after the time retry' do
+      it 'falls back to driving for a long (>= 2km) leg when the relaxed transit query is ZERO_RESULTS' do
+        Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
+          call_count = 0
+
+          expect(DirectionsService).to receive(:request).exactly(3).times do |uri|
+            call_count += 1
+            if call_count == 3
+              expect(uri.query).to include('mode=driving')
+              ok_body
+            else
+              expect(uri.query).to include('mode=transit')
+              { 'status' => 'ZERO_RESULTS', 'routes' => [] }
+            end
+          end
+
+          result = DirectionsService.auto_leg(origin: origin, destination: destination)
+          expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded', transport: 'car')
+        end
+      end
+
+      it 'falls back to walking when both transit and driving fail for a long leg' do
+        Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
+          expect(DirectionsService).to receive(:request).exactly(4).times do |uri|
+            if uri.query.include?('mode=walking')
+              ok_body
+            else
+              { 'status' => 'ZERO_RESULTS', 'routes' => [] }
+            end
+          end
+
+          result = DirectionsService.auto_leg(origin: origin, destination: destination)
+          expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded', transport: 'walk')
+        end
+      end
+
+      it 'falls back to walking (not driving) for a 1-2km leg when the relaxed transit query is ZERO_RESULTS' do
+        # origin から約 1.5km（AUTO_WALK_THRESHOLD_METERS 以上 / AUTO_DRIVE_THRESHOLD_METERS 未満）。
+        mid_destination = double('mid_destination', latitude: 34.9806, longitude: 135.7727)
+
         Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
           call_count = 0
 
@@ -303,12 +341,12 @@ RSpec.describe DirectionsService do
             end
           end
 
-          result = DirectionsService.auto_leg(origin: origin, destination: destination)
+          result = DirectionsService.auto_leg(origin: origin, destination: mid_destination)
           expect(result).to eq(distance_meters: 1500, duration_seconds: 1080, polyline: 'abc123encoded', transport: 'walk')
         end
       end
 
-      it 'returns nil when both the relaxed transit query and the walking fallback fail' do
+      it 'returns nil when transit, driving and the walking fallback all fail' do
         Timecop.freeze(Time.zone.local(2026, 1, 5, 10, 0, 0)) do
           allow(DirectionsService).to receive(:request).and_return('status' => 'ZERO_RESULTS', 'routes' => [])
           expect(DirectionsService.auto_leg(origin: origin, destination: destination)).to be_nil

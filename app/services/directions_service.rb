@@ -45,6 +45,11 @@ class DirectionsService
   # Google 側も短距離の transit 問い合わせに ZERO_RESULTS を返しやすいため。
   AUTO_WALK_THRESHOLD_METERS = 1000
 
+  # 乗換案内が見つからなかった区間のうち、このメートル以上は徒歩ではなく車で案内する。
+  # 日本では Directions API の transit が経路を返さない（ZERO_RESULTS）ことが多く、
+  # 徒歩フォールバックだけだと数 km〜十数 km の区間まで「徒歩」になってしまうため。
+  AUTO_DRIVE_THRESHOLD_METERS = 2000
+
   Attempt = Struct.new(:result, :retryable)
   private_constant :Attempt
 
@@ -62,15 +67,21 @@ class DirectionsService
 
     # ユーザーに手段を選ばせず、区間ごとに最適な移動手段を自動決定する版。
     # 近距離（AUTO_WALK_THRESHOLD_METERS 未満）は徒歩、それ以外は手段を絞らない
-    # 一般的な transit（乗換案内）を優先し、見つからなければ徒歩にフォールバックする。
-    # 返り値: leg の結果に transport: "walk" | "transit" を加えたもの、または nil。
+    # 一般的な transit（乗換案内）を優先する。見つからなければ、
+    # AUTO_DRIVE_THRESHOLD_METERS 以上は車、それ未満（または車も失敗）は徒歩にフォールバックする。
+    # 返り値: leg の結果に transport: "walk" | "transit" | "car" を加えたもの、または nil。
     def auto_leg(origin:, destination:)
       return nil if api_key.blank?
       return nil unless coordinates?(origin) && coordinates?(destination)
 
-      return walk_leg(origin, destination) if short_distance?(origin, destination)
+      distance = straight_distance_meters(origin, destination)
+      return walk_leg(origin, destination) if distance < AUTO_WALK_THRESHOLD_METERS
 
-      relaxed_transit_leg(origin, destination)&.merge(transport: 'transit') || walk_leg(origin, destination)
+      transit = relaxed_transit_leg(origin, destination)
+      return transit.merge(transport: 'transit') if transit
+
+      drive = drive_leg(origin, destination) if distance >= AUTO_DRIVE_THRESHOLD_METERS
+      drive || walk_leg(origin, destination)
     end
 
     private
@@ -79,10 +90,14 @@ class DirectionsService
       fetch_leg(origin, destination, 'walk', nil).result&.merge(transport: 'walk')
     end
 
-    def short_distance?(origin, destination)
+    def drive_leg(origin, destination)
+      fetch_leg(origin, destination, 'car', nil).result&.merge(transport: 'car')
+    end
+
+    def straight_distance_meters(origin, destination)
       from = Geokit::LatLng.new(origin.latitude, origin.longitude)
       to = Geokit::LatLng.new(destination.latitude, destination.longitude)
-      (from.distance_to(to, units: :kms) * 1000) < AUTO_WALK_THRESHOLD_METERS
+      from.distance_to(to, units: :kms) * 1000
     end
 
     # 手段を絞らない一般的な transit（乗換案内）で問い合わせる。サービス時間外の
