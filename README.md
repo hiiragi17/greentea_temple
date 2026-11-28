@@ -91,6 +91,7 @@ https://matcha-to-jinja.vercel.app/
 
 # ■使用技術  
 バックエンド（本リポジトリ）
+
 　・Ruby 3.4.13  
 　・Ruby on Rails 8.1.x（`ActionController::API` による `api/v1` 名前空間で JSON API を提供）
 　・PostgreSQL  
@@ -104,6 +105,7 @@ https://matcha-to-jinja.vercel.app/
 　・rack-cors（CORS）/ rack-attack（レート制限）  
 
 フロントエンド（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)）    
+
 　・Next.js（App Router）+ React + TypeScript  
 　・Tailwind CSS v4 + daisyUI 5  
 　・NextAuth.js（Google / LINE の OAuth 認証）  
@@ -112,16 +114,19 @@ https://matcha-to-jinja.vercel.app/
 　※ Rails 側の旧 Web フロント（HTML 画面・JS/CSS ビルド）は撤去済み
 
 インフラ    
+
 　・GCP Cloud Run（バックエンド API）  
 　・Neon PostgreSQL（本番 DB）  
 　・Vercel（フロントエンド）  
 　・GitHub Actions（CI: RSpec / RuboCop / Trivy、main マージで Cloud Run へ自動デプロイ）  
 
 テスト  
+
 　・バックエンド: RSpec（request spec 中心）+ FactoryBot  
 　・フロントエンド: Vitest + Testing Library + MSW / Playwright（E2E）  
 
-使用API  
+使用API 
+
 　・Google Geocoding API（緯度経度の取得に使用）  
 　・Google Maps JavaScript API（マップ作成に使用）  
 
