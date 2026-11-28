@@ -78,8 +78,8 @@
 
 ### C. その他の既知の齟齬
 
-- **LINE ログインは ENV では有効化されない** → `credentials.yml.enc` に `line.channel_id` /
-  `line.channel_secret` が必要（本書「4」の⚠️を参照）。
+- **LINE / Google ログインの認証情報は Rails には不要** → OAuth はフロント（NextAuth.js）が行い、
+  Rails はアクセストークンを各社 API で検証するだけ（本書「4」の ℹ️ を参照）。
 - `FRONTEND_URL` を本番値（`https://matcha-to-jinja.vercel.app`）にしないと CORS で弾かれる。
 - `DATABASE_URL` は Neon の **pooler 経由 + `sslmode=require`**。
 - `/api/v1/health` は **DB 非接続**なので 200 でも DB 疎通の証明にならない。
@@ -231,8 +231,6 @@ echo "$SA"
 | `JWT_SECRET_KEY` | API 用 JWT 署名鍵 | 任意の十分長い乱数 |
 | `GMAP_API` | Geocoding 用 API キー | Google Cloud Console |
 | `GOOGLE_MAP_API` | Maps JS API キー | Google Cloud Console |
-| `LINE_KEY` | LINE OAuth キー（※下記注意） | LINE Developers |
-| `LINE_SECRET` | LINE OAuth シークレット（※下記注意） | LINE Developers |
 | `SECRET_KEY_BASE` | （任意）未設定なら credentials 由来を使用 | 任意 |
 | `WARMUP_TOKEN` | （任意）ウォームアップ用エンドポイント（`GET /api/v1/warmup`）の認証トークン。Cloud Scheduler の呼び出しのみに限定するための共有シークレット | `openssl rand -hex 32` 等で生成 |
 
@@ -247,22 +245,10 @@ echo "$SA"
 > `SECRET_KEY_BASE` は **secret が存在するときのみ** Cloud Run に渡される実装。
 > credentials.yml.enc 側に持たせるなら未設定で OK（`RAILS_MASTER_KEY` で復号される）。
 
-> ⚠️ **LINE OAuth の認証情報は環境変数では読まれない**（重要）
-> `config/initializers/sorcery.rb` は LINE の key/secret を **encrypted credentials** から読む:
->
-> ```ruby
-> config.line.key    = Rails.application.credentials.dig(:line, :channel_id)
-> config.line.secret = Rails.application.credentials.dig(:line, :channel_secret)
-> ```
->
-> そのため上表の `LINE_KEY` / `LINE_SECRET` を Cloud Run に渡しても **Sorcery は参照せず、LINE
-> ログインは有効化されない**（`deploy-cloud-run.yml` がこれらを env で渡しているのは現状
-> アプリ側と未整合）。LINE ログインを本番で動かすには、**`credentials.yml.enc` に
-> `line.channel_id` / `line.channel_secret` を設定**し（`RAILS_MASTER_KEY` で復号）、
-> その値を使うこと。GitHub Secrets の `LINE_KEY` / `LINE_SECRET` は現状不要。
->
-> （根本対応として initializer を `ENV['LINE_KEY']` 参照へ寄せる選択肢もあるが、認証境界に
-> 触れるため本手順書のスコープ外。別 issue で扱う。）
+> ℹ️ **LINE / Google ログインの認証情報は Rails には不要**
+> ログインの OAuth はフロント（matcha-to-jinja の NextAuth.js）が行い、Rails は受け取った
+> アクセストークンを LINE / Google の API で検証するだけ（`app/services/oauth_user_info_fetcher/`）。
+> そのため Rails / Cloud Run 側に LINE・Google の client ID / secret は設定しない。
 
 ### Variables
 
@@ -513,14 +499,15 @@ gcloud run domain-mappings create \
 ## 6.5. 運用: 本番で admin ロールを付与する
 
 `User#role`（`general` / `admin`）はセルフサービスの昇格 API を持たない設計（`app/controllers/api/v1/base_controller.rb`
-の `require_admin!` が唯一のガード）。**API 経由の自動昇格は存在せず**、最初の1人目は console（方法A/B）で手動付与し、
-2人目以降は既に admin になっているユーザーが Administrate（方法C）から昇格させる、という2段階の運用になる。
+の `require_admin!` が唯一のガード）。**API 経由の自動昇格は存在せず**、フロントの管理画面（matcha-to-jinja の `/admin`）にも
+ユーザーの権限を変える機能は無い。そのため admin の付与は、1人目・2人目以降とも console（方法A/B）で手動で行う
+（以前の Administrate 画面 `/admin/users` からの昇格は、Administrate 撤去に伴い使えない）。
 
 Cloud Run には SSH/exec できないが、DB は Neon（外部公開エンドポイント + `sslmode=require`）なので
 **ローカルから `DATABASE_URL` を本番 Neon に向けて `rails console` を起動**すれば足りる
 （3-4 節の seed 投入と同じパターン）。
 
-### 方法A: ローカルから本番 Neon に向けて console（最初の1人目の bootstrap 用）
+### 方法A: ローカルから本番 Neon に向けて console
 
 `DATABASE_URL` / `RAILS_MASTER_KEY` をコマンドラインに直接書くとシェル履歴に残るため、
 `read -s` で非表示入力し、使用後は環境変数を破棄する。
@@ -551,7 +538,7 @@ user.update!(role: :admin)
 ```
 
 - **`update!` の前に必ず候補の件数と id/name/provider/uid を確認**する（`update_all` や範囲指定はしない）
-- 用途は「最初の1人目」の bootstrap に限定する。2人目以降は方法Cで昇格させる
+- 1人ずつ id を確認して付与する（2人目以降も同じ手順）
 
 ### 方法B: Cloud Run Job（DB接続文字列をローカルに持ち出したくない場合）
 
@@ -604,12 +591,6 @@ gcloud run jobs execute grant-admin --region="$REGION"
 # 3. 使い終わったら削除する（残すと誤実行のリスクがある）
 gcloud run jobs delete grant-admin --region="$REGION"
 ```
-
-### 方法C: Administrate 画面（2人目以降・平常運用）
-
-既に admin が1人いれば、以降は `/admin/users`（`Admin::ApplicationController` が
-`current_user.admin?` でガード、`UserDashboard` の `FORM_ATTRIBUTES` に `role` あり）から
-その admin が対象ユーザーの `role` を `admin` に変更できる。本番での通常運用はこちらを使う。
 
 ---
 

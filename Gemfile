@@ -40,11 +40,6 @@ gem "bootsnap", require: false
 # Model
 gem 'enum_help'
 
-# Authentication
-gem 'sorcery', '~> 0.18'
-gem 'oauth2'
-gem 'config'
-
 # CORS for API (#113)
 gem 'rack-cors'
 
@@ -93,9 +88,6 @@ gem 'open_uri_redirections'
 
 # APIを環境変数化
 gem 'dotenv-rails'
-
-# 管理画面
-gem "administrate"
 
 # Use Sass to process CSS
 gem "sassc-rails"

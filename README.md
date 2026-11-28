@@ -95,13 +95,11 @@ https://matcha-to-jinja.vercel.app/
 　・Ruby 3.4.13  
 　・Ruby on Rails 8.1.x（`ActionController::API` による `api/v1` 名前空間で JSON API を提供）
 　・PostgreSQL  
-　・Sorcery（LINE / Google OAuth）  
 　・Ransack（検索）/ Kaminari（ページネーション）  
 　・Geokit + Geocoder（緯度経度・距離計算）  
 　・CarrierWave + MiniMagick（画像アップロード）  
 　・jsonapi-serializer（API レスポンス）  
-　・Administrate（管理画面）  
-　・JWT 認証（フロントエンド向け）  
+　・JWT 認証（LINE / Google のアクセストークンを各社 API で検証して発行）  
 　・rack-cors（CORS）/ rack-attack（レート制限）  
 
 フロントエンド（[matcha-to-jinja](https://github.com/hiiragi17/matcha-to-jinja)）    

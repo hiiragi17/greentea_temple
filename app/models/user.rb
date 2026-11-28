@@ -1,5 +1,4 @@
 class User < ApplicationRecord
-  authenticates_with_sorcery!
   has_many :greentea_likes, dependent: :destroy
   has_many :greenteas, through: :greentea_likes, source: :greentea
   has_many :temple_likes, dependent: :destroy

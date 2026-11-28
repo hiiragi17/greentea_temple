@@ -1,7 +1,5 @@
 ja:
   defaults:
-    login: 'ログイン'
-    logout: 'ログアウト'
     post: '投稿'
     edit: '編集'
     show: '詳細'
@@ -10,7 +8,6 @@ ja:
     update: '更新する'
     unspecified: '指定なし'
     message:
-      require_login: 'ログインしてください'
       created: "%{item}を作成しました"
       not_created: "%{item}を作成できませんでした"
       updated: "%{item}を更新しました"
@@ -29,24 +26,6 @@ ja:
       title: 'プライバシーポリシー'
     terms_of_service:
       title: '利用規約'
-  users:
-    show:
-      title: 'マイページ'
-    edit:
-      title: 'プロフィール編集'
-    update:
-      success: 'ユーザー情報のアップデートに成功しました'
-      fail: 'ユーザー情報のアップデートに失敗しました'
-    destroy:
-      success: '退会しました。ご利用いただきありがとうございました'
-  user_sessions:
-    new:
-      title: '会員登録/ログイン'
-    create:
-      success: 'ログインしました'
-      fail: 'ログインに失敗しました'
-    destroy:
-      success: 'ログアウトしました'
   greenteas:
     index:
       title: '抹茶スイーツ店を検索する'

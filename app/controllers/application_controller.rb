@@ -13,13 +13,5 @@ class ApplicationController < ActionController::Base
     render template: 'errors/500', status: :internal_server_error
   end
 
-  before_action :require_login
-
   add_flash_types :success, :error, :info
-
-  private
-
-  def not_authenticated
-    redirect_to root_path, error: t('defaults.message.require_login')
-  end
 end

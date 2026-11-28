@@ -163,7 +163,7 @@
 
 ### 4-5. その他
 
-- `--allow-unauthenticated` で公開しつつ、認証は **アプリ層（JWT / Sorcery セッション）** で担保。
+- `--allow-unauthenticated` で公開しつつ、認証は **アプリ層（JWT）** で担保。
 - 環境変数（`RAILS_MASTER_KEY` / `JWT_SECRET_KEY` / `DATABASE_URL` 等）は Cloud Run のシークレット or Secret Manager 経由で注入し、イメージに焼き込まない。
 - CI で `bundle exec rspec` / `rubocop` をゲートにし、`main` push → build → Artifact Registry → Cloud Run deploy を WIF で鍵レス自動化。
 

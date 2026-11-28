@@ -10,11 +10,10 @@
 - Ruby 3.4.13（#119 で 3.1.2 → 3.3.11、その後 3.4.9 → 3.4.12 → 3.4.13 へ）
 - Ruby on Rails 8.1.x（7.0 → 7.1 を経て 8.1 へアップグレード済み。`config.load_defaults 8.1`）
 - PostgreSQL
-- Sorcery（LINE / Google OAuth）
+- JWT 認証（`jwt` gem。LINE / Google ログインは NextAuth.js が OAuth を行い、Rails はアクセストークンを各社 API で検証して JWT を発行）
 - Ransack（検索）/ Kaminari（ページネーション）
 - Geokit + Geocoder（緯度経度・距離計算）
 - CarrierWave + MiniMagick（画像アップロード）
-- Administrate（管理画面）
 - RSpec + FactoryBot + Capybara
 - デプロイ: GCP Cloud Run + Neon PostgreSQL（#118 で移行予定）
   - `deploy-cloud-run.yml` は **CI（`ci.yml`）が main で成功したとき**（`workflow_run`）に発火する。手動実行（`workflow_dispatch`）も可能。**`db:migrate` は新リビジョン投入前に自動実行**される（`Run DB migrations` step）。migration は列追加など後方互換な変更にすること
@@ -45,8 +44,6 @@ bundle exec rubocop
 |---|---|
 | `GMAP_API` | 住所 → 緯度経度（Geocoder。`config/initializers/geocoder.rb`）。seed 実行時に必須 |
 | `GOOGLE_MAP_API` | 地図描画（Maps JavaScript API。`app/views/**/*.erb` から HTML に埋め込み） |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth（#90 で Twitter から移行）。未設定時は credentials の `google.client_id` / `google.client_secret` にフォールバック |
-| （LINE は ENV 不可） | LINE OAuth は `credentials.yml.enc` の `line.channel_id` / `line.channel_secret` のみ参照（`config/initializers/sorcery.rb`）。環境変数では有効化されない |
 | `DATABASE_URL` | 本番 PostgreSQL（Neon。pooled + `sslmode=require`） |
 | `FRONTEND_URL` | CORS allowlist。開発: `http://localhost:3000`（デフォルト）/ 本番: `https://matcha-to-jinja.vercel.app`（#113〜） |
 | `JWT_SECRET_KEY` | API 用 JWT 署名（#115〜）。credentials の `jwt_secret` が優先 |
@@ -63,8 +60,8 @@ bundle exec rubocop
 - `greentea_genres` / `temple_areas` — 中間テーブル
 
 ユーザー系:
-- `users` — Sorcery core（name, crypted_password 等）
-- `authentications` — Sorcery external（provider, uid。LINE / Google）
+- `users` — name, role（general / admin）, token_version（JWT 失効用）
+- `authentications` — OAuth の連携先（provider, uid。LINE / Google）
 
 ソーシャル系:
 - `greentea_likes` / `temple_likes` — いいね（`(user_id, *_id)` で UNIQUE）
@@ -84,11 +81,8 @@ ER 図: `docs/er-diagram.png`（`route_spots` の `spottable` は Greentea / Tem
 ```text
 app/
   controllers/
-    admin/              # Administrate 管理画面
-    api/v1/             # 【新規】Next.js フロント向け API（#113 で着地）
-    oauths_controller.rb              # Sorcery OAuth callback
-    user_sessions_controller.rb, users_controller.rb
-    static_pages_controller.rb
+    api/v1/             # Next.js フロント向け API（管理用は api/v1/admin）
+    static_pages_controller.rb        # トップ・利用規約・プライバシーの HTML
     legacy_routes_controller.rb       # 旧 Web ルートの 410 Gone 応答（#136 段階1）
     # greenteas / temples / greentea_likes / temple_likes / greenteacomments /
     # templecomments / current_location の各コントローラは #136 段階3 で削除済み
@@ -98,8 +92,7 @@ app/
     greentea_like.rb, temple_like.rb
     greenteacomment.rb, templecomment.rb
     user.rb, authentication.rb
-  dashboards/           # Administrate dashboards
-  views/                # 既存 Web 画面（HTML。JS/CSS ビルドは #136 段階4 で撤去済み）
+  views/                # 残存 HTML（static_pages / errors / pwa。JS/CSS ビルドは #136 段階4 で撤去済み）
   assets/images/        # sprockets 配信の画像（logo 等）
 
 config/
@@ -114,12 +107,13 @@ spec/                   # RSpec
 
 ## 認証戦略
 
-ハイブリッド構成（Web セッション + API JWT）:
+API の JWT 認証のみ（Cookie セッションは使わない）。Sorcery・Administrate・旧 Web ログイン画面は #136 段階5・6 で撤去済み。
 
-- **既存 Web 画面**: Sorcery のセッション認証（Cookie）でそのまま運用
-- **新規 API（#113〜）**: Sorcery の OAuth プロバイダ実装は再利用しつつ、フロント (Next.js) には JWT を発行
-  - フロー: NextAuth で OAuth → `access_token` を Rails に渡す → Rails が Sorcery で User を upsert → JWT 返却
+- フロー: NextAuth.js（matcha-to-jinja）で OAuth → `access_token` を `POST /api/v1/auth/:provider` に渡す →
+  Rails が LINE / Google の API でトークンを検証（`app/services/oauth_user_info_fetcher/`）→ `users` / `authentications` を upsert → JWT 返却
   - 詳細: #115
+- LINE / Google の client ID / secret は Rails 側には不要（OAuth はフロントが行うため）
+- 管理機能はフロントの `/admin`（matcha-to-jinja）から `api/v1/admin/*` を JWT（`users.role = admin`）で呼ぶ
 
 外部認証プロバイダ: LINE / Google（#90 で Twitter を廃止し Google を追加）
 
@@ -129,7 +123,6 @@ JWT ライブラリ: `jwt` gem（HS256 / 有効期限 7 日。詳細は #115）�
 
 - **失効**: `users.token_version` を JWT の `ver` クレームと照合する。`DELETE /api/v1/auth/logout` で +1 し、そのユーザーに発行済みの JWT を全端末分まとめて失効させる（`ver` を持たない旧トークンは 0 世代扱い）
 - **クレーム**: `exp` / `iat` / `iss` / `aud` / `user_id` / `provider` / `ver`。`exp` / `iss` / `aud` は必須で、`iss` / `aud` が無い・不一致のトークンは 401（#307 で必須化。導入前の旧トークンの救済期間は終了）
-- **Web セッション**（Administrate 管理画面）: Sorcery `session_timeout` で最終操作から30分で失効
 - **CORS**（`config/initializers/cors.rb`）: 認証は Bearer ヘッダーのみで Cookie を使わないため、`credentials` は許可しない（フロントの `fetch` も `credentials: "include"` を付けない）
 
 ## 進行中の大型タスク: Rails API 化
@@ -195,11 +188,10 @@ DELETE /api/v1/greentea_likes/:id     # :id = greentea_id として解決
 
 ### Controller / 認証境界
 
-- 既存の `ApplicationController` は当面 **触らない**（Web 側に影響が出る）。認証境界（Sorcery セッション / `require_login`）の整理は #136 段階5 で実施する
-- 旧 Web フロントの撤去（#136）が進行中。**段階1〜4 着地済み**: 抹茶店／神社の閲覧・いいね・口コミ・現在地検索の HTML ルートは `LegacyRoutesController#gone` 経由で **410 Gone** を返し（段階1・残存ビューが参照する名前付きヘルパーは維持）、対応するビュー（段階2）・コントローラ本体（段階3）は削除済み。段階4でフロント資産（`app/javascript`・`app/assets/stylesheets`・jsbundling-rails/cssbundling-rails/turbo-rails/stimulus-rails gem、Dockerfile の Node/Yarn ビルド）も撤去済み。**残存する Web 画面（login/users/static_pages/admin）は無スタイルの素の HTML で描画される**（Tailwind/daisyUI/Turbo/Stimulus は撤去済みのため）。`data: { turbo_method: :delete }` に依存していたログアウト・退会リンクは `button_to`（JS 不要のネイティブ form 送信）に置き換え済み。認証境界整理（段階5）・不要 gem 整理（段階6）以降は未着手
+- 旧 Web フロントの撤去（#136）は**段階1〜6 着地済み**: 抹茶店／神社の閲覧・いいね・口コミ・現在地検索の HTML ルートは `LegacyRoutesController#gone` 経由で **410 Gone** を返し（段階1・残存ビューが参照する名前付きヘルパーは維持）、対応するビュー（段階2）・コントローラ本体（段階3）は削除済み。段階4でフロント資産（`app/javascript`・`app/assets/stylesheets`・jsbundling-rails/cssbundling-rails/turbo-rails/stimulus-rails gem、Dockerfile の Node/Yarn ビルド）も撤去済み。段階5・6で Administrate 管理画面・旧ログイン画面（user_sessions / oauths / users）・Sorcery・config gem を撤去済み。**残存する HTML は static_pages（トップ・利用規約・プライバシー）・errors・pwa のみ**で、無スタイルの素の HTML で描画される
 - API は `Api::V1::BaseController < ActionController::API` を別系統で持つ
 - API のエラーは JSON で返す: 401 / 403 / 404 / 400 / 422 / 500
-- `current_user` の解決は Web 側 = セッション / API 側 = JWT で完全に分離
+- `current_user` は API（`Api::V1::BaseController`）で JWT から解決する（Web 側のセッションは撤去済み）
 
 ### Serializer
 
